@@ -1,7 +1,11 @@
 .App {
-  text-align: center;
+  height: 100%;
+  padding: 10px;
+  background-color: #f5f6f7;
 }
-
+html, body, #root {
+  height: 100%;
+}
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -23,7 +27,11 @@
   font-size: calc(10px + 2vmin);
   color: white;
 }
-
+.app-shellbar{
+  border-radius: 10px!important;
+  box-shadow: var(--_ui5-v1-24-4_side_navigation_box_shadow)!important;
+  padding:3px;
+}
 .App-link {
   color: #61dafb;
 }
@@ -35,4 +43,89 @@
   to {
     transform: rotate(360deg);
   }
+}
+ui5-icon {
+  box-sizing: content-box;
+  border-left: 1px solid #89919A;
+}
+
+ui5-icon:hover {
+  cursor: pointer;
+  color: #861645;
+}
+.main{
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  gap: 10px;
+}
+.main-body{
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 10px;
+}
+.monitoring-tile{
+  box-shadow: var(--_ui5-v1-24-4_side_navigation_box_shadow)!important;
+  padding:15px;
+  display: flex;
+  justify-content: stretch;
+  align-items: stretch;
+  height:150px;
+  width:150px; 
+  border-radius:15px;
+  flex-direction: column;
+}
+.monitoring-tile:hover {
+  background-color: whitesmoke;
+}
+.tile-text{
+  margin-bottom: 70px;
+}
+.tile-number{
+  text-align: right;
+  font-size: 36px!important;
+  display: flex;
+  justify-content: flex-end;
+  gap: 3px;
+} 
+.tile-header-text{
+  text-align: left;
+}
+.tile-text-text{
+  text-align: left;
+  font-weight: 600!important;
+}
+.tile-number-text{
+  text-align: right;
+  font-size: 36px!important;
+}
+.tile-number-uom{
+  text-align: right;
+  font-size: 12px!important;
+  transform: rotate(-90deg);
+  margin-right:-20px;
+}
+.monitoring-panel{
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
+  align-items: stretch;
+  padding: 15px;
+}
+.monitoring-panel-content{
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 15px;
+}
+.monitoring-content{
+  padding: 5px;
+  border-radius: 10px;
+  background-color: white;
 }
