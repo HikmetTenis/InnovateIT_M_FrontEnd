@@ -2,9 +2,35 @@ import logo from './logo.svg';
 import './App.css';
 import "@ui5/webcomponents-icons/dist/AllIcons.js";
 import { ThemeProvider, Button, Panel, SideNavigation, SideNavigationItem, SideNavigationSubItem, BusyIndicator,ShellBar,Text, Avatar,ShellBarItem, Input, Icon, Bar   } from '@ui5/webcomponents-react';
+import Home from './components/home';
+import React, { useState } from 'react';
 import MonitoringPage from './components/monitoring-page';
-
+import MonitoringConfigure from './components/monitoring-configure';
+import { motion, AnimatePresence, useAnimationControls } from "framer-motion"
 function App() {
+  const wrapperVariants = {
+      hidden: {
+        opacity: 0,
+        x: '-5vw',
+        transition: { ease: 'easeInOut', delay: 0.1 },
+        display: "none"
+      },
+      visible: {
+        opacity: 1,
+        x: 0,
+        transition: { ease: 'easeInOut', delay: 0.4 },
+        display: "flex"
+      },
+      exit: {
+        x: '-5vh',
+        transition: { ease: 'easeInOut' },
+      },
+  };
+  const controls = useAnimationControls();
+  const[page, setpage] = useState("home") 
+  const showDetails = (newpage) =>{ 
+    setpage(newpage) 
+  } 
   return (
     <div className="App">
       {/* <header className="App-header">
@@ -45,35 +71,52 @@ function App() {
           <div className='main-body'>
             <SideNavigation
               collapsed
-              fixedItems={<><SideNavigationItem href="https://www.sap.com/index.html" icon="chain-link" target="_blank" text="External Link"/><SideNavigationItem icon="history" text="History"/></>}
+              fixedItems={<><SideNavigationItem icon="action-settings" text="Settings"/></>}
               onSelectionChange={function _a(){}}
               >
                 <SideNavigationItem
                   icon="home"
                   text="Home"
+                  onClick={()=> showDetails("home")}
+                  selected
                 />
                 <SideNavigationItem
                   expanded
-                  icon="group"
-                  text="People"
+                  icon="dimension"
+                  text="Monitoring"
+                  onClick={()=> showDetails("monitoring")}
                 >
-                  <SideNavigationSubItem text="From My Team" />
-                  <SideNavigationSubItem text="From Other Teams" />
+                  {/* <SideNavigationSubItem text="From My Team" />
+                  <SideNavigationSubItem text="From Other Teams" /> */}
                 </SideNavigationItem>
                 <SideNavigationItem
-                  icon="locate-me"
-                  selected
-                  text="Locations"
+                  icon="add-process"
+                  onClick={()=>showDetails("configuremonitoring")}
+                  text="Configure Monitoring"
                 />
-                <SideNavigationItem
-                  icon="calendar"
-                  text="Events"
-                >
-                  <SideNavigationSubItem text="Local" />
-                  <SideNavigationSubItem text="Others" />
-                </SideNavigationItem>
+              
               </SideNavigation>
-              <MonitoringPage></MonitoringPage>
+              <AnimatePresence>
+                <motion.div style={{flex:"1 1 auto"}}
+                    variants={wrapperVariants}
+                    initial="visible"
+                    animate={page === 'home' ? 'visible' : 'hidden'}
+                    exit="exit">{page === "home" && (<Home></Home>)} </motion.div>
+              </AnimatePresence>
+              <AnimatePresence>
+                <motion.div style={{flex:"1 1 auto"}}
+                    variants={wrapperVariants}
+                    initial="visible"
+                    animate={page === "monitoring" ? 'visible' : 'hidden'}
+                    exit="exit">{page === "monitoring" && (<MonitoringPage></MonitoringPage>)}</motion.div>
+              </AnimatePresence>
+              <AnimatePresence>
+                <motion.div style={{flex:"1 1 auto",width:"100%", height:"100%"}}
+                    variants={wrapperVariants}
+                    initial="visible"
+                    animate={page === "configuremonitoring" ? 'visible' : 'hidden'}
+                    exit="exit">{page === "configuremonitoring" && (<MonitoringConfigure style={{width:"100%", height:"100%"}}></MonitoringConfigure>)}</motion.div>
+              </AnimatePresence>
               {/* <BusyIndicator
                 active
                 delay={1000}

@@ -5,10 +5,10 @@ import MonitoringPageTiles from "./monitoring-page-tiles";
 export default function MonitoringPage() {
    
     return (
-            <DynamicSideContent className='monitoring-content' hideSideContent="true">
-                    <div className="monitoring-panel-content">
-                        <MonitoringPageTiles />
-                    </div>
-            </DynamicSideContent>
+        <DynamicSideContent className='monitoring-content' hideSideContent="true">
+                <div className="monitoring-panel-content">
+                    <MonitoringPageTiles />
+                </div>
+        </DynamicSideContent>
     );
 }

@@ -73,7 +73,7 @@ const MonitoringPageDetails = props => {
             style={{
               maxHeight: '700px'
             }}>
-            <motion.div style={{flex:"1 1 auto"}}
+            {/* <motion.div style={{flex:"1 1 auto"}}
                 variants={wrapperVariants}
                 initial="hidden"
                 animate={!details ? 'visible' : 'hidden'}
@@ -83,7 +83,7 @@ const MonitoringPageDetails = props => {
                       delay={1000}
                       size="Medium"
                     />
-            </motion.div>
+            </motion.div> */}
             <motion.div style={{flex:"1 1 auto"}}
                 variants={wrapperVariants}
                 initial="visible"
