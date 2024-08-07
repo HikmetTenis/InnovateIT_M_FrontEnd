@@ -3,10 +3,15 @@ import './App.css';
 import "@ui5/webcomponents-icons/dist/AllIcons.js";
 import { ThemeProvider, Button, Panel, SideNavigation, SideNavigationItem, SideNavigationSubItem, BusyIndicator,ShellBar,Text, Avatar,ShellBarItem, Input, Icon, Bar   } from '@ui5/webcomponents-react';
 import Home from './components/home';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MonitoringPage from './components/monitoring-page';
 import MonitoringConfigure from './components/monitoring-configure';
 import { motion, AnimatePresence, useAnimationControls } from "framer-motion"
+import MessageBoxComponent from "./components/message-box"
+import MessageToastComponent from "./components/message-toast"
+import '@ui5/webcomponents-react/dist/Assets'
+import messageContext from "./helpers/message-context";
+import $ from 'jquery';
 function App() {
   const wrapperVariants = {
       hidden: {
@@ -26,13 +31,21 @@ function App() {
         transition: { ease: 'easeInOut' },
       },
   };
-  const controls = useAnimationControls();
+  
   const[page, setpage] = useState("home") 
+  const[isCollapsed, setIsCollapsed] = useState(true) 
+  
+  const [message,setMessage] = useState({open:false,message:"",result:null, callback:null, toast:false})
   const showDetails = (newpage) =>{ 
     setpage(newpage) 
   } 
+  useEffect(() => {
+    var shellBarHeader = $(".app-shellbar").children('header:first'); 
+    shellBarHeader.append('<Button  design="Transparent"  icon="menu2"/>')
+  })
   return (
     <div className="App">
+      <messageContext.Provider value={{message,setMessage}}>
       {/* <header className="App-header">
         
       </header> */}
@@ -40,6 +53,7 @@ function App() {
         <div className="main">
         <ThemeProvider>
           <div className='App-Header'>
+          <Button style={{display:"block",position:"fixed",left:"20px", top:"20px", zIndex:"100", color:"black"}} onClick={() => setIsCollapsed(!isCollapsed)} design="Transparent"  icon="menu2"/>
             <ShellBar className='app-shellbar'
                 logo={<img style={{maxHeight:"2.5rem", marginTop:"-5px"}}alt="Innovate IT" src={process.env.PUBLIC_URL + '/logo3.png'} />}
                 //menuItems={<><StandardListItem data-key="1">Menu Item 1</StandardListItem><StandardListItem data-key="2">Menu Item 2</StandardListItem><StandardListItem data-key="3">Menu Item 3</StandardListItem></>}
@@ -59,6 +73,7 @@ function App() {
                 showNotifications
                 showProductSwitch
               >
+                
               <ShellBarItem
                 count="3"
                 icon="add"
@@ -70,7 +85,7 @@ function App() {
           </div>
           <div className='main-body'>
             <SideNavigation
-              collapsed
+              collapsed={isCollapsed} style={{zIndex:"100"}}
               fixedItems={<><SideNavigationItem icon="action-settings" text="Settings"/></>}
               onSelectionChange={function _a(){}}
               >
@@ -123,9 +138,14 @@ function App() {
                 size="Medium"
               /> */}
           </div>
+          <MessageBoxComponent/>
+          <MessageToastComponent/>
           </ThemeProvider>
+          
           </div>
+          
         </body>
+        </messageContext.Provider>
     </div>
   );
 }

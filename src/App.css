@@ -4,7 +4,7 @@
   background-color: #f5f6f7;
 }
 html, body, #root {
-  height: 100%;
+  height: 99%;
 }
 .App-logo {
   height: 40vmin;
@@ -16,7 +16,10 @@ html, body, #root {
     animation: App-logo-spin infinite 20s linear;
   }
 }
-
+.highlight:not(.djs-connection) .djs-visual > :nth-child(1) {
+  fill: #449d44 !important; /* color elements as green */
+  opacity:0.2;
+}
 .App-header {
   background-color: #282c34;
   min-height: 100vh;
@@ -34,6 +37,9 @@ html, body, #root {
 }
 .App-link {
   color: #61dafb;
+}
+.packages div[data-component-name="ObjectPageContent"]{
+  padding-inline:0px!important
 }
 
 @keyframes App-logo-spin {
@@ -62,7 +68,7 @@ ui5-icon:hover {
   height:100%;
 }
 .DynamicPage_contentContainer_i8nn3_24{
-  height:100%!important;
+  height:80%!important;
 }
 .main-body{
   display: flex;
@@ -70,7 +76,7 @@ ui5-icon:hover {
   justify-content: flex-start;
   align-items: flex-start;
   gap: 10px;
-  height:85%;
+  height:90%;
 }
 .monitoring-tile{
   box-shadow: var(--_ui5-v1-24-4_side_navigation_box_shadow)!important;

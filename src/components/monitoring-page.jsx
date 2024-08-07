@@ -1,7 +1,7 @@
 import "@ui5/webcomponents-icons/dist/AllIcons.js";
-import { Panel,DynamicSideContent} from '@ui5/webcomponents-react';
-import React, { useState } from 'react';
+import { Panel,DynamicSideContent, FlexBox} from '@ui5/webcomponents-react';
 import MonitoringPageTiles from "./monitoring-page-tiles";
+
 export default function MonitoringPage() {
    
     return (
@@ -10,5 +10,6 @@ export default function MonitoringPage() {
                     <MonitoringPageTiles />
                 </div>
         </DynamicSideContent>
+            
     );
 }
