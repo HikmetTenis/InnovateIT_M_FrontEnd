@@ -48,12 +48,12 @@ export default function MonitoringPageHeader() {
                             </div>
                     </Panel>
             </motion.div>
-            <motion.div style={{flex:"1 1 auto"}}
+            <motion.div style={{flex:"1 1 auto",width:"100%", height:"100%"}}
                 variants={wrapperVariants}
                 initial="hidden"
                 animate={details ? 'visible' : 'hidden'}
                 exit="exit">
-                    <MonitoringPageDetails  className="monitoring-details" onClick={() => showDetails(!details)}/>
+                    <MonitoringPageDetails  style={{width:"100%", height:"100%"}} className="monitoring-details" onClick={() => showDetails(!details)}/>
             </motion.div>
         </AnimatePresence>
 

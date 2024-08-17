@@ -12,6 +12,12 @@ import MessageToastComponent from "./components/message-toast"
 import '@ui5/webcomponents-react/dist/Assets'
 import messageContext from "./helpers/message-context";
 import $ from 'jquery';
+
+import { library } from '@fortawesome/fontawesome-svg-core'
+// import your icons
+import { fab } from '@fortawesome/free-brands-svg-icons'
+import { fas } from '@fortawesome/free-solid-svg-icons'
+import { far } from '@fortawesome/free-regular-svg-icons'
 function App() {
   const wrapperVariants = {
       hidden: {
@@ -55,7 +61,7 @@ function App() {
           <div className='App-Header'>
           <Button style={{display:"block",position:"fixed",left:"20px", top:"20px", zIndex:"100", color:"black"}} onClick={() => setIsCollapsed(!isCollapsed)} design="Transparent"  icon="menu2"/>
             <ShellBar className='app-shellbar'
-                logo={<img style={{maxHeight:"2.5rem", marginTop:"-5px"}}alt="Innovate IT" src={process.env.PUBLIC_URL + '/logo3.png'} />}
+                logo={<img style={{maxHeight:"2.5rem", marginTop:"-5px"}}alt="Innovate IT" src={process.env.PUBLIC_URL + '/shield.png'} />}
                 //menuItems={<><StandardListItem data-key="1">Menu Item 1</StandardListItem><StandardListItem data-key="2">Menu Item 2</StandardListItem><StandardListItem data-key="3">Menu Item 3</StandardListItem></>}
                 notificationsCount="10"
                 onCoPilotClick={function _a(){}}
@@ -65,7 +71,8 @@ function App() {
                 onProductSwitchClick={function _a(){}}
                 onProfileClick={function _a(){}}
                 onSearchButtonClick={function _a(){}}
-                primaryTitle=""
+                //primaryTitle={<span style={{fontFamily:'"72Black","72Blackfull","72","72full",Arial,Helvetica,sans-serif'}}>Watchmen</span>}
+                primaryTitle="Watchmen"
                 profile={<Avatar><img src="https://sap.github.io/ui5-webcomponents-react/main/assets/Person-B7wHqdJw.png" /></Avatar>}
                 searchField={<Input icon={<Icon interactive name="search"/>} showClearIcon/>}
                 secondaryTitle=""
@@ -112,18 +119,18 @@ function App() {
               
               </SideNavigation>
               <AnimatePresence>
-                <motion.div style={{flex:"1 1 auto"}}
+                <motion.div style={{flex:"1 1 auto",width:"100%", height:"100%"}}
                     variants={wrapperVariants}
                     initial="visible"
                     animate={page === 'home' ? 'visible' : 'hidden'}
                     exit="exit">{page === "home" && (<Home></Home>)} </motion.div>
               </AnimatePresence>
               <AnimatePresence>
-                <motion.div style={{flex:"1 1 auto"}}
+                <motion.div style={{flex:"1 1 auto",width:"100%", height:"100%"}}
                     variants={wrapperVariants}
                     initial="visible"
                     animate={page === "monitoring" ? 'visible' : 'hidden'}
-                    exit="exit">{page === "monitoring" && (<MonitoringPage></MonitoringPage>)}</motion.div>
+                    exit="exit">{page === "monitoring" && (<MonitoringPage style={{width:"100%", height:"100%"}}></MonitoringPage>)}</motion.div>
               </AnimatePresence>
               <AnimatePresence>
                 <motion.div style={{flex:"1 1 auto",width:"100%", height:"100%"}}
@@ -151,3 +158,4 @@ function App() {
 }
 
 export default App;
+library.add(fab, fas, far)

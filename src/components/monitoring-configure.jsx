@@ -56,9 +56,10 @@ export default function MonitoringPage() {
             for(const iflow of res.data.obj){
                 listOfChildren.push(<TableRow>
                     <TableCell style={{width:"80%"}}>
-                      <span>
-                        {iflow.Name}
-                      </span>
+                        <FlexBox direction="Row" alignItems="Center" fitContainer="true">
+                            <Icon name="combine" mode="decorative" style={{marginRight:"10px",borderLeft:"none"}}/>
+                            <span>{iflow.Name}</span>
+                        </FlexBox>
                     </TableCell>
                     <TableCell>
                       <span>
@@ -128,7 +129,9 @@ export default function MonitoringPage() {
                                 {artifact.Id === currentItemID ? 
                                 <BusyIndicator active={loading} style={{width:"100%"}} size="Medium">
                                     <Table
-                                        columns={<><TableColumn style={{width: '80%'}}><span>Artifact Name</span></TableColumn><TableColumn minWidth={800} popinText="Supplier"><span>Version</span></TableColumn><TableColumn style={{width:"40px"}}><Button data-id={artifact.Id} data-name={artifact.PackageName} design="Transparent" onClick={(e) => handleItemToggle(e)} icon="refresh"/></TableColumn></>}
+                                        columns={<><TableColumn style={{width:"80%"}}><span>Artifact Name</span></TableColumn>
+                                                   <TableColumn style={{width:"15%"}} popinText="Artifact Name"><span>Version</span></TableColumn>
+                                                   <TableColumn style={{width:"40px"}}><Button data-id={artifact.Id} data-name={artifact.PackageName} design="Transparent" onClick={(e) => handleItemToggle(e)} icon="refresh"/></TableColumn></>}
                                         onLoadMore={function _a(){}}
                                         onPopinChange={function _a(){}}
                                         onRowClick={function _a(){}}
