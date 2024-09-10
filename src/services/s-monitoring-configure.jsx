@@ -38,7 +38,7 @@ export const getElementType = (element) => {
   }  
   return null
 }
-export const processIntegrationProcesses = async(processName, processId,intProcessChildren, everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore, parentStepNumber, status) => {
+export const processIntegrationProcesses = async(processName, processId,intProcessChildren, everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore, parentStepNumber, status,keepPayloadAsDefault,reprocessingAsDefault) => {
   let sequenceList = []
   let stepNumber = 1
   return new Promise(async(resolve, reject) => {
@@ -50,17 +50,27 @@ export const processIntegrationProcesses = async(processName, processId,intProce
               let x = -25
               let y = -25
               let ll = []
+              let ttype = child.type
+              if(!ttype)
+                ttype = child.$type
               for(let outgoing of child.outgoing){
                 if(outgoing.id.indexOf("MessageFlow") === -1)
                   ll.push(outgoing.id)
+              }
+              let isReprocessingpossible = true
+              if(status === "FAILED"){
+                isReprocessingpossible= false
               }
               const data = {
                   id:child.id,
                   id2:child.id,
                   sequences:ll,
+                  keepPayload: keepPayloadAsDefault,
+                  reprocessing: reprocessingAsDefault,
+                  reprocessingpossible: isReprocessingpossible,
                   stepType: "AUTO",
                   status:status,
-                  type:child.type,
+                  type:ttype,
                   stepNumber:stepNumber,
                   parentName:processName,
                   parentID: processId,
@@ -82,6 +92,9 @@ export const processIntegrationProcesses = async(processName, processId,intProce
                     let x = -25
                     let y = -25
                     let ll = []
+                    let ttype = child.type
+                    if(!ttype)
+                      ttype = child.$type
                     for(let incoming of child.incoming){
                       if(incoming.id.indexOf("MessageFlow") === -1)
                         ll.push(incoming.id)
@@ -90,8 +103,11 @@ export const processIntegrationProcesses = async(processName, processId,intProce
                         id:child.id,
                         id2:child.id,
                         stepType: "AUTO",
-                        type:child.type,
+                        type:ttype,
+                        keepPayload: keepPayloadAsDefault,
                         stepNumber:stepNumber,
+                        reprocessing: false,
+                        reprocessingpossible: false,
                         status:status,
                         parentID: processId,
                         parentName:processName,
@@ -113,6 +129,9 @@ export const processIntegrationProcesses = async(processName, processId,intProce
                     let x = child.width-7
                     let y = child.height-7
                     let ll = []
+                    let ttype = child.type
+                    if(!ttype)
+                      ttype = child.$type
                     for(let outgoing of child.outgoing){
                       if(outgoing.id.indexOf("MessageFlow") === -1)
                         ll.push(outgoing.id)
@@ -120,9 +139,12 @@ export const processIntegrationProcesses = async(processName, processId,intProce
                     const data = {
                         id:child.id,
                         id2:child.id,
-                        type:child.type,
+                        type:ttype,
                         stepType: "AUTO",
+                        keepPayload: keepPayloadAsDefault,
                         stepNumber:stepNumber,
+                        reprocessing: false,
+                        reprocessingpossible: false,
                         status:status,
                         sequences:ll,
                         parentID: processId,
@@ -144,17 +166,24 @@ export const processIntegrationProcesses = async(processName, processId,intProce
                 let x = -25
                 let y = -25
                 let ll = []
+                let ttype = child.type
+                if(!ttype)
+                  ttype = child.$type
                 for(let incoming of child.incoming){
                   if(incoming.id.indexOf("MessageFlow") === -1)
                     ll.push(incoming.id)
                 }
+                
                 const data = {
                     id:child.id,
                     id2:child.id,
-                    type:child.type,
+                    type:ttype,
                     stepType: "AUTO",
+                    keepPayload: keepPayloadAsDefault,
                     stepNumber:stepNumber,
                     status:status,
+                    reprocessing: false,
+                    reprocessingpossible: false,
                     parentName:processName,
                     sequences:ll,
                     parentID: processId,
@@ -168,55 +197,57 @@ export const processIntegrationProcesses = async(processName, processId,intProce
             }
         }
     }
-    const subList = await processSubProcesses(processName, processId,intProcessChildren, everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore, stepNumber, status) 
+    const subList = await processSubProcesses(processName, processId,intProcessChildren, everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore, stepNumber, status,keepPayloadAsDefault,reprocessingAsDefault) 
     sequenceList = [...sequenceList, ...subList] 
     resolve(sequenceList)
   })
 }
-export const processSubProcesses = async(processName, processId,intProcessChildren, everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore, parentStepNumber, status) => {
+export const processSubProcesses = async(processName, processId,intProcessChildren, everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore, parentStepNumber, status,keepPayloadAsDefault,reprocessingAsDefault) => {
   return new Promise(async(resolve, reject) => {
     for(let child of intProcessChildren){
       if(child.type === "bpmn:SubProcess"){
+        const pType = await getProcessType(child.businessObject)
+        if(pType === "EP")
+          status = "FAILED"
         const subChildren = child.businessObject.flowElements
-        const sequenceList = await processIntegrationProcesses(processName, child.id,subChildren, everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore, parentStepNumber, status)
+        const sequenceList = await processIntegrationProcesses(processName, child.id,subChildren, everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore, parentStepNumber, status,keepPayloadAsDefault,reprocessingAsDefault)
         resolve(sequenceList)
       }
     }
     resolve([])
   })
 }
-export const modifyOverlays = async(modeler,everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore) => {
+export const modifyOverlays = async(modeler,everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore,keepPayloadAsDefault,reprocessingAsDefault) => {
   return new Promise(async(resolve, reject) => {
     const elementRegistry = modeler.get('elementRegistry');
     const elements = elementRegistry.getAll()
     const integrationProcesses = await getIntegrationProcesses(elements, "IP")
-    
     let mergedArray = []
     for(let integrationProcess of integrationProcesses){
         const intProcessChildren = integrationProcess.children
         const processName = integrationProcess.businessObject.name
         const processId = integrationProcess.businessObject.processRef.id
-        let sequenceList = await processIntegrationProcesses(processName, processId,intProcessChildren, everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore, null, "SUCCESS")
+        let sequenceList = await processIntegrationProcesses(processName, processId,intProcessChildren, everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore, null, "SUCCESS",keepPayloadAsDefault,reprocessingAsDefault)
         mergedArray = [...sequenceList, ...mergedArray]
         integrationProcess.businessObject.processRef.stepNumber = sequenceList.length
     }
     const localIntegrationProcesses = await getIntegrationProcesses(elements, "LP")
-
     for(let integrationProcess of localIntegrationProcesses){
+      
         const intProcessChildren = integrationProcess.children
         const processName = integrationProcess.businessObject.name
         const processId = integrationProcess.businessObject.processRef.id
-        let sequenceList = await processIntegrationProcesses(processName, processId,intProcessChildren, everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore, null, "SUCCESS")
+        let sequenceList = await processIntegrationProcesses(processName, processId,intProcessChildren, everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore, null, "SUCCESS",keepPayloadAsDefault,reprocessingAsDefault)
         mergedArray = [...sequenceList, ...mergedArray]
         integrationProcess.businessObject.processRef.stepNumber = sequenceList.length
     }
     const exceptionIntegrationProcesses = await getIntegrationProcesses(elements, "EP")
-
     for(let integrationProcess of exceptionIntegrationProcesses){
+      
         const intProcessChildren = integrationProcess.children
         const processName = integrationProcess.businessObject.name
         const processId = integrationProcess.businessObject.processRef.id
-        let sequenceList = await processIntegrationProcesses(processName, processId,intProcessChildren, everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore,null, "ERROR")
+        let sequenceList = await processIntegrationProcesses(processName, processId,intProcessChildren, everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore,null, "FAILED",keepPayloadAsDefault,reprocessingAsDefault)
         mergedArray = [...sequenceList, ...mergedArray]
         integrationProcess.businessObject.processRef.stepNumber = sequenceList.length
     }

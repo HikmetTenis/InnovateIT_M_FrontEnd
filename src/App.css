@@ -33,24 +33,43 @@ html, body, #root {
 .generic-shadow{
   box-shadow: var(--_ui5-v1-24-8_side_navigation_box_shadow);
 }
+.generic-border-radius{
+  border-radius:15px;
+  padding: 5px;
+  background: var(--sapList_Background);
+}
 .app-shellbar{
   border-radius: 10px;
   padding:3px;
   box-shadow: var(--_ui5-v1-24-8_side_navigation_box_shadow);
   background: var(--sapList_Background);
+  width:99%;
 }
-.pagiation{
-  box-shadow: var(--_ui5-v1-24-8_side_navigation_box_shadow);
+/* .pagiation{
+  /* box-shadow: var(--_ui5-v1-24-8_side_navigation_box_shadow);
   background: var(--sapList_Background);
-  width:100%; 
+  width:99.5%; 
   height:30px;
-  padding-top:30px;
-  padding-bottom:40px;
+  padding-top:25px;
+  padding-bottom:25px;
   border-radius:15px;
-}
+  flex:1 1 auto;
+} */
 .App-link {
   color: #61dafb;
 }
+/* .no-header{
+  height:10px!important;
+  display:block;
+}
+.no-header th{
+  height:10px!important;
+  display:block;
+}
+.generic-shadow tr{
+  height:10px!important;
+  display:block;
+} */
 .packages div[data-component-name="ObjectPageContent"]{
   padding-inline:0px!important
 }

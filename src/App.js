@@ -4,7 +4,8 @@ import "@ui5/webcomponents-icons/dist/AllIcons.js";
 import { ThemeProvider, Button, Panel, SideNavigation, SideNavigationItem, SideNavigationSubItem, BusyIndicator,ShellBar,Text, Avatar,ShellBarItem, Input, Icon, Bar   } from '@ui5/webcomponents-react';
 import Home from './components/home';
 import React, { useState, useEffect } from 'react';
-import MonitoringPage from './components/monitoring-page';
+import MonitoringPage from './components/monitoring-page'
+import MonitoringLanes from './components/monitoring-lanes';
 import MonitoringConfigure from './components/monitoring-configure';
 import { motion, AnimatePresence, useAnimationControls } from "framer-motion"
 import MessageBoxComponent from "./components/message-box"
@@ -106,10 +107,10 @@ function App() {
                   expanded
                   icon="dimension"
                   text="Monitoring"
-                  onClick={()=> showDetails("monitoring")}
+                  
                 >
-                  {/* <SideNavigationSubItem text="From My Team" />
-                  <SideNavigationSubItem text="From Other Teams" /> */}
+                  <SideNavigationSubItem onClick={()=> showDetails("monitoring")} text="Monitoring Messages" />
+                  <SideNavigationSubItem onClick={()=> showDetails("monitoringStatus")} text="Monitoring Statuses" />
                 </SideNavigationItem>
                 <SideNavigationItem
                   icon="add-process"
@@ -131,6 +132,13 @@ function App() {
                     initial="visible"
                     animate={page === "monitoring" ? 'visible' : 'hidden'}
                     exit="exit">{page === "monitoring" && (<MonitoringPage style={{width:"100%", height:"100%"}}></MonitoringPage>)}</motion.div>
+              </AnimatePresence>
+              <AnimatePresence>
+                <motion.div style={{flex:"1 1 auto",width:"100%", height:"100%"}}
+                    variants={wrapperVariants}
+                    initial="visible"
+                    animate={page === "monitoringStatus" ? 'visible' : 'hidden'}
+                    exit="exit">{page === "monitoringStatus" && (<MonitoringLanes style={{width:"100%", height:"100%"}}></MonitoringLanes>)}</motion.div>
               </AnimatePresence>
               <AnimatePresence>
                 <motion.div style={{flex:"1 1 auto",width:"100%", height:"100%"}}
