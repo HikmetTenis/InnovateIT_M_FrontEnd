@@ -8,8 +8,12 @@ import $ from 'jquery';
 import momentTZ from 'moment-timezone';
 import MonitoringTileDetailsConfigure from "./monitoring-tile-details-configure"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Panel,Icon,Link,Text,Bar,MultiComboBox,MultiComboBoxItem,Select,Option,Switch,BusyIndicator,Button, Input,FilterGroupItem,FlexBox,Label,Title} from '@ui5/webcomponents-react';
-
+import { Panel,Icon,Link,Text,Bar,DateTimePicker,MultiComboBoxItem,Select,Option,Button, Input,FilterGroupItem,FlexBox,Label,Title} from '@ui5/webcomponents-react';
+const generateRandomNumber = () => {
+  const min = 10000;
+  const max = 99999;
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+};
 const MonitoringLanes = props => {
   let dateSelection = useRef(null);
   let statusSelection = useRef(null);
@@ -21,8 +25,18 @@ const MonitoringLanes = props => {
   let [statusList, setStatusList] = useState([]);
   let [stepNumbers,setStepNumbers] = useState([]);
   let [lanes,setLanes] = useState([]);
-
   let stepStatus = useRef(null);
+  let [updateLanes, setUpdateLanes] = useState(0);
+  let [laneDedatils,setLaneDetails] = useState({
+    startDate:null,
+    endDate:null,
+    search:null,
+    dayFilter:"1:hours",
+    customData:"NONE"
+  });
+  let customStartdate  = useRef(null);
+  let customEnddate  = useRef(null);
+  let customPanel  = useRef(null);
   const wrapperVariants = {
     hidden: {
       opacity: 0,
@@ -47,39 +61,10 @@ const MonitoringLanes = props => {
   }
   useEffect(() => {
     setStepNumbers(options)
-    let now = moment();
-    const endDate = moment.utc(now).format("YYYY-MM-DD HH:mm:ss")
-    let past = now.subtract(60, 'minutes');
-     
-    const startDate = moment.utc(past).format("YYYY-MM-DD HH:mm:ss")
-    const successDetails ={
-      startDate:startDate,
-      endDate:endDate,
-      status:"SUCCESS",
-      customData:"NONE"
-    }
-    lanes.push(<MonitoringLane details={successDetails}></MonitoringLane>)
-    const failedDetails ={
-      startDate:startDate,
-      endDate:endDate,
-      status:"FAILED",
-      customData:"NONE"
-    }
-    lanes.push(<MonitoringLane details={failedDetails}></MonitoringLane>)
-    const processingDetails ={
-      startDate:startDate,
-      endDate:endDate,
-      status:"PROCESSING",
-      customData:"NONE"
-    }
-    lanes.push(<MonitoringLane details={processingDetails}></MonitoringLane>)
-    const reprocessedDetails ={
-      startDate:startDate,
-      endDate:endDate,
-      status:"REPROCESSED",
-      customData:"NONE"
-    }
-    lanes.push(<MonitoringLane details={reprocessedDetails}></MonitoringLane>)
+    // lanes.push(<MonitoringLane details={laneDedatils} laneType="SUCCESS" updateData={updateLanes}></MonitoringLane>)
+    // lanes.push(<MonitoringLane details={laneDedatils} laneType="FAILED" updateData={updateLanes}></MonitoringLane>)
+    // lanes.push(<MonitoringLane details={laneDedatils} laneType="PROCESSING" updateData={updateLanes}></MonitoringLane>)
+    // lanes.push(<MonitoringLane details={laneDedatils} laneType="REPROCESSED" updateData={updateLanes}></MonitoringLane>)
     setLanes(lanes)
     const fetchData = async () => {
       const artifacts = await getAllArtifacts()
@@ -98,14 +83,56 @@ const MonitoringLanes = props => {
     }
     fetchData();
   }, [])
-  const filterChanged = async(event) => {
-    
-  };
   const multiSelectionToggled = (event, id) => {
     let selectAllElement = document.getElementById( id );
     let isitSelected = selectAllElement.getAttribute( "data-selected" );
     if(isitSelected === 'true' && event.srcElement.selectedValues.length === 0){
       selectAllElement.selected = true
+    }
+  }
+  const filterChanged = (event) => {
+    const searchString = searchSelection.current.value
+    const dateSelected = dateSelection.current.value
+    let customData = customHeaderProperties.current.value
+    if(customData === '')
+      customData = "NONE"
+    let startDate = null
+    let endDate = null
+    if(dateSelected === "Custom"){
+      const customStart = moment(customStartdate.current.value, "MMM DD, YYYY, hh:mm:ss A")
+      startDate = moment.utc(customStart).format("YYYY-MM-DD HH:mm:ss")
+      const customEnd = moment(customEnddate.current.value, "MMM DD, YYYY, hh:mm:ss A")
+      endDate = moment.utc(customEnd).format("YYYY-MM-DD HH:mm:ss")
+    }
+    let changedDetails ={
+      startDate:startDate,
+      endDate:endDate,
+      artifactSelection:artifactSelection.current.value,
+      searchString:searchString,
+      dayFilter:dateSelected,
+      customData:customData
+    }
+    
+    setLaneDetails(changedDetails);
+    setUpdateLanes(generateRandomNumber()); 
+  };
+  const dateChanged  = (event) => {
+    const dateSelected = event.target.value
+    if(dateSelected === "Custom"){
+      customStartdate.current.disabled = false
+      customEnddate.current.disabled = false
+      customPanel.current.collapsed = false
+      let now = moment();
+      const startDate = moment(now).format("MMM DD, YYYY, hh:mm:ss A")
+      customEnddate.current.value = startDate
+      let past = now.subtract(60, 'minutes');
+      const hourBefore = moment(past).format("MMM DD, YYYY, hh:mm:ss A")
+      customStartdate.current.value = hourBefore
+    }else{
+      customStartdate.current.disabled = true
+      customEnddate.current.disabled = true
+      customStartdate.current.value = ""
+      customEnddate.current.value = ""
     }
   }
   const multiSelectionChanged= (event, id) => {
@@ -162,7 +189,7 @@ const MonitoringLanes = props => {
               <Button design="Transparent" onClick={(e) => filterChanged(e)} icon="action-settings"/>
             </FlexBox>
           </FlexBox>
-          <Panel accessibleRole="Form" onToggle={function _a(){}} collapsed style={{width:"100%"}}
+          <Panel accessibleRole="Form" ref={customPanel} onToggle={function _a(){}} collapsed style={{width:"100%"}}
             header={<FlexBox direction="Row" style={{marginLeft:"10px"}} alignItems="Center" justifyContent="SpaceBetween" fitContainer="true">
             <FlexBox direction="Row" alignItems="Center" justifyContent="Start" fitContainer="true">
               {/* <FilterGroupItem groupName="Group 2" label="Status" style={{flex:"0 0 15%"}}>
@@ -171,7 +198,7 @@ const MonitoringLanes = props => {
                 </MultiComboBox>
               </FilterGroupItem> */}
               <FilterGroupItem groupName="Group 2" label="Time" style={{flex:"0 0 15%"}}>
-                <Select ref={dateSelection} className="generic-shadow">
+                <Select ref={dateSelection} className="generic-shadow" onChange={(e) => dateChanged(e)}>
                   <Option value="1:hours" selected>Past Hour</Option>
                   <Option value="2:hours" >Past 2 Hours</Option>
                   <Option value="3:hours" >Past 3 Hours</Option>
@@ -181,6 +208,7 @@ const MonitoringLanes = props => {
                   <Option value="24:hours" >Past 24 Hours</Option>
                   <Option value="1:weeks" >Past Week</Option>
                   <Option value="1:months" >Past Month</Option>
+                  <Option value="Custom" >Custom</Option>
                 </Select>
               </FilterGroupItem>
               <FilterGroupItem groupName="Group 3" label="Artifact Name" style={{flex:"0 0 25%"}}>
@@ -196,26 +224,35 @@ const MonitoringLanes = props => {
             </FlexBox>
             </FlexBox>}>
             <FlexBox direction="Row" alignItems="Center" justifyContent="Start" fitContainer="true">
-              <FilterGroupItem groupName="Group 4" label="Step Number:" style={{flex:"1 1 5%"}}>
+              {/* <FilterGroupItem groupName="Group 4" label="Step Number:" style={{flex:"1 1 5%"}}>
                 <MultiComboBox ref={customStepNumber} className="generic-shadow" onOpenChange = {(d) =>  multiSelectionToggled(d, 'selecAllID')} onSelectionChange={(d) =>  multiSelectionChanged(d, 'selecAllID')}>
                     {stepNumbers}
                 </MultiComboBox>
               </FilterGroupItem>
               <FilterGroupItem groupName="Group 4" label="Step Status:" style={{flex:"1 1 25%"}}>
                   <Input ref={stepStatus} className="generic-shadow"   type="Text" valueState="None" placeholder="SUCCESS or FAILED, etc.. (one status ONLY)"></Input>
-              </FilterGroupItem>
+              </FilterGroupItem> */}
+              <FilterGroupItem groupName="Group 1" label="Start Date" style={{flex:"1 1 5%"}}>
+                    <DateTimePicker  ref={customStartdate} onChange={function Sa(){}} primaryCalendarType="Gregorian" valueState="None"/>
+                  </FilterGroupItem>
+                  <FilterGroupItem groupName="Group 2" label="End Date" style={{flex:"1 1 5%"}}>
+                    <DateTimePicker  ref={customEnddate} onChange={function Sa(){}} primaryCalendarType="Gregorian" valueState="None"/>
+                  </FilterGroupItem>
               <FilterGroupItem groupName="Group 4" label="Custom Header Properties" style={{flex:"1 1 70%"}}>
                 <FlexBox direction="Row" alignItems="Center" justifyContent="Start" fitContainer="true">
                   <Input ref={customHeaderProperties} className="generic-shadow" style={{width:"80%"}} type="Text" valueState="None" placeholder="Name = Value or/and Name=Value ..."></Input>
-                  <Switch checked="true"/>
-                  <Label>Add Custom Header Properties to Table as columns</Label>
+                  {/* <Switch checked="true"/>
+                  <Label>Add Custom Header Properties to Table as columns</Label> */}
                 </FlexBox>
               </FilterGroupItem>
             </FlexBox>
           </Panel>  
         </FlexBox>
         <FlexBox direction="Row" alignItems="Start" justifyContent="Start" fitContainer="true" >
-          {lanes}
+          <MonitoringLane index={2} details={laneDedatils} laneType="SUCCESS" updateData={updateLanes}></MonitoringLane>
+          <MonitoringLane index={1} details={laneDedatils} laneType="FAILED" updateData={updateLanes}></MonitoringLane>
+          <MonitoringLane index={3} details={laneDedatils} laneType="PROCESSING" updateData={updateLanes}></MonitoringLane>
+          <MonitoringLane index={4} details={laneDedatils} laneType="REPROCESSED" updateData={updateLanes}></MonitoringLane>
         </FlexBox>
       </FlexBox>
     </FlexBox>

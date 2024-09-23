@@ -1,9 +1,10 @@
 import "@ui5/webcomponents-icons/dist/AllIcons.js";
-import { DynamicPage, DynamicPageHeader,FlexBox,BusyIndicator,Bar,Dialog,Form, Panel,FormGroup, ToolbarButton,ActionSheet,FormItem,Label,DynamicPageTitle,Title,Badge,Toolbar,MessageStrip,Button,ObjectPage,ObjectPageSection, ObjectPageSubSection, Switch,Icon,Input,Table,TableColumn, TableRow,TableCell} from '@ui5/webcomponents-react';
+import { DynamicPage, IllustratedMessage,FlexBox,BusyIndicator,Bar,Dialog,Form, Panel,FormGroup, ToolbarButton,ActionSheet,FormItem,Label,DynamicPageTitle,Title,Badge,Toolbar,MessageStrip,Button,ObjectPage,ObjectPageSection, ObjectPageSubSection, Switch,Icon,Input,Table,TableHeaderRow,TableHeaderCell, TableRow,TableCell} from '@ui5/webcomponents-react';
 import React, { useEffect, useState,useRef } from 'react';
 import {getPackages, getArtifacts} from '../services/s-monitoring-configure'
 import MonitoringConfigureDetails from "./monitoring-configure-details"
 import { motion, AnimatePresence, useAnimationControls } from "framer-motion"
+import "@ui5/webcomponents-fiori/dist/illustrations/UnableToLoad.js"
 export default function MonitoringPage() {
     const [artifacts, setArtifacts] = useState([])
     const [loading, setLoading] = useState(false);
@@ -13,6 +14,7 @@ export default function MonitoringPage() {
     const [currentArtifact, setCurrentArtifact] = useState(null)
     const [currentArtifactID, setCurrentArtifactID] = useState(null)
     const [packageName, setPackageName] = useState(null)
+    const [errorOccured, setErrorOccured] = useState(false)
     const wrapperVariants = {
         hidden: {
           opacity: 0,
@@ -36,8 +38,12 @@ export default function MonitoringPage() {
         setLoading(true)
         getPackages().then((res)=>{
             setLoading(false)
-            setArtifacts(res.data.obj)
-            
+            if(res.data.type === "error"){
+                setErrorOccured(true)
+            }else{
+                setErrorOccured(false)
+                setArtifacts(res.data.obj)
+            }
         })
     },[])
     const loadArtifact = (iflow) => {
@@ -54,19 +60,19 @@ export default function MonitoringPage() {
         getArtifacts(e.currentTarget.dataset.id).then((res)=>{
             let listOfChildren = []
             for(const iflow of res.data.obj){
-                listOfChildren.push(<TableRow>
+                listOfChildren.push(<TableRow style={{display:"flex", alignItems:"Center", justifyContent:"SpaceBetween"}}>
                     <TableCell style={{width:"80%"}}>
                         <FlexBox direction="Row" alignItems="Center" fitContainer="true">
                             <Icon name="combine" mode="decorative" style={{marginRight:"10px",borderLeft:"none"}}/>
                             <span>{iflow.Name}</span>
                         </FlexBox>
                     </TableCell>
-                    <TableCell>
+                    <TableCell style={{width:"15%"}}>
                       <span>
                         {iflow.Version}
                       </span>
                     </TableCell>
-                    <TableCell>
+                    <TableCell style={{width:"60px"}}>
                         <Button design="Transparent" icon="slim-arrow-right" ui5-button="" icon-only="" has-icon="" onClick={() => loadArtifact(iflow)}></Button>
                         {/* <Icon name="navigation-right-arrow" onClick={props.onClick} style={{border:"none"}}/> */}
                     </TableCell>
@@ -118,7 +124,7 @@ export default function MonitoringPage() {
                     onToggleHeaderContent={function _a(){}}
                               
                     style={{height: '100%',borderRadius:"10px"}}>
-                    {artifacts.map((artifact) => {
+                    {errorOccured?<IllustratedMessage name="UnableToLoad" />:artifacts.map((artifact) => {
                         return(
                             <Panel collapsed={artifact.Id !== currentItemID} data-id={artifact.Id} data-name={artifact.PackageName}
                                 accessibleRole="Form" style={{marginBottom:"3px",width: '100%'}}
@@ -127,11 +133,16 @@ export default function MonitoringPage() {
                                 onToggle={handleItemToggle}>
                             
                                 {artifact.Id === currentItemID ? 
-                                <BusyIndicator active={loading} style={{width:"100%"}} size="Medium">
-                                    <Table
-                                        columns={<><TableColumn style={{width:"80%"}}><span>Artifact Name</span></TableColumn>
-                                                   <TableColumn style={{width:"15%"}} popinText="Artifact Name"><span>Version</span></TableColumn>
-                                                   <TableColumn style={{width:"40px"}}><Button data-id={artifact.Id} data-name={artifact.PackageName} design="Transparent" onClick={(e) => handleItemToggle(e)} icon="refresh"/></TableColumn></>}
+                                <BusyIndicator active={loading} style={{width:"100%"}} size="M">
+                                    <Table style={{width:"100%"}}
+                                        headerRow={<TableHeaderRow style={{display:"flex", alignItems:"Center", justifyContent:"SpaceBetween"}} sticky>
+                                                        <TableHeaderCell width="80%"><span>Artifact Name</span></TableHeaderCell>
+                                                        <TableHeaderCell width="15%" popinText="Artifact Name"><span>Version</span></TableHeaderCell>
+                                                        <TableHeaderCell width="60px">
+                                                            <Button data-id={artifact.Id} data-name={artifact.PackageName} design="Transparent" onClick={(e) => handleItemToggle(e)} icon="refresh"/>
+                                                                </TableHeaderCell>
+                                                    </TableHeaderRow>
+                                                    }
                                         onLoadMore={function _a(){}}
                                         onPopinChange={function _a(){}}
                                         onRowClick={function _a(){}}

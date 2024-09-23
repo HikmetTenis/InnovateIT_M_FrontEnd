@@ -1,16 +1,16 @@
 import "@ui5/webcomponents-icons/dist/AllIcons.js";
-import { MessageBox, MessageBoxActions} from '@ui5/webcomponents-react';
+import { MessageBox, MessageBoxAction} from '@ui5/webcomponents-react';
 import React, { useContext } from 'react';
 import MessageContext from "../helpers/message-context";
 import { motion} from "framer-motion"
 function MessageBoxComponent(){
     const {message, setMessage} = useContext(MessageContext)
     const handleClose = (event) => {
-        if (event.detail.action === MessageBoxActions.OK) {
-            message.callback(MessageBoxActions.OK)
+        if (event === MessageBoxAction.OK) {
+            message.callback(MessageBoxAction.OK)
             setMessage({open:false, message:"", result:null, callback:null})
             
-        } else if (event.detail.action === MessageBoxActions.Cancel) {
+        } else if (event === MessageBoxAction.Cancel) {
             //message.callback(MessageBoxActions.Cancel)
             setMessage({open:false, message:"", result:null, callback:null})
         } else {
@@ -47,7 +47,7 @@ function MessageBoxComponent(){
                     animate={message.open ? 'visible' : 'hidden'}
                     exit="exit">
             <>
-                <MessageBox open={message.open} onClose={handleClose} actions={[MessageBoxActions.OK, MessageBoxActions.Cancel]}>
+                <MessageBox open={message.open} onClose={handleClose} actions={[MessageBoxAction.OK, MessageBoxAction.Cancel]}>
                 {message.message}
                 </MessageBox>
             </>

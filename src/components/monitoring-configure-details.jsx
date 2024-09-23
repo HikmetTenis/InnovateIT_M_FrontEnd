@@ -1,5 +1,5 @@
 import "@ui5/webcomponents-icons/dist/AllIcons.js";
-import { DynamicPageHeader,FlexBox,BusyIndicator,Bar,Dialog,Form, FormGroup, ActionSheet,FormItem,Label,DynamicPageTitle,Title,Badge,Toolbar,MessageStrip,Button,ObjectPage,ObjectPageSection, ObjectPageSubSection, Switch,Icon,Input,Table,TableColumn, TableRow,TableCell} from '@ui5/webcomponents-react';
+import { DynamicPageHeader,FlexBox,BusyIndicator,Bar,Dialog,Form, FormGroup, ActionSheet,FormItem,ObjectPageTitle, ObjectPageHeader,Label,DynamicPageTitle,Title,Tag,Toolbar,MessageStrip,Button,ObjectPage,ObjectPageSection, ObjectPageSubSection, Switch,Icon,Input,Table,TableHeaderRow,TableHeaderCell, TableRow,TableCell} from '@ui5/webcomponents-react';
 import React, { useEffect, useState, useContext, useRef, Component } from 'react';
 import {getArtifactRuntimeDetails, saveArtifact,getArtifactDetails,getProcessType, modifyOverlays} from '../services/s-monitoring-configure'
 import { motion} from "framer-motion";
@@ -648,7 +648,7 @@ export default function MonitoringConfigureDetails(props) {
                     <Button design="Transparent" icon="slim-arrow-left" slot="startContent" ui5-button="" icon-only="" has-icon="" onClick={props.onClick}>Back</Button>
                 </Bar>
                 <ObjectPage
-                    headerContent={<DynamicPageHeader>
+                    headerArea={<ObjectPageHeader>
                             <FlexBox wrap="Wrap">
                                 <FlexBox direction="Column">
                                     <Label>Package ID: {props.packagename}</Label>
@@ -662,114 +662,81 @@ export default function MonitoringConfigureDetails(props) {
                                     <ObjectStatus state="Success">In Stock</ObjectStatus>
                                 </FlexBox> */}
                             </FlexBox>
-                        </DynamicPageHeader>}
+                        </ObjectPageHeader>}
                     headerContentPinnable
-                    headerTitle={
-                        <DynamicPageTitle 
-                            actions={
-                                <motion.div style={{flex:"1 1 auto", height:"100%", display:"flex", flexDirection:"row"}}
+                    
+                    titleArea={
+                        <ObjectPageTitle  
+                            actionsBar={
+                                <motion.div style={{flex:"1 1 auto", height:"100%", width:"100%", display:"flex", flexDirection:"row", alignItems:"Center", justifyContent:"End"}}
                                     variants={wrapperVariants}
                                     initial="visible"
                                     animate={!loading ? 'visible' : 'hidden'}
                                     exit="exit">
                                     <><Button design="Emphasized" disabled={updateDisabled} onClick={() => openDialog()}>Save</Button><Button design="Transparent">Cancel</Button><Button design="Transparent" onClick={() => clearDiagram()} icon="action"/></>
                                 </motion.div>}
-                            expandedContent={
-                                <MessageStrip>Information (only visible if header content is expanded)</MessageStrip>} 
-                            header={props.iflow.Name} 
-                            showSubHeaderRight 
-                            
+                            // expandedContent={
+                            //     <MessageStrip>Information (only visible if header content is expanded)</MessageStrip>} 
+                            header={<Title style={{fontSize: 'var(--sapObjectHeader_Title_FontSize)'}}>{props.iflow.Name}</Title>} 
+                           
                             snappedContent={
                                 <MessageStrip>Information (only visible if header content is collapsed/snapped)</MessageStrip>}>
-                            <Badge>Status: <span ref={status}></span></Badge>
-                        </DynamicPageTitle>}
-                    
-                    onBeforeNavigate={function _a(){}}
-                    onPinnedStateChange={function _a(){}}
-                    onSelectedSectionChange={function _a(){}}
-                    onToggleHeaderContent={function _a(){}}
-                    selectedSectionId="goals"
-                    showHideHeaderButton
+                            <Tag>Status: <span ref={status}></span></Tag>
+                        </ObjectPageTitle>}
                     style={{height: '100%',}}>
+                    <ObjectPageSection
+                        aria-label="Diagram Settings"
+                        id="diagramSettings"
+                        titleText="Diagram Settings" style={{height: '80px'}}>
+                        <FlexBox direction="Row" alignItems="Center" justifyContent="Start" fitContainer="true" style={{paddingLeft:"10px",background:"var(--sapList_Background)",borderRadius:"10px"}}>
+                            <Switch onChange={(d) => setEveryEventSwitch(d)} checked={everyEvent}/>
+                            <Label>Add every "Start Event" and "End Event"</Label>
+                            <Switch onChange={(d) => setEveryReceiverSenderBeforeSwitch(d)} checked={everyReceiverSenderBefore}/>
+                            <Label>Add BEFORE every "Send"</Label>
+                            <Switch onChange={(d) => setEveryReceiverSenderAfterSwitch(d)} checked={everyReceiverSenderAfter}/>
+                            <Label>Add AFTER every "Send"</Label>
+                            {/* <Switch onChange={(d) => setReprocessingAsDefaultSwitch(d)} checked={reprocessingAsDefault} ref={dialogStepReprocessing}/>
+                            <Label>Enable reprocessing for all steps</Label> */}
+                            <Switch onChange={(d) => setKeepPayloadAsDefaultSwitch(d)} checked={keepPayloadAsDefault}/>
+                            <Label>Keep Payload for all steps</Label>
+                        </FlexBox>
+                    </ObjectPageSection>
                     <ObjectPageSection
                         aria-label="Diagram"
                         id="diagram"
                         titleText="Diagram" style={{height: '700px'}}>
-                        <ObjectPageSubSection style={{height: '100%',}}
-                            actions={<><Button design="Transparent" icon="action-settings" tooltip="settings"/></>}
-                            aria-label=""
-                            id="monitoring-version"
-                            titleText="">
-                                <div style={{height: '600px',width: '100%'}}>
-                                    <FlexBox direction="Column" alignItems="Start" justifyContent="SpaceBetween" fitContainer="true">
-                                        <BusyIndicator active={loading} style={{width:"100%", height:"100%"}} size="Medium">
-                                            <FlexBox direction="Column" alignItems="Stretch" fitContainer="true">
-                                                <motion.div style={{flex:"1 1 auto", display:"flex", flexDirection:"column"}}
-                                                            variants={wrapperVariants}
-                                                            initial="visible"
-                                                            animate={!loading ? 'visible' : 'hidden'}
-                                                            exit="exit">
-                                                    <Toolbar style={{marginBottom:"10px", flex:"1 1 auto"}} alignContent={{End: 'End', Start: 'Start'}}>
-                                                        <Switch onChange={(d) => setEveryEventSwitch(d)} checked={everyEvent}/>
-                                                        <Label>Add every "Start Event" and "End Event"</Label>
-                                                        <Switch onChange={(d) => setEveryReceiverSenderBeforeSwitch(d)} checked={everyReceiverSenderBefore}/>
-                                                        <Label>Add BEFORE every "Send"</Label>
-                                                        <Switch onChange={(d) => setEveryReceiverSenderAfterSwitch(d)} checked={everyReceiverSenderAfter}/>
-                                                        <Label>Add AFTER every "Send"</Label>
-                                                        {/* <Switch onChange={(d) => setReprocessingAsDefaultSwitch(d)} checked={reprocessingAsDefault} ref={dialogStepReprocessing}/>
-                                                        <Label>Enable reprocessing for all steps</Label> */}
-                                                        <Switch onChange={(d) => setKeepPayloadAsDefaultSwitch(d)} checked={keepPayloadAsDefault}/>
-                                                        <Label>Keep Payload for all steps</Label>
-                                                    </Toolbar>
-                                                </motion.div>
-                                                <div className="modeler-parent" style={{width:"100%", height:"100%"}}>
-                                                    <div id="modeler-container" style={{width:"100%", height:"100%"}} ref={containerRef}></div>
-                                                </div>
-                                            </FlexBox>
-                                        </BusyIndicator>
+                        <div style={{height: '600px',width: '100%'}}>
+                            <FlexBox direction="Column" alignItems="Start" justifyContent="SpaceBetween" fitContainer="true" style={{marginTop:"10px",background:"var(--sapList_Background)",borderRadius:"10px"}}>
+                                <BusyIndicator active={loading} style={{width:"100%", height:"100%"}} size="M">
+                                    <FlexBox direction="Column" alignItems="Stretch" fitContainer="true">
+                                
+                                        <div className="modeler-parent" style={{width:"100%", height:"100%"}}>
+                                            <div id="modeler-container" style={{width:"100%", height:"100%"}} ref={containerRef}></div>
+                                        </div>
                                     </FlexBox>
-                                </div>
-                        </ObjectPageSubSection>
+                                </BusyIndicator>
+                            </FlexBox>
+                        </div>
                     </ObjectPageSection>
                     <ObjectPageSection
                         aria-label="Steps and Details"
                         id="monitoring-details"
                         titleText="Steps and Details">
-                        <ObjectPageSubSection
-                            actions={<><Button design="Transparent" icon="action-settings" tooltip="settings"/><Button design="Transparent" icon="refresh" tooltip="refresh"/></>}
-                            aria-label="STEPs and Details"
-                            id="steps"
-                            titleText="STEPs and Details">
-                                <div style={{flex:"1 1 auto"}}>
-                                    <FlexBox direction="Column" alignItems="Start" justifyContent="SpaceBetween" flex="1 1 90%" style={{gap:"5px"}} fitContainer="true">
-                                        <Table  columns={<>
-                                            <TableColumn>
-                                                <span>STEP#</span>
-                                            </TableColumn>
-                                            <TableColumn>
-                                                <span>Name</span>
-                                            </TableColumn>
-                                            <TableColumn>
-                                                <span>Description</span>
-                                            </TableColumn>
-                                            <TableColumn>
-                                                <span>Process Name</span>
-                                            </TableColumn>
-                                            <TableColumn>
-                                                <span>Reprocessing</span>
-                                            </TableColumn>
-                                            <TableColumn>
-                                                <span>Keep Payload</span>
-                                            </TableColumn>
-                                            </>}>
-                                            {steps}
-                                        </Table>
-                                        {/* <FlexBox direction="Column" alignItems="Center" justifyContent="Center" flex="0 0 10%" fitContainer="true" style={{marginRight:"10px"}}>
-                                            <Button design="Emphasized" icon="save" onClick={(d) =>  updateSteps()} disabled={updateDisabled}>Update Diagram</Button>
-                                        </FlexBox> */}
-                                    </FlexBox>
-                                </div>
-                            </ObjectPageSubSection>
+                        <div style={{flex:"1 1 auto"}}>
+                            <FlexBox direction="Column" alignItems="Start" justifyContent="SpaceBetween" flex="1 1 90%" style={{marginTop:"10px",background:"var(--sapList_Background)",borderRadius:"10px",padding:"5px"}} fitContainer="true">
+                                <Table headerRow={
+                                    <TableHeaderRow sticky>
+                                        <TableHeaderCell width="12rem"><span>STEP#</span></TableHeaderCell>
+                                        <TableHeaderCell minWidth="100px"><span>Name</span></TableHeaderCell>
+                                        <TableHeaderCell minWidth="200px"><span>Description</span></TableHeaderCell>
+                                        <TableHeaderCell minWidth="200px"><span>Process Name</span></TableHeaderCell>
+                                        <TableHeaderCell><span>Reprocessing</span></TableHeaderCell>
+                                        <TableHeaderCell><span>Keep Payload</span></TableHeaderCell>
+                                    </TableHeaderRow>}>
+                                    {steps}
+                                </Table>
+                            </FlexBox>
+                        </div>
                     </ObjectPageSection>
                 </ObjectPage>
             </motion.div>

@@ -1,18 +1,32 @@
-import axios from "axios";
-axios.defaults.withCredentials = true
-export const  getMessagesByDate = (startDate, endDate, skip, limit, status, customData) => {
+import api from '../helpers/axios-custom';
+
+export const  getMessagesByDate = (startDate, endDate, skip, limit, status, customData,artifactName) => {
     return new Promise((resolve, reject) => {
         var config = {
             method: 'get',
-            withCredentials:true,
-            url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/messages/getMessagesByDate?customData=\""+customData+"\"&status="+status+"&startDate='"+startDate+"'&endDate='"+endDate+"'&limit="+limit+"&skip="+skip
+            withCredentials:true,            
+            url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/messages/getMessagesByDate?artifactName="+artifactName+"&customData=\""+customData+"\"&status="+status+"&startDate='"+startDate+"'&endDate='"+endDate+"'&limit="+limit+"&skip="+skip
           };
-          axios(config).then(function (response) {
+          api(config).then(function (response) {
             resolve(response)
           }).catch(function (error) {
             reject(error)
           });
     });
+}
+export const  getCountByStatus = (startDate, endDate,status) => {
+  return new Promise((resolve, reject) => {
+      var config = {
+          method: 'get',
+          withCredentials:true,            
+          url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/messages/getStatusCount?status="+status+"&startDate='"+startDate+"'&endDate='"+endDate+"'"
+        };
+        api(config).then(function (response) {
+          resolve(response)
+        }).catch(function (error) {
+          reject(error)
+        });
+  });
 }
 export const getMessagesBySearch = (searchString, l, s) => {
   return new Promise((resolve, reject) => {
@@ -21,7 +35,7 @@ export const getMessagesBySearch = (searchString, l, s) => {
           withCredentials:true,
           url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/messages/getMessagesBySearch?searchString='"+searchString+"'&limit="+l+"&skip="+s
         };
-        axios(config).then(function (response) {
+        api(config).then(function (response) {
           resolve(response)
         }).catch(function (error) {
           reject(error)
@@ -35,7 +49,7 @@ export const  getAllStatus = () => {
           withCredentials:true,
           url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/messages/getAllStatus"
         };
-        axios(config).then(function (response) {
+        api(config).then(function (response) {
           resolve(response)
         }).catch(function (error) {
           reject(error)
@@ -49,7 +63,7 @@ export const  getAllArtifacts = () => {
           withCredentials:true,
           url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/messages/getAllArtifacts"
         };
-        axios(config).then(function (response) {
+        api(config).then(function (response) {
           resolve(response)
         }).catch(function (error) {
           reject(error)
@@ -63,7 +77,7 @@ export const  getProcessDetails = (id, messageID) => {
           withCredentials:true,
           url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/messages/getProcessDetails?id="+id+"&messageID="+messageID
         };
-        axios(config).then(function (response) {
+        api(config).then(function (response) {
           resolve(response)
         }).catch(function (error) {
           reject(error)

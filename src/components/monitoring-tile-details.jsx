@@ -7,7 +7,7 @@ import $ from 'jquery';
 import momentTZ from 'moment-timezone';
 import MonitoringTileDetailsConfigure from "./monitoring-tile-details-configure"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Table, TableColumn,TableRow,TableCell, Panel,Icon,Link,Text,Bar,MultiComboBox,MultiComboBoxItem,Select,Option,Switch,BusyIndicator,Button, Input,FilterGroupItem,FlexBox,Label,Title} from '@ui5/webcomponents-react';
+import { Table, TableHeaderRow,TableHeaderCell,TableRow,TableCell, DateTimePicker,Panel,Icon,Link,Text,Bar,MultiComboBox,MultiComboBoxItem,Select,Option,Switch,BusyIndicator,Button, Input,FilterGroupItem,FlexBox,Label,Title} from '@ui5/webcomponents-react';
 
 const MonitoringPageDetails = props => {
   const [details, setDetails] = useState(false);
@@ -29,6 +29,9 @@ const MonitoringPageDetails = props => {
   let currentPage = useRef(null);
   let limitSelection = useRef(null);
   let customHeaderProperties = useRef(null);
+  let customStartdate  = useRef(null);
+  let customEnddate  = useRef(null);
+  let customPanel  = useRef(null);
   let [stepNumbers,setStepNumbers] = useState([]);
   let [allArtifacts, setAllArtifacts] = useState([]);
   let [statusList, setStatusList] = useState([]);
@@ -83,6 +86,16 @@ const MonitoringPageDetails = props => {
   useEffect(() => {
     let s = 0
     let l = 10
+    const dateSelected = dateSelection.current.value
+    if(dateSelected !== "Custom"){
+      customStartdate.current.disabled = true
+      customEnddate.current.disabled = true
+      customStartdate.current.value = ""
+      customEnddate.current.value = ""
+    }else{
+      customStartdate.current.disabled = false
+      customEnddate.current.disabled = false
+    }
     offset.current.innerHTML = s
     limit.current.innerHTML = l
     currentPage.current.value = 1
@@ -93,7 +106,7 @@ const MonitoringPageDetails = props => {
     let past = now.subtract(60, 'minutes');
     
     const startDate = moment.utc(past).format("YYYY-MM-DD HH:mm:ss")
-    getMessages(startDate,endDate, s, l, "ALL", "NONE")
+    getMessages(startDate,endDate, s, l, "ALL", "NONE", "ALL")
     const fetchData = async () => {
       const artifacts = await getAllArtifacts()
       let allArtifacts = [<Option value="ALL" selected>All</Option>]
@@ -208,10 +221,29 @@ const MonitoringPageDetails = props => {
       setMessagesLoaded(true)
     }, 2000);
   }
-  const getMessages  = (startDate,endDate, s, l, status,customData, sNumbers, sStatus) => {
-    getMessagesByDate(startDate,endDate, s, l, status, customData, sNumbers, sStatus).then((res)=>{
+  const getMessages  = (startDate,endDate, s, l, status,customData, artifactName) => {
+    getMessagesByDate(startDate,endDate, s, l, status, customData, artifactName).then((res)=>{
       upateMessages(res, l, s)
     })
+  }
+  const dateSelectionChanged  = (event) => {
+    const dateSelected = event.target.value
+    if(dateSelected === "Custom"){
+      customStartdate.current.disabled = false
+      customEnddate.current.disabled = false
+      customPanel.current.collapsed = false
+      let now = moment();
+      const startDate = moment(now).format("MMM DD, YYYY, hh:mm:ss A")
+      customEnddate.current.value = startDate
+      let past = now.subtract(60, 'minutes');
+      const hourBefore = moment(past).format("MMM DD, YYYY, hh:mm:ss A")
+      customStartdate.current.value = hourBefore
+    }else{
+      customStartdate.current.disabled = true
+      customEnddate.current.disabled = true
+      customStartdate.current.value = ""
+      customEnddate.current.value = ""
+    }
   }
   const loadArtifact = async(message) => {
     //currentMessage.current.value = message
@@ -221,6 +253,7 @@ const MonitoringPageDetails = props => {
     setShowStepDiagram(!showStepDiagram)
   }
   const filterChanged = async(event) => {
+    
     setMessagesLoaded(false)
     if(searchSelection.current.value !== ""){
       let s = 0
@@ -228,10 +261,10 @@ const MonitoringPageDetails = props => {
       const res = await getMessagesBySearch(searchSelection.current.value, l, s)
       upateMessages(res, l, s)
     }else{
-      let selectedStatus = []
-      for(const selectedValue of statusSelection.current.selectedValues){
-        selectedStatus.push(selectedValue.innerHTML)
-      }
+      // let selectedStatus = []
+      // for(const selectedValue of statusSelection.current.selectedValues){
+      //   selectedStatus.push(selectedValue.innerHTML)
+      // }
       let s = 0
       let l = limitSelection.current.value
       const dateSelected = dateSelection.current.value
@@ -239,26 +272,34 @@ const MonitoringPageDetails = props => {
       if(customData === '')
         customData = "NONE"
       const sStatus = stepStatus.current.value
-      let sNumbers = []
-      for(const stepNumber of customStepNumber.current.selectedValues){
-        sNumbers.push("STEPS='"+stepNumber.innerHTML.trim()+":"+sStatus+"'")
-      }
-      if(sNumbers.length > 0 && sNumbers.toString().indexOf("ALL") === -1){
-        let customDataS = sNumbers.toString()
-        customData = customDataS.replaceAll(","," and ")
-      }else{
-        stepStatus.current.value = ''
-      }
+      // let sNumbers = []
+      // for(const stepNumber of customStepNumber.current.selectedValues){
+      //   sNumbers.push("STEPS='"+stepNumber.innerHTML.trim()+":"+sStatus+"'")
+      // }
+      // if(sNumbers.length > 0 && sNumbers.toString().indexOf("ALL") === -1){
+      //   let customDataS = sNumbers.toString()
+      //   customData = customDataS.replaceAll(","," and ")
+      // }else{
+      //   stepStatus.current.value = ''
+      // }
       currentPage.current.value = 1
       limit.current.innerHTML = limitSelection.current.value
       offset.current.innerHTML = 0
-      const dateSelectedSplitted = dateSelected.split(":")
-      let now = moment();
-      const endDate = moment.utc(now).format("YYYY-MM-DD HH:mm:ss")
-      let past = now.subtract(dateSelectedSplitted[0], dateSelectedSplitted[1]);
-      
-      const startDate = moment.utc(past).format("YYYY-MM-DD HH:mm:ss")
-      getMessages(startDate,endDate, s, l, selectedStatus,customData, sNumbers, sStatus)
+      let startDate
+      let endDate
+      if(dateSelected === "Custom"){
+        const customStart = moment(customStartdate.current.value, "MMM DD, YYYY, hh:mm:ss A")
+        startDate = moment.utc(customStart).format("YYYY-MM-DD HH:mm:ss")
+        const customEnd = moment(customEnddate.current.value, "MMM DD, YYYY, hh:mm:ss A")
+        endDate = moment.utc(customEnd).format("YYYY-MM-DD HH:mm:ss")
+      }else{
+        const dateSelectedSplitted = dateSelected.split(":")
+        let now = moment();
+        endDate = moment.utc(now).format("YYYY-MM-DD HH:mm:ss")
+        let past = now.subtract(dateSelectedSplitted[0], dateSelectedSplitted[1]);
+        startDate = moment.utc(past).format("YYYY-MM-DD HH:mm:ss")
+      }
+      getMessages(startDate,endDate, s, l, sStatus,customData,artifactSelection.current.value)
     }
   };
   const multiSelectionToggled = (event, id) => {
@@ -298,25 +339,56 @@ const MonitoringPageDetails = props => {
     }
   }
   const searchChanged = (event) => {
+    const dateSelected = dateSelection.current.value
     if(searchSelection.current.value !== ""){
       artifactSelection.current.disabled = true
       statusSelection.current.disabled = true
       dateSelection.current.disabled = true
+      customStartdate.current.disabled = true
+      customEnddate.current.disabled = true
+      if(dateSelected !== "Custom"){
+        customStartdate.current.value = ""
+        customEnddate.current.value = ""
+      }
+      customStepNumber.current.disabled = true
+      stepStatus.current.disabled = true
+      customHeaderProperties.current.disabled = true
     }else{
       artifactSelection.current.disabled = false
       statusSelection.current.disabled = false
       dateSelection.current.disabled = false
+      customStepNumber.current.disabled = false
+      stepStatus.current.disabled = false
+      customHeaderProperties.current.disabled = false
+      if(dateSelected === "Custom"){
+        customStartdate.current.disabled = false
+        customEnddate.current.disabled = false
+      }
     }
   }
   const changePage = (event) => {
     setMessagesLoaded(false)
     const dateSelected = dateSelection.current.value
-    const dateSelectedSplitted = dateSelected.split(":")
-    let now = moment();
-    const endDate = moment.utc(now).format("YYYY-MM-DD HH:mm:ss")
-    let past = now.subtract(dateSelectedSplitted[0], dateSelectedSplitted[1]);
+    let startDate
+    let endDate
+    if(dateSelected === "Custom"){
+      const customStart = moment(customStartdate.current.value, "MMM DD, YYYY, hh:mm:ss A")
+      startDate = moment.utc(customStart).format("YYYY-MM-DD HH:mm:ss")
+      const customEnd = moment(customEnddate.current.value, "MMM DD, YYYY, hh:mm:ss A")
+      endDate = moment.utc(customEnd).format("YYYY-MM-DD HH:mm:ss")
+    }else{
+      const dateSelectedSplitted = dateSelected.split(":")
+      let now = moment();
+      endDate = moment.utc(now).format("YYYY-MM-DD HH:mm:ss")
+      let past = now.subtract(dateSelectedSplitted[0], dateSelectedSplitted[1]);
+      startDate = moment.utc(past).format("YYYY-MM-DD HH:mm:ss")
+    }
+    // const dateSelectedSplitted = dateSelected.split(":")
+    // let now = moment();
+    // const endDate = moment.utc(now).format("YYYY-MM-DD HH:mm:ss")
+    // let past = now.subtract(dateSelectedSplitted[0], dateSelectedSplitted[1]);
     
-    const startDate = moment.utc(past).format("YYYY-MM-DD HH:mm:ss")
+    // const startDate = moment.utc(past).format("YYYY-MM-DD HH:mm:ss")
     let lSelection = parseInt(limitSelection.current.value)
     let cPage = parseInt(currentPage.current.value)
     let totalPages1 = parseInt(totalPages.current.innerHTML)
@@ -324,27 +396,28 @@ const MonitoringPageDetails = props => {
     let customData = customHeaderProperties.current.value
     if(customData === '')
       customData = "NONE"
-    let selectedStatus = []
-    for(const selectedValue of statusSelection.current.selectedValues){
-      selectedStatus.push(selectedValue.innerHTML)
-    }
+    // let selectedStatus = []
+    // for(const selectedValue of statusSelection.current.selectedValues){
+    //   selectedStatus.push(selectedValue.innerHTML)
+    // }
     const sStatus = stepStatus.current.value
-    let sNumbers = []
-    for(const stepNumber of customStepNumber.current.selectedValues){
-      sNumbers.push("STEPS='"+stepNumber.innerHTML.trim()+":"+sStatus+"'")
-    }
-    if(sNumbers.length > 0 && sNumbers.toString().indexOf("ALL") === -1){
-      let customDataS = sNumbers.toString()
-      customData = customDataS.replaceAll(","," and ")
-    }else{
-      stepStatus.current.value = ''
-    }
+    // let sNumbers = []
+    // for(const stepNumber of customStepNumber.current.selectedValues){
+    //   sNumbers.push("STEPS='"+stepNumber.innerHTML.trim()+":"+sStatus+"'")
+    // }
+    // if(sNumbers.length > 0 && sNumbers.toString().indexOf("ALL") === -1){
+    //   let customDataS = sNumbers.toString()
+    //   customData = customDataS.replaceAll(","," and ")
+    // }else{
+    //   stepStatus.current.value = ''
+    // }
+    const artifactName = artifactSelection.current.value
     if(event === "BACK" && cPage > 1){
       cPage = cPage - 1
       let offset1 = cPage * lSelection
       offset.current.innerHTML = offset1 - lSelection
       limit.current.innerHTML = offset1
-      getMessages(startDate,endDate, offset1 - lSelection,lSelection, selectedStatus, customData,sNumbers)
+      getMessages(startDate,endDate, offset1 - lSelection,lSelection, sStatus, customData,artifactName)
       currentPage.current.value = cPage
     }else if(event === "FORWARD" && cPage <= totalPages1){
       let offset1 = cPage*lSelection
@@ -353,19 +426,19 @@ const MonitoringPageDetails = props => {
         limit.current.innerHTML = totalEntries.current.innerHTML
       }else
         limit.current.innerHTML = offset1+lSelection
-      getMessages(startDate,endDate, offset1,lSelection, selectedStatus, customData,sNumbers)
+      getMessages(startDate,endDate, offset1,lSelection,sStatus,customData,artifactName)
       currentPage.current.value = cPage + 1
     }else if(event === "LAST" && cPage <= totalPages1){
       let offset1 = (parseInt(totalPages.current.innerHTML)-1) * lSelection
       offset.current.innerHTML = offset1
       limit.current.innerHTML = totalEntries.current.innerHTML
-      getMessages(startDate,endDate, offset1,lSelection, selectedStatus, customData,sNumbers)
+      getMessages(startDate,endDate, offset1,lSelection, sStatus, customData,artifactName)
       currentPage.current.value = parseInt(totalPages.current.innerHTML)
     }else if(event === "FIRST" && cPage <= totalPages1){
       let offset1 = 0
       offset.current.innerHTML = offset1
       limit.current.innerHTML = offset1+lSelection
-      getMessages(startDate,endDate, offset1,lSelection, selectedStatus, customData,sNumbers)
+      getMessages(startDate,endDate, offset1,lSelection, sStatus, customData,artifactName)
       currentPage.current.value = 1
     }
   }
@@ -388,16 +461,11 @@ const MonitoringPageDetails = props => {
                   <Button design="Transparent" onClick={(e) => filterChanged(e)} icon="action-settings"/>
                 </FlexBox>
               </FlexBox>
-              <Panel accessibleRole="Form" onToggle={function _a(){}} collapsed style={{width:"100%"}}
+              <Panel accessibleRole="Form" ref={customPanel} onToggle={function _a(){}} collapsed style={{width:"100%"}}
                 header={<FlexBox direction="Row" style={{marginLeft:"10px"}} alignItems="Center" justifyContent="SpaceBetween" fitContainer="true">
                 <FlexBox direction="Row" alignItems="Center" justifyContent="Start" fitContainer="true">
-                  <FilterGroupItem groupName="Group 2" label="Status" style={{flex:"0 0 15%"}}>
-                    <MultiComboBox ref={statusSelection} className="generic-shadow" onOpenChange = {(d) =>  multiSelectionToggled(d, 'selecAllID1')} onSelectionChange={(d) =>  multiSelectionChanged(d, 'selecAllID1')}>
-                      {statusList}
-                    </MultiComboBox>
-                  </FilterGroupItem>
                   <FilterGroupItem groupName="Group 2" label="Time" style={{flex:"0 0 15%"}}>
-                    <Select ref={dateSelection} className="generic-shadow">
+                    <Select ref={dateSelection} className="generic-shadow" onChange={(e) => dateSelectionChanged(e)}>
                       <Option value="1:hours" selected>Past Hour</Option>
                       <Option value="2:hours" >Past 2 Hours</Option>
                       <Option value="3:hours" >Past 3 Hours</Option>
@@ -407,9 +475,15 @@ const MonitoringPageDetails = props => {
                       <Option value="24:hours" >Past 24 Hours</Option>
                       <Option value="1:weeks" >Past Week</Option>
                       <Option value="1:months" >Past Month</Option>
+                      <Option value="Custom" >Custom</Option>
                     </Select>
                   </FilterGroupItem>
-                  <FilterGroupItem groupName="Group 3" label="Artifact Name" style={{flex:"0 0 25%"}}>
+                  <FilterGroupItem groupName="Group 6" label="Status" style={{flex:"0 0 15%"}}>
+                    <MultiComboBox ref={statusSelection} className="generic-shadow" onOpenChange = {(d) =>  multiSelectionToggled(d, 'selecAllID1')} onSelectionChange={(d) =>  multiSelectionChanged(d, 'selecAllID1')}>
+                      {statusList}
+                    </MultiComboBox>
+                  </FilterGroupItem>
+                  <FilterGroupItem groupName="Group 7" label="Artifact Name" style={{flex:"0 0 25%"}}>
                     <Select ref={artifactSelection} className="generic-shadow">
                       {allArtifacts}
                     </Select>
@@ -422,20 +496,22 @@ const MonitoringPageDetails = props => {
                 </FlexBox>
                 </FlexBox>}>
                 <FlexBox direction="Row" alignItems="Center" justifyContent="Start" fitContainer="true">
-                  <FilterGroupItem groupName="Group 4" label="Step Number:" style={{flex:"1 1 5%"}}>
+                  <FilterGroupItem groupName="Group 1" label="Start Date" style={{flex:"1 1 5%"}}>
+                    <DateTimePicker  ref={customStartdate} onChange={function Sa(){}} primaryCalendarType="Gregorian" valueState="None"/>
+                  </FilterGroupItem>
+                  <FilterGroupItem groupName="Group 2" label="End Date" style={{flex:"1 1 5%"}}>
+                    <DateTimePicker  ref={customEnddate} onChange={function Sa(){}} primaryCalendarType="Gregorian" valueState="None"/>
+                  </FilterGroupItem>
+                  <FilterGroupItem groupName="Group 3" label="Step Number:" style={{flex:"1 1 20%"}}>
                     <MultiComboBox ref={customStepNumber} className="generic-shadow" onOpenChange = {(d) =>  multiSelectionToggled(d, 'selecAllID')} onSelectionChange={(d) =>  multiSelectionChanged(d, 'selecAllID')}>
                         {stepNumbers}
                     </MultiComboBox>
                   </FilterGroupItem>
-                  <FilterGroupItem groupName="Group 4" label="Step Status:" style={{flex:"1 1 25%"}}>
+                  <FilterGroupItem groupName="Group 4" label="Step Status:" style={{flex:"1 1 30%"}}>
                       <Input ref={stepStatus} className="generic-shadow"   type="Text" valueState="None" placeholder="SUCCESS or FAILED, etc.. (one status ONLY)"></Input>
                   </FilterGroupItem>
-                  <FilterGroupItem groupName="Group 4" label="Custom Header Properties" style={{flex:"1 1 70%"}}>
-                    <FlexBox direction="Row" alignItems="Center" justifyContent="Start" fitContainer="true">
-                      <Input ref={customHeaderProperties} className="generic-shadow" style={{width:"80%"}} type="Text" valueState="None" placeholder="Name = Value or/and Name=Value ..."></Input>
-                      <Switch checked="true"/>
-                      <Label>Add Custom Header Properties to Table as columns</Label>
-                    </FlexBox>
+                  <FilterGroupItem groupName="Group 5" label="Custom Header Properties" style={{flex:"1 1 40%"}}>
+                    <Input ref={customHeaderProperties} className="generic-shadow" style={{width:"80%"}} type="Text" valueState="None" placeholder="Name = Value or/and Name=Value ..."></Input>
                   </FilterGroupItem>
                 </FlexBox>
               </Panel>  
@@ -443,18 +519,20 @@ const MonitoringPageDetails = props => {
             </FlexBox>
             <FlexBox direction="Column" alignItems="Start" justifyContent="Start" fitContainer="true">
               <div style={{paddingTop:"10px", paddingBottom:"10px", backgroundColor:"#f5f6f7", width:"99%"}}>
-              <Table busy={!messagesLoaded} busyDelay="2000" className="generic-shadow generic-border-radius" 
-                       columns={<><TableColumn style={{width:"30px"}}>
-                                    <FlexBox direction="Column" alignItems="Center" justifyContent="Center" fitContainer="true"><span>Status</span></FlexBox>
-                                  </TableColumn>
-                                  <TableColumn style={{width:"80px"}}><span>Total Steps</span></TableColumn>
-                                  <TableColumn style={{width:"260px"}}><span>Message ID</span></TableColumn>
-                                  <TableColumn style={{width:"260px"}}><span>Correlation ID</span></TableColumn>
-                                  <TableColumn style={{width:"400px"}} ><span>Artifact Name</span></TableColumn>
-                                  <TableColumn style={{width:"200px"}} ><span>Start Time</span></TableColumn>
-                                  <TableColumn style={{width:"200px"}} ><span>End Time</span></TableColumn>
-                                  <TableColumn style={{width:"120px"}}><span>Duration</span></TableColumn>
-                                  <TableColumn style={{width:"30px"}}><span></span></TableColumn></>}
+              <Table  loading={!messagesLoaded} loadingDelay="2000" className="generic-shadow generic-border-radius" 
+                       headerRow={<TableHeaderRow sticky>
+                                    <TableHeaderCell style={{width:"30px"}}>
+                                      <FlexBox direction="Column" alignItems="Center" justifyContent="Center" fitContainer="true"><span>Status</span></FlexBox>
+                                    </TableHeaderCell>
+                                    <TableHeaderCell style={{width:"80px"}}><span>Total Steps</span></TableHeaderCell>
+                                    <TableHeaderCell style={{width:"260px"}}><span>Message ID</span></TableHeaderCell>
+                                    <TableHeaderCell style={{width:"260px"}}><span>Correlation ID</span></TableHeaderCell>
+                                    <TableHeaderCell style={{width:"400px"}} ><span>Artifact Name</span></TableHeaderCell>
+                                    <TableHeaderCell style={{width:"200px"}} ><span>Start Time</span></TableHeaderCell>
+                                    <TableHeaderCell style={{width:"200px"}} ><span>End Time</span></TableHeaderCell>
+                                    <TableHeaderCell style={{width:"120px"}}><span>Duration</span></TableHeaderCell>
+                                    <TableHeaderCell style={{width:"30px"}}><span></span></TableHeaderCell>
+                                </TableHeaderRow>}
                       onPopinChange={function _a(){}}
                       onRowClick={function _a(){}}
                       onSelectionChange={function _a(){}}>
@@ -474,7 +552,7 @@ const MonitoringPageDetails = props => {
                     </Select>
                     <div style={{marginLeft:"20px"}}>Showing <span ref={offset}></span> to <span ref={limit}></span> of <span ref={totalEntries}></span> entries</div>
                   </FlexBox>
-                  <BusyIndicator active={!messagesLoaded} style={{marginRight:"20px"}} size="Small">
+                  <BusyIndicator active={!messagesLoaded} style={{marginRight:"20px"}} delay={1000} size="S">
                     <FlexBox direction="Row" alignItems="Center" justifyContent="Center" fitContainer="true" >
                       <FontAwesomeIcon ref={firstPage} style={{width:"30px", fontSize:"14px", cursor:"hand"}} icon={['fas', 'fa-angles-left']} onClick={(d) =>  changePage("FIRST")}/>
                       <FontAwesomeIcon ref={backOnePage} style={{width:"30px", marginRight:"10px", fontSize:"14px", cursor:"hand"}} icon={['fas', 'fa-angle-left']} onClick={(d) =>  changePage("BACK")}/>

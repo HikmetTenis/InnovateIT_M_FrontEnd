@@ -1,5 +1,4 @@
-import axios from "axios";
-axios.defaults.withCredentials = true
+import api from '../helpers/axios-custom';
 export const  getPackages = async() => {
     return new Promise(async(resolve, reject) => {
         var config = {
@@ -7,7 +6,7 @@ export const  getPackages = async() => {
             withCredentials:true,
             url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/artifacts/getPackages"
           };
-          axios(config).then(function (response) {
+          api(config).then(function (response) {
             resolve(response)
           }).catch(function (error) {
             reject(error)
@@ -21,7 +20,7 @@ export const  getArtifacts = async(artifactID) => {
       withCredentials:true,
       url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/artifacts/getArtifacts?artifactID="+artifactID
     };
-    axios(config).then(function (response) {
+    api(config).then(function (response) {
       resolve(response)
     }).catch(function (error) {
       reject(error)
@@ -302,7 +301,7 @@ export const  getArtifactDetails = async(artifactID, name,version) => {
       withCredentials:true,
       url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/artifacts/getArtifactDetails?name="+name+"&version="+version+"&artifactID="+artifactID
     };
-    axios(config).then(function (response) {
+    api(config).then(function (response) {
       resolve(response)
     }).catch(function (error) {
       reject(error)
@@ -316,7 +315,7 @@ export const  getArtifactRuntimeDetails = async(artifactID) => {
       withCredentials:true,
       url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/artifacts/getArtifactRuntimeDetails?&artifactID="+artifactID
     };
-    axios(config).then(function (response) {
+    api(config).then(function (response) {
       resolve(response)
     }).catch(function (error) {
       reject(error)
@@ -331,7 +330,7 @@ export const  saveArtifact = async(artifact) => {
       url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/artifacts/saveArtifact",
       data:artifact
     };
-    axios(config).then(function (response) {
+    api(config).then(function (response) {
       resolve(response)
     }).catch(function (error) {
       reject(error)
@@ -348,7 +347,7 @@ export const  modifyArtifact = (artifact) => {
       url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/artifacts/modifyArtifact",
       data:artifact
     };
-    axios(config).then(function (response) {
+    api(config).then(function (response) {
       resolve(response)
     }).catch(function (error) {
       reject(error)

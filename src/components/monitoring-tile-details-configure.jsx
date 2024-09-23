@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext, useRef, Component } from 'react';
 import { motion} from "framer-motion";
-import { DynamicPageHeader,FlexBox,BusyIndicator,Bar,Dialog,Form, FormGroup, ActionSheet,FormItem,Label,DynamicPageTitle,Title,Badge,Toolbar,MessageStrip,Button,ObjectPage,ObjectPageSection, ObjectPageSubSection, Switch,Icon,Input,Table,TableColumn, TableRow,TableCell} from '@ui5/webcomponents-react';
+import { DynamicPageHeader,FlexBox,BusyIndicator,Bar,Dialog,Form, FormGroup, ActionSheet,FormItem,Label,DynamicPageTitle,Title,Badge,Toolbar,MessageStrip,Button,ObjectPage,ObjectPageSection, ObjectPageSubSection, Icon,} from '@ui5/webcomponents-react';
 import BpmnModeler from 'bpmn-js/dist/bpmn-navigated-viewer.production.min.js';
 import $ from 'jquery';
 import moment from 'moment'
@@ -341,28 +341,7 @@ export default function MonitoringTileDetailsConfigure(props) {
                             titleText="STEPs and Details">
                                 <div style={{flex:"1 1 auto"}}>
                                     <FlexBox direction="Column" alignItems="Start" justifyContent="SpaceBetween" flex="1 1 90%" style={{gap:"5px"}} fitContainer="true">
-                                        {/* <Table  columns={<>
-                                            <TableColumn>
-                                                <span>STEP#</span>
-                                            </TableColumn>
-                                            <TableColumn>
-                                                <span>Name</span>
-                                            </TableColumn>
-                                            <TableColumn>
-                                                <span>Description</span>
-                                            </TableColumn>
-                                            <TableColumn>
-                                                <span>Process Name</span>
-                                            </TableColumn>
-                                            <TableColumn>
-                                                <span>Keep Payload</span>
-                                            </TableColumn>
-                                            </>}>
-                                            {steps}
-                                        </Table> */}
-                                        {/* <FlexBox direction="Column" alignItems="Center" justifyContent="Center" flex="0 0 10%" fitContainer="true" style={{marginRight:"10px"}}>
-                                            <Button design="Emphasized" icon="save" onClick={(d) =>  updateSteps()} disabled={updateDisabled}>Update Diagram</Button>
-                                        </FlexBox> */}
+                                        
                                     </FlexBox>
                                 </div>
                             </ObjectPageSubSection>
