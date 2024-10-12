@@ -7,8 +7,8 @@ import MessageContext from "../helpers/message-context";
 import BpmnModeler from 'bpmn-js/dist/bpmn-navigated-viewer.production.min.js';
 import $ from 'jquery';
 import moment from 'moment'
+import { useMsal } from '@azure/msal-react';
 export default function MonitoringConfigureDetails(props) {
-    const [artifactRuntimeDetails, setArtifactRuntimeDetails] = useState({})
     const [loading, setLoading] = useState(false);
     const [everyEvent, setEveryEvent] = useState(false);
     const [everyReceiverSenderBefore, setEveryReceiverSenderBefore] = useState(false);
@@ -32,9 +32,9 @@ export default function MonitoringConfigureDetails(props) {
     const dialogStepName = useRef(null);
     const dialogStepDesc = useRef(null);
     const dialogStepId2 = useRef(null);
-    const dialogRef = useRef(null);
+    const [dialogIsOpen, setDialogIsOpen] = useState(false);
     const dialogStepKeepPayload = useRef(null);
-    const dialogStepReprocessing = useRef(false);
+    const { instance, accounts } = useMsal();
     let packageID = useRef(null);
     let description = useRef(null);
     let iflowName = useRef(null);
@@ -46,14 +46,6 @@ export default function MonitoringConfigureDetails(props) {
     let iflowID = useRef(null);
     useEffect(() => {
         setLoading(true)
-        // getArtifactRuntimeDetails(props.iflow.Id).then((data)=>{
-        //     const res = data.data.obj
-        //     const respValue = {"updatedOn":res.updatedAt, "updatedBy":res.updatedBy, "status":res.status}
-        //     setArtifactRuntimeDetails(respValue);
-        // }).catch(function(error) {
-        //     const respValue = {"updatedOn":"N/A", "updatedBy":"N/A", "status":"ERROR"}
-        //     setArtifactRuntimeDetails(respValue);
-        // })
         getArtifactDetails(props.iflow.Id,props.iflow.Name,props.iflow.Version).then((res)=>{
             const data = res.data.obj
             const decoded = atob(data.xmlString);
@@ -62,6 +54,7 @@ export default function MonitoringConfigureDetails(props) {
             setEveryEvent(data.everyEvent)
             setEveryReceiverSenderBefore(data.everyReceiverSenderBefore)
             setEveryReceiverSenderAfter(data.everyReceiverSenderAfter)
+            setKeepPayloadAsDefault(data.keepPayloadAsDefault)
             packageID.current = data.packageID
             description.current = data.description
             iflowName.current = data.name
@@ -192,7 +185,7 @@ export default function MonitoringConfigureDetails(props) {
             let color = 'blue'
             if(e.stepType === "AUTO")
                 color = 'green'
-            let overlay = $('<div reprocessing="'+e.reprocessing+'" keepPayload="'+e.keepPayload+'" id="'+e.id+'" sequences='+e.sequences+' step="'+e.stepNumber+'" name="'+e.name+'" desc="'+e.desc+'" style="color:white;cursor: pointer;background-color:'+color+';border:1px solid black;height:20px;width:20px;border-radius:20px;padding:5px;opacity:0.5;display:flex;justify-content:center;align-items:center">'+e.stepNumber+'</div>')
+            let overlay = $('<div reprocessing="'+e.reprocessing+'" keepPayload="'+e.keepPayload+'" id="'+e.id+'" sequences='+e.sequences+' step="'+e.stepNumber+'" name="'+e.name+'" desc="'+e.desc+'" style="color:white;cursor: pointer;background-color:'+color+';border:1px solid black;height:40px;width:40px;border-radius:20px;padding:5px;opacity:0.7;display:flex;justify-content:center;align-items:center">'+e.stepNumber+'</div>')
             overlays.add(e.id, {
                 id:e.id,
                 position: {
@@ -231,12 +224,7 @@ export default function MonitoringConfigureDetails(props) {
                     if(event.target.getAttribute("reprocessing") === "true")
                         reprocessing = true
                     dialogStepKeepPayload.current.checked = keepPayload
-                    if(id.indexOf("StartEvent") === -1){
-                        dialogStepReprocessing.current.checked = false
-                        dialogStepReprocessing.current.disabled = true
-                    }else{
-                        dialogStepReprocessing.current.checked = reprocessing
-                    }
+                    
                     dialogStepId2.current.value = id2;
                     setHeaderText(id);
                     popoverRef1.current.opener = container.id
@@ -311,15 +299,16 @@ export default function MonitoringConfigureDetails(props) {
        
     }
     const save = () => {
+        
         const d ={
             id:iflowID.current,
-            monID:monID.current,
             everyEvent: everyEvent,
             filename: filename,
             everyReceiverSenderAfter: everyReceiverSenderAfter,
             everyReceiverSenderBefore: everyReceiverSenderBefore,
+            keepPayloadAsDefault: keepPayloadAsDefault,
             steps:stepList,
-            monName:props.iflow.Name,
+            name:props.iflow.Name,
             iflowName: iflowName.current,
             description: description.current,
             packageName:props.packagename,
@@ -327,7 +316,7 @@ export default function MonitoringConfigureDetails(props) {
             scriptNames: scriptNames.current,
             version: props.iflow.Version,
             status: status.current.innerHTML,
-            updatedBy: "Hiko"
+            updatedBy: accounts[0].username
         }
         saveArtifact(d).then((data)=>{
             const res = data.data.obj
@@ -348,7 +337,6 @@ export default function MonitoringConfigureDetails(props) {
         let name = dialogStepName.current.value;
         let id2 = dialogStepName.current.value;
         let keepPayload = dialogStepKeepPayload.current.checked
-        let reprocessing = dialogStepReprocessing.current.checked
         if(dialogStepId2.current.value == null)
             id2 = headerText
         let id = headerText
@@ -356,7 +344,7 @@ export default function MonitoringConfigureDetails(props) {
             id:id,
             id2:id2,
             keepPayload:keepPayload,
-            reprocessing:reprocessing,
+            reprocessing:"false",
             stepNumber:stepNum,
             name:name,
             desc:desc
@@ -367,7 +355,7 @@ export default function MonitoringConfigureDetails(props) {
         }else{
             addNewStep(data, "ADD")
         }
-        dialogRef.current.close();
+        setDialogIsOpen(false);
     }
     const addNewStep = async(d) => {
         const elementRegistry = modeler.get('elementRegistry');
@@ -395,8 +383,6 @@ export default function MonitoringConfigureDetails(props) {
         let y = sourceElement.height-7
         let isReprocessingPossible = true
         if(sourceElement.id.indexOf("StartEvent") === -1){
-            dialogStepReprocessing.current.checked = false
-            dialogStepReprocessing.current.disabled = true
             isReprocessingPossible = false
         }
         const dd = {
@@ -409,7 +395,7 @@ export default function MonitoringConfigureDetails(props) {
             stepNumber:dialogStepNumber.current.value,
             parentName:processName,
             parentID:parentID,
-            reprocessing:dialogStepReprocessing.current.checked,
+            reprocessing:"false",
             reprocessingpossible:isReprocessingPossible,
             keepPayload:dialogStepKeepPayload.current.checked,
             name:dialogStepName.current.value,
@@ -458,12 +444,6 @@ export default function MonitoringConfigureDetails(props) {
         const elementRegistry = modeler.get('elementRegistry');
         const sequenceFlow = elementRegistry.get(id)
         const sourceElement = elementRegistry.get(sequenceFlow.businessObject.sourceRef.id)
-        if(sourceElement.id.indexOf("StartEvent") === -1){
-            dialogStepReprocessing.current.checked = false
-            dialogStepReprocessing.current.disabled = true
-        }else{
-            dialogStepReprocessing.current.disabled = false
-        }
         let stepNumber = sequenceFlow.businessObject.$parent.stepNumber
         if(stepNumber){
             stepNumber++
@@ -474,7 +454,7 @@ export default function MonitoringConfigureDetails(props) {
         dialogStepDesc.current.value = '' 
         
         $("#myModal").appendTo("body") 
-        dialogRef.current.show();
+        setDialogIsOpen(true);
     }
     const removeOverlay = (d) => {
         let stepNum = dialogStepNumber.current.value
@@ -492,7 +472,7 @@ export default function MonitoringConfigureDetails(props) {
     }
     const editOverlay = (event) => {
         $("#myModal").appendTo("body") 
-        dialogRef.current.show(); 
+        setDialogIsOpen(true);
     }
     const updateSteps = (data, type) => {
         const id = data.id
@@ -536,22 +516,19 @@ export default function MonitoringConfigureDetails(props) {
         //setStepList(d)
         d.forEach(function(e) {
             stepData.push(<TableRow key={`${e.id}`}>
-            <TableCell style={{width:"5%"}}>
+            <TableCell >
                 <Input style={{width:"100%"}} id={`${e.id}`} id2={`${e.id2}`} icon={<Icon name="flag-2" />} onChange={(d) =>  stepDataChanged(d, "number")} onInput={function _a(){}} onSuggestionItemPreview={function _a(){}} onSuggestionItemSelect={function _a(){}} type="Text" valueState="None" value={e.stepNumber}></Input>
             </TableCell>
-            <TableCell style={{width:"15%"}}>
+            <TableCell>
                 <Input style={{width:"100%"}} id={`${e.id}`} id2={`${e.id2}`} icon={<Icon name="flag-2" />} onChange={(d) =>  stepDataChanged(d, "name")} onInput={function _a(){}} onSuggestionItemPreview={function _a(){}} onSuggestionItemSelect={function _a(){}} type="Text" valueState="None" value={e.name}></Input>
             </TableCell>
-            <TableCell style={{width:"60%"}}>
+            <TableCell>
                 <Input style={{width:"100%"}} id={`${e.id}`} id2={`${e.id2}`} icon={<Icon name="receipt" />} onChange={(d) => stepDataChanged(d, "desc")} onInput={function _a(){}} onSuggestionItemPreview={function _a(){}} onSuggestionItemSelect={function _a(){}} type="Text" valueState="None" value={`${e.desc}`}></Input>
             </TableCell>
-            <TableCell style={{width:"16%"}}>
+            <TableCell>
                 {e.parentName}
             </TableCell>
-            <TableCell style={{width:"4%"}}>
-                <Switch onChange={(d) => setUpdateDisabled(false)} checked={e.reprocessing} disabled={!e.reprocessingpossible}/>
-            </TableCell>
-            <TableCell style={{width:"4%"}}>
+            <TableCell>
                 <Switch onChange={(d) => setUpdateDisabled(false)} checked={e.keepPayload} />
             </TableCell>
           </TableRow>)
@@ -578,10 +555,10 @@ export default function MonitoringConfigureDetails(props) {
     };
     return (
         <FlexBox direction="row" alignItems="Stretch" fitContainer="true">
-            <Dialog id="myModal" className="headerPartNoPadding footerPartNoPadding" ref={dialogRef} style={{zIndex:104}} aria-modal="true" 
+            <Dialog id="myModal" className="headerPartNoPadding footerPartNoPadding" open={dialogIsOpen} style={{zIndex:104}} aria-modal="true" 
                     footer={<Bar design="Footer" endContent={
                         <div>
-                            <Button  style={{marginRight:"3px"}} onClick={() => dialogRef.current.close()}>Close</Button>
+                            <Button  style={{marginRight:"3px"}} onClick={() => setDialogIsOpen(false)}>Close</Button>
                             {dialogStepName.current && dialogStepName.current.value !== ''
                             ?<Button design="Emphasized" onClick={(e) => updateOverlay(e)}>Update</Button>
                             :<Button design="Emphasized" onClick={(e) => updateOverlay(e)}>Add</Button>}
@@ -623,10 +600,10 @@ export default function MonitoringConfigureDetails(props) {
                                     <Switch ref={dialogStepKeepPayload} onChange={(d) => setUpdateDisabled(false)}/>
                                     <Label>Keep Payload</Label>
                                 </FlexBox>
-                                <FlexBox direction="row" alignItems="Center" fitContainer="true">
+                                {/* <FlexBox direction="row" alignItems="Center" fitContainer="true">
                                     <Switch ref={dialogStepReprocessing} onChange={(d) => setUpdateDisabled(false)}/>
                                     <Label>Enable reprocessing</Label>
-                                </FlexBox>
+                                </FlexBox> */}
                             </FlexBox>
                         </FormItem>
                     </FormGroup>
@@ -644,7 +621,7 @@ export default function MonitoringConfigureDetails(props) {
                         initial="visible"
                         animate='visible'
                         exit="exit">
-                <Bar design="Header">
+                <Bar design="Header" style={{borderTopLeftRadius:"15px",borderTopRightRadius:"15px",width:"100%"}}>
                     <Button design="Transparent" icon="slim-arrow-left" slot="startContent" ui5-button="" icon-only="" has-icon="" onClick={props.onClick}>Back</Button>
                 </Bar>
                 <ObjectPage
@@ -689,16 +666,18 @@ export default function MonitoringConfigureDetails(props) {
                         id="diagramSettings"
                         titleText="Diagram Settings" style={{height: '80px'}}>
                         <FlexBox direction="Row" alignItems="Center" justifyContent="Start" fitContainer="true" style={{paddingLeft:"10px",background:"var(--sapList_Background)",borderRadius:"10px"}}>
-                            <Switch onChange={(d) => setEveryEventSwitch(d)} checked={everyEvent}/>
-                            <Label>Add every "Start Event" and "End Event"</Label>
-                            <Switch onChange={(d) => setEveryReceiverSenderBeforeSwitch(d)} checked={everyReceiverSenderBefore}/>
-                            <Label>Add BEFORE every "Send"</Label>
-                            <Switch onChange={(d) => setEveryReceiverSenderAfterSwitch(d)} checked={everyReceiverSenderAfter}/>
-                            <Label>Add AFTER every "Send"</Label>
-                            {/* <Switch onChange={(d) => setReprocessingAsDefaultSwitch(d)} checked={reprocessingAsDefault} ref={dialogStepReprocessing}/>
-                            <Label>Enable reprocessing for all steps</Label> */}
-                            <Switch onChange={(d) => setKeepPayloadAsDefaultSwitch(d)} checked={keepPayloadAsDefault}/>
-                            <Label>Keep Payload for all steps</Label>
+                            <BusyIndicator active={loading} style={{width:"100%", height:"100%"}} size="M">
+                                <Switch onChange={(d) => setEveryEventSwitch(d)} checked={everyEvent}/>
+                                <Label>Add every "Start Event" and "End Event"</Label>
+                                <Switch onChange={(d) => setEveryReceiverSenderBeforeSwitch(d)} checked={everyReceiverSenderBefore}/>
+                                <Label>Add BEFORE every "Send"</Label>
+                                <Switch onChange={(d) => setEveryReceiverSenderAfterSwitch(d)} checked={everyReceiverSenderAfter}/>
+                                <Label>Add AFTER every "Send"</Label>
+                                {/* <Switch onChange={(d) => setReprocessingAsDefaultSwitch(d)} checked={reprocessingAsDefault} ref={dialogStepReprocessing}/>
+                                <Label>Enable reprocessing for all steps</Label> */}
+                                <Switch onChange={(d) => setKeepPayloadAsDefaultSwitch(d)} checked={keepPayloadAsDefault}/>
+                                <Label>Keep Payload for all steps</Label>
+                            </BusyIndicator>
                         </FlexBox>
                     </ObjectPageSection>
                     <ObjectPageSection
@@ -724,14 +703,14 @@ export default function MonitoringConfigureDetails(props) {
                         titleText="Steps and Details">
                         <div style={{flex:"1 1 auto"}}>
                             <FlexBox direction="Column" alignItems="Start" justifyContent="SpaceBetween" flex="1 1 90%" style={{marginTop:"10px",background:"var(--sapList_Background)",borderRadius:"10px",padding:"5px"}} fitContainer="true">
-                                <Table headerRow={
+                                <Table style={{width:"100%"}} headerRow={
                                     <TableHeaderRow sticky>
-                                        <TableHeaderCell width="12rem"><span>STEP#</span></TableHeaderCell>
+                                        <TableHeaderCell maxWidth="100px"><span>STEP#</span></TableHeaderCell>
                                         <TableHeaderCell minWidth="100px"><span>Name</span></TableHeaderCell>
-                                        <TableHeaderCell minWidth="200px"><span>Description</span></TableHeaderCell>
+                                        <TableHeaderCell minWidth="400px"><span>Description</span></TableHeaderCell>
                                         <TableHeaderCell minWidth="200px"><span>Process Name</span></TableHeaderCell>
-                                        <TableHeaderCell><span>Reprocessing</span></TableHeaderCell>
-                                        <TableHeaderCell><span>Keep Payload</span></TableHeaderCell>
+                                        {/* <TableHeaderCell maxWidth="100px"><span>Reprocessing</span></TableHeaderCell> */}
+                                        <TableHeaderCell maxWidth="130px"><span>Keep Payload</span></TableHeaderCell>
                                     </TableHeaderRow>}>
                                     {steps}
                                 </Table>

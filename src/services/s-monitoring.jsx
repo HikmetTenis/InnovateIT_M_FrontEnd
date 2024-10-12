@@ -41,12 +41,40 @@ export const  getGraphData = (startDate, endDate, status, period) => {
         });
   });
 }
-export const getJMSStats = () => {
+export const  getJMSGraphData = (startDate, endDate, period) => {
+  return new Promise((resolve, reject) => {
+      var config = {
+          method: 'get',
+          withCredentials:true,            
+          url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/monitoring/getJMSGraphData?period="+period+"&startDate='"+startDate+"'&endDate='"+endDate+"'"
+        };
+        api(config).then(function (response) {
+          resolve(response)
+        }).catch(function (error) {
+          reject(error)
+        });
+  });
+}
+export const getJMSStats = (broker) => {
   return new Promise((resolve, reject) => {
       var config = {
           method: 'get',
           withCredentials:true,
-          url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/monitoring/getJMSStats"
+          url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/monitoring/getJMSStats?broker='"+broker+"'"
+        };
+        api(config).then(function (response) {
+          resolve(response)
+        }).catch(function (error) {
+          reject(error)
+        });
+  });
+}
+export const getJMSStatsQueueNamesHigh = (broker) => {
+  return new Promise((resolve, reject) => {
+      var config = {
+          method: 'get',
+          withCredentials:true,
+          url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/monitoring/getJMSStatsInactiveQueues?broker='"+broker+"'"
         };
         api(config).then(function (response) {
           resolve(response)

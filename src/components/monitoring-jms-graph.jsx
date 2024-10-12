@@ -2,14 +2,13 @@ import { motion } from 'framer-motion';
 import {LineChart}  from '@ui5/webcomponents-react-charts';
 import React, { useState,useEffect,useRef } from 'react';
 import moment from 'moment'; 
-import {getGraphData} from '../services/s-monitoring'
+import {getJMSGraphData} from '../services/s-monitoring'
 import momentTZ from 'moment-timezone';
-function MonitoringTileGraph({ item, isExpanded, handleRangeChange}) {
+function MonitoringJMSGraph({ refresh,isExpanded}) {
   const boxVariants = {
     hidden: {
       width: "100%",
       height: "290px",
-      opacity: 0.5,
     },
     visible: {
       width: "100%",
@@ -27,7 +26,8 @@ function MonitoringTileGraph({ item, isExpanded, handleRangeChange}) {
 
   const timeRanges = [{id:'1:hours',desc:'1 hour'},{id:'6:hours',desc:'6 hours'},{id:'12:hours',desc:'12 hours'},{id:'1:days',desc:'1 day'},{id:'7:days',desc:'7 days'},{id:'30:days',desc:'30 days'}];
 
-  const handleRangeClick = (range) => {
+  const handleRangeClick = (range,e) => {
+    e.stopPropagation();
     setMessagesLoaded(true)
     let now = moment();
     const dateSelectedSplitted = range.id.split(':')
@@ -36,45 +36,51 @@ function MonitoringTileGraph({ item, isExpanded, handleRangeChange}) {
     
     let startDate = moment.utc(past).format("YYYY-MM-DD HH:mm:ss")
     setActiveRange(range.desc); // Update the active state when a button is clicked
-    getGraphData(startDate,endDate,item.type,range.desc).then((res)=>{
+    getJMSGraphData(startDate,endDate,range.desc).then((res)=>{
         if(res.data.obj.length > 0){
             const localTimezone = moment.tz.guess();
             let gData = []
             //2024-09-21T01:46:31.000Z
             for(const e of res.data.obj){
-                const utcDate = moment.utc(e.time_interval_utc);
+                const utcDate = moment.utc(e.createdAt);
                 let intervalFormat = 'HH:mm'
                 if(range.id !== "1:hours")
                     intervalFormat = 'MMM DD, HH:mm'
                 const convertedLocalTime = utcDate.tz(localTimezone).format(intervalFormat);
-                gData.push({name:convertedLocalTime, messages:parseInt(e.total_message)})
+                gData.push({name:convertedLocalTime, capacity:parseInt(e.stat)})
             }
             setGraphData(gData)
         }
         setMessagesLoaded(false)
     })
-    handleRangeChange(range)
   };
   useEffect(() => {
     let now = moment();
-    const endDate = moment.utc(now).format("YYYY-MM-DD HH:mm:ss")
-    let past = now.subtract("1", "hours");
-    const startDate = moment.utc(past).format("YYYY-MM-DD HH:mm:ss")
-    getGraphData(startDate,endDate,item.type,activeRange).then((res)=>{
+    const filteredTimeRange = timeRanges.filter(range => range.desc === activeRange);
+    const dateSelectedSplitted = filteredTimeRange[0].id.split(':')
+    let endDate = moment.utc(now).format("YYYY-MM-DD HH:mm:ss")
+    let past = now.subtract(dateSelectedSplitted[0], dateSelectedSplitted[1]);
+    
+    let startDate = moment.utc(past).format("YYYY-MM-DD HH:mm:ss")
+    getJMSGraphData(startDate,endDate,activeRange).then((res)=>{
         if(res.data.obj.length > 0){
             const localTimezone = moment.tz.guess();
+            console.log(localTimezone)
             let gData = []
             //2024-09-21T01:46:31.000Z
             for(const e of res.data.obj){
-                const utcDate = moment.utc(e.time_interval_utc);
-                const convertedLocalTime = utcDate.tz(localTimezone).format('HH:mm');
-                gData.push({name:convertedLocalTime, messages:parseInt(e.total_message)})
+                const utcDate = moment.utc(e.createdAt);
+                let intervalFormat = 'HH:mm'
+                if(filteredTimeRange[0].id !== "1:hours")
+                    intervalFormat = 'MMM DD, HH:mm'
+                const convertedLocalTime = utcDate.tz(localTimezone).format(intervalFormat);
+                gData.push({name:convertedLocalTime, capacity:parseInt(e.stat)})
             }
             setGraphData(gData)
         }
         setMessagesLoaded(false)
     })
-  }, [item])
+  }, [refresh])
   return (
     <motion.div 
       className="box"
@@ -96,8 +102,8 @@ function MonitoringTileGraph({ item, isExpanded, handleRangeChange}) {
     ]}
     measures={[
       {
-        accessor: 'messages',
-        label: 'Messages',
+        accessor: 'capacity',
+        label: 'Capacity',
       }
     ]}
     onClick={function Sa(){}}
@@ -107,10 +113,10 @@ function MonitoringTileGraph({ item, isExpanded, handleRangeChange}) {
   <div className="time-range-container">
     <div className="time-range-selector">
         {timeRanges.map((range) => (
-        <button
-        key={range.desc}
-        className={range.desc === activeRange ? 'active' : ''}
-        onClick={() => handleRangeClick(range)}
+            <button
+                key={range.desc}
+                className={range.desc === activeRange ? 'active' : ''}
+                onClick={(e) => handleRangeClick(range,e)}
         >
         {range.desc}
         </button>
@@ -121,4 +127,4 @@ function MonitoringTileGraph({ item, isExpanded, handleRangeChange}) {
   );
 }
 
-export default MonitoringTileGraph;
+export default MonitoringJMSGraph;

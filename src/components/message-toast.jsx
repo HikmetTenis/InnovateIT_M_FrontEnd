@@ -14,7 +14,7 @@ function MessageToastComponent(){
     },[message.toast]);
     return (
         <>
-        <Toast open={showToast} duration={5000} placement="BottomCenter">{message.toastMessage}</Toast>
+        <Toast open={showToast} duration={5000} placement="BottomCenter" onClose={() => {setShowToast(false);}}>{message.toastMessage}</Toast>
         </>
     );
   };

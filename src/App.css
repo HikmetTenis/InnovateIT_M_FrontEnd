@@ -4,7 +4,7 @@
   background-color: #f5f6f7;
 }
 html, body, #root {
-  height: 99%;
+  height: 100%;
 }
 .App-logo {
   height: 40vmin;
@@ -92,12 +92,9 @@ html, body, #root {
 .pagiation{
   box-shadow: var(--_ui5-v1-24-8_side_navigation_box_shadow);
   background: var(--sapList_Background);
-  width:99.5%; 
-  height:30px;
-  padding-top:25px;
-  padding-bottom:25px;
+  width:100%; 
   border-radius:15px;
-  flex:1 1 auto;
+  flex:0 0 10%;
 }
 .App-link {
   color: #61dafb;
@@ -216,6 +213,23 @@ ui5-icon:hover {
   grid-auto-flow: dense;
   padding-bottom:15px;
 }
+.jms-grid-container{
+  display: grid;
+  grid-template-columns: 300px;
+  grid-auto-rows: 20px;
+  position: relative;
+  grid-auto-flow: dense;
+  padding-bottom:15px;
+}
+.jms-grid-container > div {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.jms-grid-container>div:nth-child(even)
+{
+  background: #ddd;
+}
 .grid-item {
   box-shadow: var(--sapContent_Shadow2)!important;
   position: relative;
@@ -314,3 +328,4 @@ ui5-icon:hover {
   width:100%;
   height:100%;
 }
+

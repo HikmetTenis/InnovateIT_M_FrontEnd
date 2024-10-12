@@ -71,37 +71,6 @@ function App() {
         
       }
     };
-    // const getProfilePhoto = async () => {
-    //   try {
-    //     const request = {
-    //       scope: 'User.Read',
-    //       account: accounts[0],
-    //     };
-    //     const resp = await instance.acquireTokenSilent(request);
-    //     const response = await fetch('https://graph.microsoft.com/v1.0/me/photo/$value', {
-    //       headers: {
-    //         Authorization: `Bearer ${resp.accessToken}`,
-    //       },
-    //     });
-
-    //     if (response.ok) {
-    //       // User has a profile photo
-    //       const imageBlob = await response.blob();
-    //       const imageObjectURL = URL.createObjectURL(imageBlob);
-    //       setProfilePhoto(imageObjectURL);
-    //     } else if (response.status === 404) {
-    //       // User does not have a profile photo
-    //       console.warn('No profile photo found for the user.');
-    //       setProfilePhoto(null);
-    //     } else {
-    //       console.error('Error fetching profile photo:', response.statusText);
-    //     }
-    //   } catch (error) {
-    //     console.error('Error fetching profile photo:', error);
-    //   }
-    // };
-
-    
     initializeInterceptor();
     var shellBarHeader = $(".app-shellbar").children('header:first'); 
     shellBarHeader.append('<Button  design="Transparent"  icon="menu2"/>')
@@ -117,7 +86,6 @@ function App() {
       <messageContext.Provider value={{message,setMessage}}>
         <body>
           <div className="main">
-            
               <div className='App-Header'>
                 <Button style={{display:"block",position:"fixed",left:"20px", top:"20px", zIndex:"100", color:"black"}} onClick={() => setIsCollapsed(!isCollapsed)} design="Transparent"  icon="menu2"/>
                 <ShellBar className='app-shellbar'

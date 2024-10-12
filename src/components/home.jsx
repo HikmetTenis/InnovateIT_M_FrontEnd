@@ -1,40 +1,23 @@
 import "@ui5/webcomponents-icons/dist/AllIcons.js";
-import { Button, Panel,FlexBox} from '@ui5/webcomponents-react';
+import { Button, Panel,FlexBox,Title,Text,Label} from '@ui5/webcomponents-react';
 import {LineChart}  from '@ui5/webcomponents-react-charts';
 import MonitoringTile from './monitoring-tile';
 import GridContainer from './monitoring-tile-container';
 import JMSTile from "./monitoring-jms-stats";
-import { Container, Row, Col } from 'react-bootstrap';
 import React, { useState,useEffect } from 'react';
 import { LayoutGroup  } from 'framer-motion';
-import { motion} from "framer-motion";
 import moment from 'moment'; 
 import {getGraphAllData} from '../services/s-monitoring'
 import momentTZ from 'moment-timezone';
 export default function MonitoringPageHeader() {
-    const [loading, setLoading] = useState(false);
+    const [isRefreshed, setIsRefreshed] = useState(false);
+    const [refreshQueues, setRefreshQueues] = useState(false);
+    const [refreshTime1, setRefreshtime1] = useState(moment().format("LLL"));
+    const [refreshTime2, setRefreshtime2] = useState(moment().format("LLL"));
     const [messagesLoaded, setMessagesLoaded] = useState(true);
     const [graphData, setGraphData] = useState(true);
     const timeRanges = [{id:'1:hours',desc:'1 hour'},{id:'6:hours',desc:'6 hours'},{id:'12:hours',desc:'12 hours'},{id:'1:days',desc:'1 day'},{id:'7:days',desc:'7 days'},{id:'30:days',desc:'30 days'}];
     const [activeRange, setActiveRange] = useState('1 hour');
-    const wrapperVariants = {
-        hidden: {
-          opacity: 0,
-          x: '-5vw',
-          transition: { ease: 'easeInOut', delay: 0.1 },
-          display: "none"
-        },
-        visible: {
-          opacity: 1,
-          x: 0,
-          transition: { ease: 'easeInOut', delay: 0.4 },
-          display: "flex"
-        },
-        exit: {
-          x: '-5vh',
-          transition: { ease: 'easeInOut' },
-        },
-    };
     const [items] = useState([
         { id: 1, color: 'green', type:"SUCCESS"},
         { id: 2, color: 'red', type:"FAILED"},
@@ -47,6 +30,16 @@ export default function MonitoringPageHeader() {
     const handleExpand = (id) => {
         setExpandedId((prevId) => (prevId === id ? null : id));
     };
+    const handleRefreshTiles = (rangeDesc) => {
+        const filteredTimeRange = timeRanges.filter(range => range.desc === rangeDesc);
+        handleRangeClick(filteredTimeRange[0])
+        setIsRefreshed(!isRefreshed)
+        setRefreshtime1(moment().format("LLL"))
+    }
+    const handleRefreshQueues = () => {
+        setRefreshQueues(!refreshQueues)
+        setRefreshtime2(moment().format("LLL"))
+    }
     const handleRangeClick = (range) => {
         setMessagesLoaded(true)
         let now = moment();
@@ -74,6 +67,7 @@ export default function MonitoringPageHeader() {
         })
       };
     useEffect(() => {
+        
         let now = moment();
         const endDate = moment.utc(now).format("YYYY-MM-DD HH:mm:ss")
         let past = now.subtract("1", "hours");
@@ -98,6 +92,7 @@ export default function MonitoringPageHeader() {
                 accessibleRole="Form"
                 headerLevel="H2"
                 headerText="Messages"
+                header={<FlexBox alignItems="Center" justifyContent="SpaceBetween" fitContainer ><Title level="H2">Messages</Title><FlexBox alignItems="Center" justifyContent="SpaceBetween" ><Label showColon="true" style={{fontSize:"12px"}}>Last Refresh</Label><Text style={{fontSize:"12px"}}>{refreshTime1}</Text><Button  design="Transparent" onClick={(e) => handleRefreshTiles(activeRange)} icon="refresh"/></FlexBox></FlexBox>}
                 onToggle={function _a(){}}>
                     <LayoutGroup >
                         <GridContainer>
@@ -105,6 +100,7 @@ export default function MonitoringPageHeader() {
                                 <MonitoringTile
                                     key={item.id}
                                     item={item}
+                                    refresh={isRefreshed}
                                     isExpanded={expandedId === item.id}
                                     onExpand={handleExpand}/>
                             ))}
@@ -140,8 +136,11 @@ export default function MonitoringPageHeader() {
                 accessibleRole="Form"
                 headerLevel="H2"
                 headerText="Queues"
+                header={<FlexBox alignItems="Center" justifyContent="SpaceBetween" fitContainer ><Title level="H2">Queues</Title><FlexBox alignItems="Center" justifyContent="SpaceBetween" ><Label showColon="true" style={{fontSize:"12px"}}>Last Refresh</Label><Text style={{fontSize:"12px"}}>{refreshTime2}</Text><Button  design="Transparent" onClick={(e) =>handleRefreshQueues()}icon="refresh"/></FlexBox></FlexBox>}
                 onToggle={function _a(){}}>
-                    <JMSTile></JMSTile>
+                    <GridContainer>
+                        <JMSTile name="Broker1" refresh={refreshQueues}></JMSTile>
+                    </GridContainer>
             </Panel>
         </FlexBox>
     );

@@ -5,11 +5,10 @@ import MonitoringPageDetails from "./monitoring-tile-details";
 export default function MonitoringPage() {
    
     return (
-        <DynamicSideContent className='monitoring-content' hideSideContent="true">
-                <div className="monitoring-panel-content">
-                <MonitoringPageDetails  style={{width:"100%", height:"100%"}} className="monitoring-details" />
-                </div>
-        </DynamicSideContent>
+        // <DynamicSideContent className='monitoring-content' hideSideContent="true" >
+                    <MonitoringPageDetails  style={{width:"100%", height:"100%"}} className="monitoring-details" />
+
+        // </DynamicSideContent>
             
     );
 }

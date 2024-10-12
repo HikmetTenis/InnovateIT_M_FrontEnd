@@ -1,14 +1,33 @@
 import React, { useEffect, useState, useContext, useRef, Component } from 'react';
 import { motion} from "framer-motion";
-import { DynamicPageHeader,FlexBox,BusyIndicator,Bar,Dialog,Form, FormGroup, ActionSheet,FormItem,Label,DynamicPageTitle,Title,Badge,Toolbar,MessageStrip,Button,ObjectPage,ObjectPageSection, ObjectPageSubSection, Icon,} from '@ui5/webcomponents-react';
+import { FlexBox,BusyIndicator,Bar,Table,TableHeaderRow,ObjectPageTitle,Switch,TableRow,TableCell, ObjectPageHeader, ActionSheet,TableHeaderCell,Label,Title,Button,ObjectPage,ObjectPageSection, ObjectPageSubSection, Icon,} from '@ui5/webcomponents-react';
 import BpmnModeler from 'bpmn-js/dist/bpmn-navigated-viewer.production.min.js';
 import $ from 'jquery';
 import moment from 'moment'
 import {reprocess,getPayload} from '../services/s-monitoring'
 import MessageContext from "../helpers/message-context";
 export default function MonitoringTileDetailsConfigure(props) {
+    const wrapperVariants = {
+        hidden: {
+          opacity: 0,
+          x: '5vw',
+          transition: { ease: 'easeInOut', delay: 0.1 },
+          display: "none"
+        },
+        visible: {
+          opacity: 1,
+          x: 0,
+          transition: { ease: 'easeInOut', delay: 0.4 },
+          display: "flex"
+        },
+        exit: {
+          x: '5vh',
+          transition: { ease: 'easeInOut' },
+        },
+    };
     const containerRef = useRef(null);
     const [modeler, setModeler] = useState(null);
+    const [steps, setSteps] = useState([]);
     const [loading, setLoading] = useState(false);
     const popoverRef = useRef(null);
     const [open, setOpen] = useState(false);
@@ -31,14 +50,46 @@ export default function MonitoringTileDetailsConfigure(props) {
         drawDiagram(decoded, props.metadata.steps, props.messageData.steps)
         packageID.current = props.metadata.packageID
         description.current = props.metadata.description
-        iflowName.current = props.metadata.monName
-        monID.current = props.metadata.monID
+        iflowName.current = props.metadata.name
+        monID.current = props.metadata.id
         iflowID.current = props.metadata.id
         let updatedDate = props.metadata.updatedAt
         if(updatedDate !== "N/A")
             updatedDate = moment( props.metadata.updatedAt).format('MMMM Do YYYY, h:mm:ss a')
-        updatedAt.current.innerHTML = updatedDate
-        updatedBy.current.innerHTML = props.metadata.updatedBy
+        if(updatedAt.current !== null)
+            updatedAt.current.innerHTML = updatedDate
+        if(updatedBy.current !== null)
+            updatedBy.current.innerHTML = props.metadata.updatedBy
+        let stepData = []
+        
+        props.metadata.steps.forEach(function(e) {
+            const messageStatus = props.messageData.steps.filter(m => parseInt(m.stepNumber) === e.stepNumber);
+            let status = "N/A"
+            if(messageStatus.length > 0){
+                status = messageStatus[0].stepStatus
+            }
+            stepData.push(<TableRow key={`${e.id}`}>
+            <TableCell >
+                <span>{e.stepNumber}</span>
+            </TableCell>
+            <TableCell>
+                <span>{e.name}</span>
+            </TableCell>
+            <TableCell>
+                <span>{e.desc}</span>
+            </TableCell>
+            <TableCell>
+                <span>{e.parentName}</span>
+            </TableCell>
+            <TableCell>
+                <span>{status}</span>
+            </TableCell>
+            <TableCell>
+                <Switch disabled checked={e.keepPayload} />
+            </TableCell>
+          </TableRow>)
+        })
+        setSteps(stepData)
     }, [props])
     const setupOverlays = (steps, modelerInstance, runtimeSteps)=>{
         let m = null
@@ -72,13 +123,13 @@ export default function MonitoringTileDetailsConfigure(props) {
             let overlay
             if(e.keepPayload){
                 overlay = $('<div class="main_'+e.id+'" keepPayload="'+e.keepPayload+'" id="'+e.id+'" sequences='+e.sequences+' step="'+e.stepNumber+'" name="'+e.name+'" desc="'+e.desc+'" color:white;cursor: pointer;background-color:'+color+';border:1px solid black;height:20px;width:20px;border-radius:20px;padding:5px;opacity:0.5;display:flex;justify-content:center;align-items:center">'+
-                    '<div id="'+e.id+'" style="color:white;cursor: pointer;background-color:'+color+';border:1px solid black;height:20px;width:20px;border-radius:20px;padding:5px;opacity:0.5;display:flex;justify-content:center;align-items:center">'+txt+
+                    '<div id="'+e.id+'" style="color:white;cursor: pointer;background-color:'+color+';border:1px solid black;height:40px;width:40px;border-radius:20px;padding:5px;opacity:0.7;display:flex;justify-content:center;align-items:center">'+txt+
                         '<div id="'+e.id+'" style="position:absolute;font-size:10px;font-weight:600;top:-3px;right:-3px;background-color:transparent;color:black;padding:1px;-webkit-border-radius: 5px;-moz-border-radius: 5px;border-radius: 5px;width:5px;height:5px;text-align:center;">P</div>'+
                     '</div>'+
                 '</div>')
             }else{
                 overlay = $('<div class="main_'+e.id+'" keepPayload="'+e.keepPayload+'" id="'+e.id+'" sequences='+e.sequences+' step="'+e.stepNumber+'" name="'+e.name+'" desc="'+e.desc+'" color:white;cursor: pointer;background-color:'+color+';border:1px solid black;height:20px;width:20px;border-radius:20px;padding:5px;opacity:0.5;display:flex;justify-content:center;align-items:center">'+
-                    '<div id="'+e.id+'" style="color:white;cursor: pointer;background-color:'+color+';border:1px solid black;height:20px;width:20px;border-radius:20px;padding:5px;opacity:0.5;display:flex;justify-content:center;align-items:center">'+txt+
+                    '<div id="'+e.id+'" style="color:white;cursor: pointer;background-color:'+color+';border:1px solid black;height:40px;width:40px;border-radius:20px;padding:5px;opacity:0.7;display:flex;justify-content:center;align-items:center">'+txt+
                     '</div>'+
                 '</div>')
             }
@@ -145,7 +196,7 @@ export default function MonitoringTileDetailsConfigure(props) {
         const messageId = props.messageData.messageId
         const stepNumber = $(selectedOverlay.current.parentNode).attr("step")
         getPayload(stepNumber,messageId).then((res)=>{
-            const binaryString = window.atob(res.data.obj.data);
+            const binaryString = window.atob(res.data.obj);
 
             // Create a byte array from the binary string
             const len = binaryString.length;
@@ -213,24 +264,7 @@ export default function MonitoringTileDetailsConfigure(props) {
         }, 2000);
     
     }
-    const wrapperVariants = {
-        hidden: {
-          opacity: 0,
-          x: '5vw',
-          transition: { ease: 'easeInOut', delay: 0.1 },
-          display: "none"
-        },
-        visible: {
-          opacity: 1,
-          x: 0,
-          transition: { ease: 'easeInOut', delay: 0.4 },
-          display: "flex"
-        },
-        exit: {
-          x: '5vh',
-          transition: { ease: 'easeInOut' },
-        },
-    };
+    
     return (
         <FlexBox direction="row" alignItems="Stretch" fitContainer="true">
             
@@ -239,16 +273,18 @@ export default function MonitoringTileDetailsConfigure(props) {
             </ActionSheet>
             <ActionSheet ref={popoverRef1} open={open1}>
                 <Button onClick={(e) => showPayload(e)} icon="show" disabled={dialogStepShowPayload} >Show Payload</Button>
-                <Button onClick={(e) => resend(e)} icon="restart" disabled={dialogStepReprocessing} >Reprocess</Button>
+                {/* <Button onClick={(e) => resend(e)} icon="restart" disabled={dialogStepReprocessing} >Reprocess</Button> */}
             </ActionSheet>
             <motion.div style={{flex:"1 1 auto", height:"100%", display:"flex", flexDirection:"column"}}
                         variants={wrapperVariants}
                         initial="visible"
                         animate='visible'
                         exit="exit">
-                
+                <Bar design="Header" style={{borderTopLeftRadius:"15px",borderTopRightRadius:"15px",width:"100%"}}>
+                    <Button design="Transparent" icon="slim-arrow-left" slot="startContent" ui5-button="" icon-only="" has-icon="" onClick={props.onClick}>Back to List</Button>
+                </Bar>
                 <ObjectPage
-                    headerContent={<DynamicPageHeader>
+                    headerArea={<ObjectPageHeader>
                             <FlexBox wrap="Wrap">
                                 <FlexBox direction="Column">
                                     <Label>Package ID: {props.metadata.packageID}</Label>
@@ -262,35 +298,15 @@ export default function MonitoringTileDetailsConfigure(props) {
                                     <ObjectStatus state="Success">In Stock</ObjectStatus>
                                 </FlexBox> */}
                             </FlexBox>
-                        </DynamicPageHeader>}
+                        </ObjectPageHeader>}
                     headerContentPinnable
-                    headerTitle={
-                        <DynamicPageTitle style={{height:"80px", overflow:"hidden"}}
-                            // actions={
-                            //     <motion.div style={{flex:"1 1 auto", height:"100%", display:"flex", flexDirection:"row"}}
-                            //         variants={wrapperVariants}
-                            //         initial="visible"
-                            //         animate={!loading ? 'visible' : 'hidden'}
-                            //         exit="exit">
-                            //         <><Button design="Emphasized" disabled={updateDisabled} onClick={() => openDialog()}>Save</Button><Button design="Transparent">Cancel</Button><Button design="Transparent" onClick={() => clearDiagram()} icon="action"/></>
-                            //     </motion.div>}
-                            expandedContent={<MessageStrip>Information (only visible if header content is expanded)</MessageStrip>} 
+                    titleArea={
+                        <ObjectPageTitle style={{height:"80px", overflow:"hidden"}}
                             header={props.messageData.customStatus === "SUCCESS"?
-                                    <FlexBox alignItems="Center" justifyContent="Start" fitContainer="true"><Icon style={{color:"green", borderLeft:"none", width:"24px",height:"24px", paddingRight:"10px"}} name="message-success" /><h4>{iflowName.current}</h4></FlexBox>:
-                                    <FlexBox alignItems="Center" justifyContent="Start" fitContainer="true"><Icon style={{color:"red", borderLeft:"none", width:"24px",height:"24px", paddingRight:"10px"}} name="message-error" /><h4>{iflowName.current}</h4></FlexBox>} 
-                            showSubHeaderRight 
-                            snappedContent={<MessageStrip>Information (only visible if header content is collapsed/snapped)</MessageStrip>}>
-                            {/* <FlexBox wrap="Wrap">
-                                <Badge>Status: <span ref={status}></span></Badge>
-                            </FlexBox> */}
-                        </DynamicPageTitle>}
-                    
-                    onBeforeNavigate={function _a(){}}
-                    onPinnedStateChange={function _a(){}}
-                    onSelectedSectionChange={function _a(){}}
-                    onToggleHeaderContent={function _a(){}}
-                    selectedSectionId="goals"
-                    showHideHeaderButton
+                                    <FlexBox alignItems="Center" justifyContent="Start" fitContainer="true"><Icon style={{color:"green", borderLeft:"none", width:"24px",height:"24px", paddingRight:"10px"}} name="message-success" /><Title style={{fontSize: 'var(--sapObjectHeader_Title_FontSize)'}}>{iflowName.current}</Title></FlexBox>:
+                                    <FlexBox alignItems="Center" justifyContent="Start" fitContainer="true"><Icon style={{color:"red", borderLeft:"none", width:"24px",height:"24px", paddingRight:"10px"}} name="message-error" /><Title style={{fontSize: 'var(--sapObjectHeader_Title_FontSize)'}}>{iflowName.current}</Title></FlexBox>} 
+                            showSubHeaderRight >
+                        </ObjectPageTitle>}
                     style={{height: '100%',}}>
                     <ObjectPageSection
                         aria-label="Diagram"
@@ -341,7 +357,17 @@ export default function MonitoringTileDetailsConfigure(props) {
                             titleText="STEPs and Details">
                                 <div style={{flex:"1 1 auto"}}>
                                     <FlexBox direction="Column" alignItems="Start" justifyContent="SpaceBetween" flex="1 1 90%" style={{gap:"5px"}} fitContainer="true">
-                                        
+                                    <Table style={{width:"100%"}} headerRow={<TableHeaderRow sticky>
+                                            <TableHeaderCell maxWidth="100px"><span>STEP#</span></TableHeaderCell>
+                                            <TableHeaderCell minWidth="100px"><span>Name</span></TableHeaderCell>
+                                            <TableHeaderCell minWidth="400px"><span>Description</span></TableHeaderCell>
+                                            <TableHeaderCell minWidth="200px"><span>Process Name</span></TableHeaderCell>
+                                            <TableHeaderCell minWidth="200px"><span>Status</span></TableHeaderCell>
+                                            <TableHeaderCell maxWidth="130px"><span>Keep Payload</span></TableHeaderCell>
+                                        </TableHeaderRow>}
+                                        onRowClick={function ks(){}}>
+                                            {steps}
+                                    </Table>
                                     </FlexBox>
                                 </div>
                             </ObjectPageSubSection>

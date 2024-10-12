@@ -1,10 +1,11 @@
 import "@ui5/webcomponents-icons/dist/AllIcons.js";
 import { motion, AnimatePresence, useAnimationControls } from "framer-motion"
 import {getMessagesByDate,getAllArtifacts, getProcessDetails,getAllStatus,getMessagesBySearch} from '../services/s-messages'
-import React, { useState,useEffect,useRef } from 'react';
+import React, { useState,useEffect,useRef, useContext } from 'react';
 import moment from 'moment';
 import $ from 'jquery';
 import momentTZ from 'moment-timezone';
+import MessageContext from "../helpers/message-context";
 import MonitoringTileDetailsConfigure from "./monitoring-tile-details-configure"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Table, TableHeaderRow,TableHeaderCell,TableRow,TableCell, DateTimePicker,Panel,Icon,Link,Text,Bar,MultiComboBox,MultiComboBoxItem,Select,Option,Switch,BusyIndicator,Button, Input,FilterGroupItem,FlexBox,Label,Title} from '@ui5/webcomponents-react';
@@ -14,6 +15,9 @@ const MonitoringPageDetails = props => {
   const [messages, setMessages] = useState([]);
   const [messagesLoaded, setMessagesLoaded] = useState(false);
   const [showStepDiagram, setShowStepDiagram] = useState(false);
+  const {message,setMessage} = useContext(MessageContext);
+  const [currentMessage,setCurrentMessage] = useState(null);
+  const [currentMetadata,setCurrentMetadata] = useState(null);
   let offset = useRef(null);
   let limit = useRef(null);
   let totalEntries = useRef(null);
@@ -248,9 +252,14 @@ const MonitoringPageDetails = props => {
   const loadArtifact = async(message) => {
     //currentMessage.current.value = message
     const details = await getProcessDetails(message.integrationArtifact.id, message.messageId)
-    //currentMetadata.current.value = details
-    setSelectedEntry(<MonitoringTileDetailsConfigure messageData={message} metadata={details.data.obj} style={{width:"99.5%"}}></MonitoringTileDetailsConfigure>)
-    setShowStepDiagram(!showStepDiagram)
+    if(details.data.obj !== null){
+      //setSelectedEntry(<MonitoringTileDetailsConfigure messageData={message} metadata={details.data.obj} style={{flex:"1 1 auto",height:"100%"}}></MonitoringTileDetailsConfigure>)
+      setCurrentMessage(message)
+      setCurrentMetadata(details.data.obj)
+      setShowStepDiagram(!showStepDiagram)
+    }else{
+      setMessage({open:false, toastMessage:"Monitoring is not enabled for "+message.integrationArtifact.name, result:null, callback:null, toast:true})
+    }
   }
   const filterChanged = async(event) => {
     
@@ -400,7 +409,7 @@ const MonitoringPageDetails = props => {
     // for(const selectedValue of statusSelection.current.selectedValues){
     //   selectedStatus.push(selectedValue.innerHTML)
     // }
-    const sStatus = stepStatus.current.value
+    
     // let sNumbers = []
     // for(const stepNumber of customStepNumber.current.selectedValues){
     //   sNumbers.push("STEPS='"+stepNumber.innerHTML.trim()+":"+sStatus+"'")
@@ -411,7 +420,12 @@ const MonitoringPageDetails = props => {
     // }else{
     //   stepStatus.current.value = ''
     // }
-    const artifactName = artifactSelection.current.value
+    let artifactName = artifactSelection.current.value
+    if(artifactName === "" || artifactName == null)
+      artifactName = "ALL"
+    let sStatus = stepStatus.current.value
+    if(sStatus === "" || sStatus == null)
+      sStatus = "ALL"
     if(event === "BACK" && cPage > 1){
       cPage = cPage - 1
       let offset1 = cPage * lSelection
@@ -443,7 +457,7 @@ const MonitoringPageDetails = props => {
     }
   }
   return (
-      <FlexBox direction="Column" alignItems="Start" justifyContent="Start" fitContainer="true">
+      <FlexBox direction="Row" alignItems="Stretch" fitContainer="true">
         <motion.div style={{width:'100%'}}
                             variants={wrapperVariants}
                             initial="visible"
@@ -453,7 +467,7 @@ const MonitoringPageDetails = props => {
             {/* <Bar design="Header" style={{borderTopLeftRadius:"15px",borderTopRightRadius:"15px",width:"99.5%"}}>
               <Button design="Transparent" icon="slim-arrow-left" slot="startContent" ui5-button="" icon-only="" has-icon="" onClick={props.onClick}>Back</Button>
             </Bar> */}
-            <FlexBox direction="Column" alignItems="Start" justifyContent="Start" style={{width:"99.5%", backgroundColor:"white",borderRadius:"15px"}}>
+            <FlexBox direction="Column" alignItems="Start" justifyContent="Start" style={{width:"100%", backgroundColor:"white",borderRadius:"15px"}}>
               <FlexBox direction="Row" alignItems="Start" justifyContent="SpaceBetween" fitContainer="true">
                 <Title level="H4" style={{marginBottom:"20px",marginTop:"20px", backgroundColor:"white", paddingLeft:"30px"}}>Monitor Message Processing</Title>
                 <FlexBox direction="Row" alignItems="Start" justifyContent="Start">
@@ -465,7 +479,7 @@ const MonitoringPageDetails = props => {
                 header={<FlexBox direction="Row" style={{marginLeft:"10px"}} alignItems="Center" justifyContent="SpaceBetween" fitContainer="true">
                 <FlexBox direction="Row" alignItems="Center" justifyContent="Start" fitContainer="true">
                   <FilterGroupItem groupName="Group 2" label="Time" style={{flex:"0 0 15%"}}>
-                    <Select ref={dateSelection} className="generic-shadow" onChange={(e) => dateSelectionChanged(e)}>
+                    <Select ref={dateSelection}  onChange={(e) => dateSelectionChanged(e)}>
                       <Option value="1:hours" selected>Past Hour</Option>
                       <Option value="2:hours" >Past 2 Hours</Option>
                       <Option value="3:hours" >Past 3 Hours</Option>
@@ -479,18 +493,18 @@ const MonitoringPageDetails = props => {
                     </Select>
                   </FilterGroupItem>
                   <FilterGroupItem groupName="Group 6" label="Status" style={{flex:"0 0 15%"}}>
-                    <MultiComboBox ref={statusSelection} className="generic-shadow" onOpenChange = {(d) =>  multiSelectionToggled(d, 'selecAllID1')} onSelectionChange={(d) =>  multiSelectionChanged(d, 'selecAllID1')}>
+                    <MultiComboBox ref={statusSelection}  onOpenChange = {(d) =>  multiSelectionToggled(d, 'selecAllID1')} onSelectionChange={(d) =>  multiSelectionChanged(d, 'selecAllID1')}>
                       {statusList}
                     </MultiComboBox>
                   </FilterGroupItem>
                   <FilterGroupItem groupName="Group 7" label="Artifact Name" style={{flex:"0 0 25%"}}>
-                    <Select ref={artifactSelection} className="generic-shadow">
+                    <Select ref={artifactSelection} >
                       {allArtifacts}
                     </Select>
                   </FilterGroupItem>
                   <Text style={{marginRight:"15px"}}>Or</Text>
                   <FilterGroupItem groupName="Group 4" label="Search" style={{flex:"0 0 30%"}}>
-                    <Input className="generic-shadow" ref={searchSelection} onChange={(d) =>  searchChanged(d)} icon={<Icon name="search" />} onInput={(d) =>  searchChanged(d)}></Input>
+                    <Input ref={searchSelection} onChange={(d) =>  searchChanged(d)} icon={<Icon name="search" />} onInput={(d) =>  searchChanged(d)}></Input>
                   </FilterGroupItem>
                   <Link design="Emphasized" onClick={(d) =>  filterChanged(d)}>Filter</Link>
                 </FlexBox>
@@ -503,22 +517,22 @@ const MonitoringPageDetails = props => {
                     <DateTimePicker  ref={customEnddate} onChange={function Sa(){}} primaryCalendarType="Gregorian" valueState="None"/>
                   </FilterGroupItem>
                   <FilterGroupItem groupName="Group 3" label="Step Number:" style={{flex:"1 1 20%"}}>
-                    <MultiComboBox ref={customStepNumber} className="generic-shadow" onOpenChange = {(d) =>  multiSelectionToggled(d, 'selecAllID')} onSelectionChange={(d) =>  multiSelectionChanged(d, 'selecAllID')}>
+                    <MultiComboBox ref={customStepNumber}  onOpenChange = {(d) =>  multiSelectionToggled(d, 'selecAllID')} onSelectionChange={(d) =>  multiSelectionChanged(d, 'selecAllID')}>
                         {stepNumbers}
                     </MultiComboBox>
                   </FilterGroupItem>
                   <FilterGroupItem groupName="Group 4" label="Step Status:" style={{flex:"1 1 30%"}}>
-                      <Input ref={stepStatus} className="generic-shadow"   type="Text" valueState="None" placeholder="SUCCESS or FAILED, etc.. (one status ONLY)"></Input>
+                      <Input ref={stepStatus}    type="Text" valueState="None" placeholder="SUCCESS or FAILED, etc.. (one status ONLY)"></Input>
                   </FilterGroupItem>
                   <FilterGroupItem groupName="Group 5" label="Custom Header Properties" style={{flex:"1 1 40%"}}>
-                    <Input ref={customHeaderProperties} className="generic-shadow" style={{width:"80%"}} type="Text" valueState="None" placeholder="Name = Value or/and Name=Value ..."></Input>
+                    <Input ref={customHeaderProperties}  style={{width:"80%"}} type="Text" valueState="None" placeholder="Name = Value or/and Name=Value ..."></Input>
                   </FilterGroupItem>
                 </FlexBox>
               </Panel>  
 
             </FlexBox>
             <FlexBox direction="Column" alignItems="Start" justifyContent="Start" fitContainer="true">
-              <div style={{paddingTop:"10px", paddingBottom:"10px", backgroundColor:"#f5f6f7", width:"99%"}}>
+              <div style={{paddingTop:"10px", paddingBottom:"10px", backgroundColor:"#f5f6f7", width:"100%"}}>
               <Table  loading={!messagesLoaded} loadingDelay="2000" className="generic-shadow generic-border-radius" 
                        headerRow={<TableHeaderRow sticky>
                                     <TableHeaderCell style={{width:"30px"}}>
@@ -552,7 +566,7 @@ const MonitoringPageDetails = props => {
                     </Select>
                     <div style={{marginLeft:"20px"}}>Showing <span ref={offset}></span> to <span ref={limit}></span> of <span ref={totalEntries}></span> entries</div>
                   </FlexBox>
-                  <BusyIndicator active={!messagesLoaded} style={{marginRight:"20px"}} delay={1000} size="S">
+                  <BusyIndicator active={!messagesLoaded} style={{marginRight:"20px"}} size="S">
                     <FlexBox direction="Row" alignItems="Center" justifyContent="Center" fitContainer="true" >
                       <FontAwesomeIcon ref={firstPage} style={{width:"30px", fontSize:"14px", cursor:"hand"}} icon={['fas', 'fa-angles-left']} onClick={(d) =>  changePage("FIRST")}/>
                       <FontAwesomeIcon ref={backOnePage} style={{width:"30px", marginRight:"10px", fontSize:"14px", cursor:"hand"}} icon={['fas', 'fa-angle-left']} onClick={(d) =>  changePage("BACK")}/>
@@ -568,18 +582,12 @@ const MonitoringPageDetails = props => {
             </FlexBox>
           </FlexBox>
         </motion.div>
-      
-        <motion.div style={{width:'100%'}}
+        <motion.div style={{flex:"1 1 auto", height:"100%", display:"flex", flexDirection:"column"}}
                     variants={wrapperVariants}
                     initial="visible"
                     animate={showStepDiagram ? 'visible' : 'hidden'}
                     exit="exit">
-          <FlexBox direction="Column" alignItems="Start" justifyContent="Center" fitContainer="true" >
-            <Bar design="Header" style={{borderTopLeftRadius:"15px",borderTopRightRadius:"15px",width:"99.5%"}}>
-              <Button design="Transparent" icon="slim-arrow-left" slot="startContent" ui5-button="" icon-only="" has-icon="" onClick={(d) =>  setShowStepDiagram(!showStepDiagram)}>Back to List</Button>
-            </Bar>
-            {selectedEntry}
-          </FlexBox>
+            {showStepDiagram?<MonitoringTileDetailsConfigure onClick={() => setShowStepDiagram(!showStepDiagram)} messageData={currentMessage} metadata={currentMetadata} style={{flex:"1 1 auto",height:"100%"}}></MonitoringTileDetailsConfigure>:""}
         </motion.div>
       </FlexBox>
     );

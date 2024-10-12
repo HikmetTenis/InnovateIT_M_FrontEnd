@@ -5,16 +5,19 @@ import moment from 'moment';
 import {BusyIndicator} from '@ui5/webcomponents-react';
 import MonitoringTileGraph from './monitoring-tile-graph'
 import React, { useState,useEffect,useRef } from 'react';
-function MonitoringTile({ item, isExpanded, onExpand }) {
-  const gridColumn = isExpanded ? 'span 4' : 'span 1';
+function MonitoringTile({ item, refresh, isExpanded, onExpand }) {
+  const gridColumn = isExpanded ? 'span 6' : 'span 1';
   const gridRow = isExpanded ? 'span 3' : 'span 1';
+  
   const style = {
     color:  item.color
   }
+  
   let [messageCount,setMessageCount] = useState(0);
   const [messagesLoaded, setMessagesLoaded] = useState(true);
 
   useEffect(() => {
+    setMessagesLoaded(true)
     let now = moment();
     const endDate = moment.utc(now).format("YYYY-MM-DD HH:mm:ss")
     let past = now.subtract("1", "hours");
@@ -23,7 +26,7 @@ function MonitoringTile({ item, isExpanded, onExpand }) {
       setMessageCount(res.data.obj[0].totalcount)
       setMessagesLoaded(false)
     })
-  }, [])
+  }, [refresh])
   const handleRangeClick = (range) => {
     setMessagesLoaded(true)
     const dateSelectedSplitted = range.id.split(":")
@@ -59,8 +62,7 @@ function MonitoringTile({ item, isExpanded, onExpand }) {
           <span className='tile-number-text'><BusyIndicator active={messagesLoaded} style={{marginRight:"5px"}} delay={1000} size="S">{messageCount}</BusyIndicator></span>
           <span className='tile-number-uom'>count</span>
         </div>
-      
-      {isExpanded && (
+        {isExpanded && (
           <div style={{flex:"1", width:"100%"}}>
             <MonitoringTileGraph style={{flex:"1", width:"100%"}} item={item} isExpanded={isExpanded} handleRangeChange={handleRangeClick}></MonitoringTileGraph>
           </div>

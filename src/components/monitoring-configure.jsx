@@ -1,5 +1,5 @@
 import "@ui5/webcomponents-icons/dist/AllIcons.js";
-import { DynamicPage, IllustratedMessage,FlexBox,BusyIndicator,Bar,Dialog,Form, Panel,FormGroup, ToolbarButton,ActionSheet,FormItem,Label,DynamicPageTitle,Title,Badge,Toolbar,MessageStrip,Button,ObjectPage,ObjectPageSection, ObjectPageSubSection, Switch,Icon,Input,Table,TableHeaderRow,TableHeaderCell, TableRow,TableCell} from '@ui5/webcomponents-react';
+import { DynamicPage, IllustratedMessage,FlexBox,BusyIndicator,Bar,Dialog,Form, Panel,ObjectPageTitle, ToolbarButton,ActionSheet,FormItem,Label,DynamicPageTitle,Title,Badge,Toolbar,MessageStrip,Button,ObjectPage,ObjectPageSection, ObjectPageSubSection, Switch,Icon,Input,Table,TableHeaderRow,TableHeaderCell, TableRow,TableCell} from '@ui5/webcomponents-react';
 import React, { useEffect, useState,useRef } from 'react';
 import {getPackages, getArtifacts} from '../services/s-monitoring-configure'
 import MonitoringConfigureDetails from "./monitoring-configure-details"
@@ -46,6 +46,18 @@ export default function MonitoringPage() {
             }
         })
     },[])
+    const refreshArtifact = (packageid) => {
+        setLoading(true)
+        getPackages().then((res)=>{
+            setLoading(false)
+            if(res.data.type === "error"){
+                setErrorOccured(true)
+            }else{
+                setErrorOccured(false)
+                setArtifacts(res.data.obj)
+            }
+        })
+    }
     const loadArtifact = (iflow) => {
         setCurrentArtifact(iflow)
         setCurrentArtifactID(iflow.Id)
@@ -54,7 +66,6 @@ export default function MonitoringPage() {
     }
     const handleItemToggle = (e) => {
         setLoading(true)
-        setLazyArtifacts([])
         setCurrentItemID(e.currentTarget.dataset.id)
         setPackageName(e.currentTarget.dataset.name)
         getArtifacts(e.currentTarget.dataset.id).then((res)=>{
@@ -94,15 +105,16 @@ export default function MonitoringPage() {
                                 animate={!loadArtifactDetails ? 'visible' : 'hidden'}
                                 exit="exit">
                 <ObjectPage className="packages"
-                    headerTitle={
-                        <DynamicPageTitle 
-                            actions={
-                                <motion.div style={{flex:"1 1 auto", height:"100%", display:"flex", flexDirection:"row"}}
+                    headerContentPinnable
+                    titleArea={
+                        <ObjectPageTitle
+                            actionsBar={
+                                <motion.div style={{flex:"1 1 auto", height:"100%", display:"Flex", flexDirection:"Column", justifyContent:"Center", alignItems:"End"}}
                                     variants={wrapperVariants}
                                     initial="visible"
                                     animate={!loading ? 'visible' : 'hidden'}
                                     exit="exit">
-                                    <Button design="Transparent" icon="refresh"/>
+                                    <Button style={{flex:"0"}} onClick={(e) => refreshArtifact(e)} design="Transparent" icon="refresh"/>
                                 </motion.div>}
                              
                             header={<FlexBox direction="Column" alignItems="Start" fitContainer="true" style={{marginTop:"10px"}}>
@@ -111,22 +123,12 @@ export default function MonitoringPage() {
                                             <Title style={{fontSize: 'var(--sapObjectHeader_Title_FontSize)'}}>Packages</Title>
                                         </FlexBox>
                                         <Label style={{marginTop:"10px",marginLeft:"45px"}}>List of Packages</Label>
-                                    </FlexBox>}
-                             
-                            
-                            snappedContent>
-                           
-                        </DynamicPageTitle>}
-                    
-                    onBeforeNavigate={function _a(){}}
-                    onPinnedStateChange={function _a(){}}
-                    onSelectedSectionChange={function _a(){}}
-                    onToggleHeaderContent={function _a(){}}
-                              
+                                    </FlexBox>}>
+                        </ObjectPageTitle>}
                     style={{height: '100%',borderRadius:"10px"}}>
                     {errorOccured?<IllustratedMessage name="UnableToLoad" />:artifacts.map((artifact) => {
                         return(
-                            <Panel collapsed={artifact.Id !== currentItemID} data-id={artifact.Id} data-name={artifact.PackageName}
+                            <Panel collapsed={artifact.Id !== currentItemID} data-id={artifact.Id} key={artifact.Id} data-name={artifact.PackageName}
                                 accessibleRole="Form" style={{marginBottom:"3px",width: '100%'}}
                                 headerLevel="H2" 
                                 header={<FlexBox direction="row" alignItems="Center"><Icon name="database" mode="decorative" style={{marginRight:"5px",borderLeft:"none"}}/>{artifact.PackageName}</FlexBox>}
