@@ -1,5 +1,5 @@
 import "@ui5/webcomponents-icons/dist/AllIcons.js";
-import { DynamicPageHeader,FlexBox,BusyIndicator,Bar,Dialog,Form, FormGroup, ActionSheet,FormItem,ObjectPageTitle, ObjectPageHeader,Label,DynamicPageTitle,Title,Tag,Toolbar,MessageStrip,Button,ObjectPage,ObjectPageSection, ObjectPageSubSection, Switch,Icon,Input,Table,TableHeaderRow,TableHeaderCell, TableRow,TableCell} from '@ui5/webcomponents-react';
+import { DynamicPageHeader,FlexBox,BusyIndicator,Bar,Dialog,Form, FormGroup, ActionSheet,FormItem,ObjectPageTitle, ObjectPageHeader,Label,Title,Tag,MessageStrip,Button,ObjectPage,ObjectPageSection, Switch,Icon,Input,Table,TableHeaderRow,TableHeaderCell, TableRow,TableCell} from '@ui5/webcomponents-react';
 import React, { useEffect, useState, useContext, useRef, Component } from 'react';
 import {getArtifactRuntimeDetails, saveArtifact,getArtifactDetails,getProcessType, modifyOverlays} from '../services/s-monitoring-configure'
 import { motion} from "framer-motion";
@@ -185,7 +185,7 @@ export default function MonitoringConfigureDetails(props) {
             let color = 'blue'
             if(e.stepType === "AUTO")
                 color = 'green'
-            let overlay = $('<div reprocessing="'+e.reprocessing+'" keepPayload="'+e.keepPayload+'" id="'+e.id+'" sequences='+e.sequences+' step="'+e.stepNumber+'" name="'+e.name+'" desc="'+e.desc+'" style="color:white;cursor: pointer;background-color:'+color+';border:1px solid black;height:40px;width:40px;border-radius:20px;padding:5px;opacity:0.7;display:flex;justify-content:center;align-items:center">'+e.stepNumber+'</div>')
+            let overlay = $('<div reprocessing="'+e.reprocessing+'" keepPayload="'+e.keepPayload+'" id="'+e.id+'" sequences='+e.sequences+' step="'+e.stepNumber+'" name="'+e.name+'" desc="'+e.desc+'" style="color:white;cursor: pointer;background-color:'+color+';border:1px solid black;height:40px;width:40px;border-radius:20px;padding:5px;opacity:0.7;display:flex;justify-content:center;align-items:center"><img style="height:20px;width:20px;" id="'+e.id+'" src='+process.env.PUBLIC_URL+'"task1.webp" /></div>')
             overlays.add(e.id, {
                 id:e.id,
                 position: {
@@ -196,6 +196,9 @@ export default function MonitoringConfigureDetails(props) {
             });
             stepOverLays.push(e)
             overlay.click(function(event) {
+                let element = event.target
+                if(element.getAttribute("desc") == null)
+                    element = element.parentElement
                 let customActionSheets = document.querySelectorAll("[id*=custom_actionsheet1_]")
                 for (let el of customActionSheets) {
                     document.body.removeChild(el)
@@ -205,24 +208,20 @@ export default function MonitoringConfigureDetails(props) {
                 container.style.position = 'absolute';
                 container.style.left = event.originalEvent.clientX+'px'
                 container.style.top = event.originalEvent.clientY+'px'
-                container.id = "custom_actionsheet1_"+event.target.id
+                container.id = "custom_actionsheet1_"+element.id
                 document.body.appendChild(container);
 
                 if (popoverRef1.current) {
-                    let desc = event.target.getAttribute("desc")
-                    let id = event.target.getAttribute("id")
-                    let id2 = event.target.getAttribute("id2")
-                    let name = event.target.getAttribute("name")
-                    let stepNum = event.target.getAttribute("step")
+                    let desc = element.getAttribute("desc")
+                    let id = element.getAttribute("id")
+                    let id2 = element.getAttribute("id2")
+                    let name = element.getAttribute("name")
                     let keepPayload = false
-                    let reprocessing = false
-                    dialogStepNumber.current.value = stepNum;
+                    //dialogStepNumber.current.value = stepNum;
                     dialogStepDesc.current.value = desc;
                     dialogStepName.current.value = name;
-                    if(event.target.getAttribute("keepPayload") === "true")
+                    if(element.getAttribute("keepPayload") === "true")
                         keepPayload = true
-                    if(event.target.getAttribute("reprocessing") === "true")
-                        reprocessing = true
                     dialogStepKeepPayload.current.checked = keepPayload
                     
                     dialogStepId2.current.value = id2;
@@ -299,7 +298,6 @@ export default function MonitoringConfigureDetails(props) {
        
     }
     const save = () => {
-        
         const d ={
             id:iflowID.current,
             everyEvent: everyEvent,
@@ -311,6 +309,7 @@ export default function MonitoringConfigureDetails(props) {
             name:props.iflow.Name,
             iflowName: iflowName.current,
             description: description.current,
+            packageID:packageID.current,
             packageName:props.packagename,
             xmlString:diagramXML,
             scriptNames: scriptNames.current,
@@ -318,11 +317,11 @@ export default function MonitoringConfigureDetails(props) {
             status: status.current.innerHTML,
             updatedBy: accounts[0].username
         }
-        saveArtifact(d).then((data)=>{
-            const res = data.data.obj
-            // const respValue = {"updatedOn":res.updatedAt, "updatedBy":res.updatedBy, "status":res.status}
-            // setArtifactRuntimeDetails(respValue);
-            setMessage({open:false, toastMessage:"Artifact "+res+" saved.!", result:null, callback:null, toast:true})
+        saveArtifact(d).then((resp)=>{
+            if(resp.data.type === "error"){
+                setMessage({open:false, toastMessage:"ERROR:"+resp.data.obj, result:null, callback:null, toast:true})
+            }else
+                setMessage({open:false, toastMessage:"Artifact "+resp.data.obj+" saved.!", result:null, callback:null, toast:true})
             setUpdateDisabled(true)
         })
     }
@@ -583,23 +582,25 @@ export default function MonitoringConfigureDetails(props) {
                     }}
                     titleText=""
                     >
-                    <FormGroup titleText="Step Details">
-                        <FormItem label="Step Number">
-                            <Input ref={dialogStepNumber} icon={null} type="Text"></Input>
-                        </FormItem>
-                        <FormItem label="Step Name">
+                    <FormGroup headerText="Step Details">
+                        <FormItem labelContent={<Label>Step ID</Label>}>
                             <Input ref={dialogStepName} icon={null} type="Text"></Input>
                         </FormItem>
-                        <FormItem label="Step Description">
+                        <FormItem labelContent={<Label>Step Description</Label>}>
+                            <Input ref={dialogStepDesc} icon={null} type="Text"></Input>
+                            
+                        </FormItem>
+                        {/* <FormItem labelContent={<Label>Step Description</Label>}>
                             <Input ref={dialogStepDesc} icon={null} type="Text"></Input>
                             <Input ref={dialogStepId2} icon={null} type="Text" hidden></Input>
-                        </FormItem>
+                        </FormItem> */}
                         <FormItem>
                             <FlexBox direction="Column" alignItems="Center" fitContainer="true">
                                 <FlexBox direction="row" alignItems="Center" fitContainer="true">
                                     <Switch ref={dialogStepKeepPayload} onChange={(d) => setUpdateDisabled(false)}/>
                                     <Label>Keep Payload</Label>
                                 </FlexBox>
+                                <Input ref={dialogStepId2} icon={null} type="Text" hidden></Input>
                                 {/* <FlexBox direction="row" alignItems="Center" fitContainer="true">
                                     <Switch ref={dialogStepReprocessing} onChange={(d) => setUpdateDisabled(false)}/>
                                     <Label>Enable reprocessing</Label>

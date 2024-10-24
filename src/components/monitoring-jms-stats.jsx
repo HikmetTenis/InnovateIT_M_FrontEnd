@@ -1,14 +1,15 @@
 import "@ui5/webcomponents-icons/dist/AllIcons.js";
 import {Text} from '@ui5/webcomponents-react';
-import {getJMSStats,getJMSStatsQueueNamesHigh} from '../services/s-monitoring'
+import {getJMSStats} from '../services/s-monitoring'
 import moment from 'moment'
 import {BusyIndicator,FlexBox} from '@ui5/webcomponents-react';
 import React, { useState,useEffect,useRef } from 'react';
 import { motion } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import MonitoringJMSGraph from './monitoring-jms-graph'
-function JMSTile({ name, refresh}) {
-    const [messagesLoaded, setMessagesLoaded] = useState(true);
+import { useNotifications } from '../helpers/notification-context';
+function JMSTile({ name, refresh, handleRefresh}) {
+    const [loading, setLoading] = useState(true);
     const [queueCount,setQueueCount] = useState(0);
     const [isExpanded,setIsExpanded] = useState(false);
     const [textColor1,setTextColor1] = useState({color:"green"});
@@ -40,51 +41,50 @@ function JMSTile({ name, refresh}) {
       },
     };
     useEffect(() => {
-        setMessagesLoaded(true)
-        let now = moment();
-        const endDate = moment.utc(now).format("YYYY-MM-DD HH:mm:ss")
-        let past = now.subtract("1", "hours");
-        const startDate = moment.utc(past).format("YYYY-MM-DD HH:mm:ss")
-        
-        getJMSStats(name).then((res)=>{
-          const result = res.data.obj.d
-          setQueueCount(result.QueueNumber)
-          setJmsProperties({
-            capaticy: result.Capacity,
-            isTransactedSessionsHigh:result.IsTransactedSessionsHigh,
-            isConsumersHigh: result.IsConsumersHigh,
-            isProducersHigh: result.IsProducersHigh,
-            maxQueueNumber: result.MaxQueueNumber,
-            capacityWarning: result.CapacityWarning,
-            capacityError: result.CapacityError,
-            isQueuesHigh: result.IsQueuesHigh,
-            isMessageSpoolHigh: result.IsMessageSpoolHigh
-          })
-          if(result.IsConsumersHigh > 0)
-            setTextColor1({color:"red"})
-          if(result.IsTransactedSessionsHigh > 0)
-            setTextColor2({color:"red"})
-          if(result.IsProducersHigh > 0)
-            setTextColor3({color:"red"})
-          if(result.CapacityWarning > 0)
-            setTextColor4({color:"orange"})
-          if(result.CapacityError > 0)
-            setTextColor4({color:"red"})
-          if(result.IsQueuesHigh > 0)
-            setTextColor5({color:"red"})
-          if(result.IsMessageSpoolHigh > 0)
-            setTextColor6({color:"red"})
-          setMessagesLoaded(false)
+      setLoading(true)
+      handleRefresh(true)
+      getJMSStats(name).then((res)=>{
+        const result = res.data.obj.d
+        setQueueCount(result.QueueNumber)
+        setJmsProperties({
+          capaticy: result.Capacity,
+          isTransactedSessionsHigh:result.IsTransactedSessionsHigh,
+          isConsumersHigh: result.IsConsumersHigh,
+          isProducersHigh: result.IsProducersHigh,
+          maxQueueNumber: result.MaxQueueNumber,
+          capacityWarning: result.CapacityWarning,
+          capacityError: result.CapacityError,
+          isQueuesHigh: result.IsQueuesHigh,
+          isMessageSpoolHigh: result.IsMessageSpoolHigh
         })
+        if(result.IsConsumersHigh > 0){
+          setTextColor1({color:"red"})
+        }
+        if(result.IsTransactedSessionsHigh > 0){
+          setTextColor1({color:"red"})
+        }
+        if(result.IsProducersHigh > 0){
+          setTextColor3({color:"red"})
+        }
+        if(result.CapacityWarning > 0){
+          setTextColor4({color:"orange"})
+        }
+        if(result.CapacityError > 0){
+          setTextColor4({color:"red"})
+        }
+        if(result.IsQueuesHigh > 0){
+          setTextColor5({color:"red"})
+        }
+        if(result.IsMessageSpoolHigh > 0){
+          setTextColor6({color:"red"})
+        }
+        setLoading(false)
+        handleRefresh(false)
+      })
     }, [refresh])
     const handleExpand = (id) => {
-      //if(showDetails === 'T' || id === "Broker1"){
         setIsExpanded(!isExpanded);
         setShowDetails(!showDetails)
-      // }else{
-      //   setIsExpanded(false);
-      //   setShowDetails('T')
-      // }
     };
     return (
       <motion.div
@@ -111,7 +111,7 @@ function JMSTile({ name, refresh}) {
                             className='tile-number'
                             animate={showDetails? 'visible' : 'hidden'}
                             exit="exit">
-                <span className='tile-number-text'><BusyIndicator active={messagesLoaded} style={{marginRight:"5px"}} delay={1000} size="S">{queueCount}</BusyIndicator></span>
+                <span className='tile-number-text'><BusyIndicator active={loading} style={{marginRight:"5px"}} delay={1000} size="S">{queueCount}</BusyIndicator></span>
                 <span className='tile-number-uom'>count</span>
             </motion.div>
             <motion.div style={{width:'100%', height:"300px"}}

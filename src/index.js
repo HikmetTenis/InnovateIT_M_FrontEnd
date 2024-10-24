@@ -8,15 +8,19 @@ import { msalConfig } from './authConfig';
 import { PublicClientApplication } from '@azure/msal-browser';
 import { AuthProvider } from './helpers/authcontext';
 import { ThemeProvider } from '@ui5/webcomponents-react';
+import { NotificationsProvider } from './helpers/notification-context';
 import 'bootstrap/dist/css/bootstrap.min.css';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 const msalInstance = new PublicClientApplication(msalConfig);
+
 root.render(
   // <React.StrictMode>
   <MsalProvider instance={msalInstance}>
       <AuthProvider>
         <ThemeProvider>
-          <App />
+          <NotificationsProvider>
+            <App />
+          </NotificationsProvider>
         </ThemeProvider>
       </AuthProvider>
   </MsalProvider>

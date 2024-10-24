@@ -5,7 +5,8 @@ import moment from 'moment';
 import {BusyIndicator} from '@ui5/webcomponents-react';
 import MonitoringTileGraph from './monitoring-tile-graph'
 import React, { useState,useEffect,useRef } from 'react';
-function MonitoringTile({ item, refresh, isExpanded, onExpand }) {
+import { useNotifications } from '../helpers/notification-context';
+function MonitoringTile({ item, refresh, isExpanded, onExpand, handleRefresh }) {
   const gridColumn = isExpanded ? 'span 6' : 'span 1';
   const gridRow = isExpanded ? 'span 3' : 'span 1';
   
@@ -14,21 +15,24 @@ function MonitoringTile({ item, refresh, isExpanded, onExpand }) {
   }
   
   let [messageCount,setMessageCount] = useState(0);
-  const [messagesLoaded, setMessagesLoaded] = useState(true);
-
+  const [loading, setLoading] = useState(true);
+  const { notifications, addNotification } = useNotifications();
   useEffect(() => {
-    setMessagesLoaded(true)
+    setLoading(true)
+    handleRefresh(true);
     let now = moment();
     const endDate = moment.utc(now).format("YYYY-MM-DD HH:mm:ss")
     let past = now.subtract("1", "hours");
     const startDate = moment.utc(past).format("YYYY-MM-DD HH:mm:ss")
     getCountByStatus(startDate,endDate,item.type).then((res)=>{
       setMessageCount(res.data.obj[0].totalcount)
-      setMessagesLoaded(false)
+      handleRefresh(false);
+      setLoading(false)
     })
   }, [refresh])
   const handleRangeClick = (range) => {
-    setMessagesLoaded(true)
+    setLoading(true)
+    handleRefresh(true);
     const dateSelectedSplitted = range.id.split(":")
     let now = moment();
     let endDate = moment.utc(now).format("YYYY-MM-DD HH:mm:ss")
@@ -36,7 +40,8 @@ function MonitoringTile({ item, refresh, isExpanded, onExpand }) {
     let startDate = moment.utc(past).format("YYYY-MM-DD HH:mm:ss")
     getCountByStatus(startDate,endDate,item.type).then((res)=>{
       setMessageCount(res.data.obj[0].totalcount)
-      setMessagesLoaded(false)
+      handleRefresh(false);
+      setLoading(false)
     })
   }
   return (
@@ -59,7 +64,7 @@ function MonitoringTile({ item, refresh, isExpanded, onExpand }) {
           }}/>
         </div>
         <div className='tile-number'>
-          <span className='tile-number-text'><BusyIndicator active={messagesLoaded} style={{marginRight:"5px"}} delay={1000} size="S">{messageCount}</BusyIndicator></span>
+          <span className='tile-number-text'><BusyIndicator active={loading} style={{marginRight:"5px"}} delay={1000} size="S">{messageCount}</BusyIndicator></span>
           <span className='tile-number-uom'>count</span>
         </div>
         {isExpanded && (

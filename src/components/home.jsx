@@ -4,16 +4,22 @@ import {LineChart}  from '@ui5/webcomponents-react-charts';
 import MonitoringTile from './monitoring-tile';
 import GridContainer from './monitoring-tile-container';
 import JMSTile from "./monitoring-jms-stats";
-import React, { useState,useEffect } from 'react';
+import React, { useState,useEffect,useContext,useRef } from 'react';
 import { LayoutGroup  } from 'framer-motion';
 import moment from 'moment'; 
 import {getGraphAllData} from '../services/s-monitoring'
 import momentTZ from 'moment-timezone';
+import { useNotifications } from '../helpers/notification-context';
+import { motion} from "framer-motion"
+import { AuthContext } from '../helpers/authcontext';
 export default function MonitoringPageHeader() {
-    const [isRefreshed, setIsRefreshed] = useState(false);
+    const [refreshMessages, setRefreshMessages] = useState(false);
     const [refreshQueues, setRefreshQueues] = useState(false);
+    const {getAccessToken } = useContext(AuthContext);
     const [refreshTime1, setRefreshtime1] = useState(moment().format("LLL"));
     const [refreshTime2, setRefreshtime2] = useState(moment().format("LLL"));
+    const [graphLoaded, setGraphLoaded] = useState(true);
+    const [queuesLoaded, setQueuesLoaded] = useState(true);
     const [messagesLoaded, setMessagesLoaded] = useState(true);
     const [graphData, setGraphData] = useState(true);
     const timeRanges = [{id:'1:hours',desc:'1 hour'},{id:'6:hours',desc:'6 hours'},{id:'12:hours',desc:'12 hours'},{id:'1:days',desc:'1 day'},{id:'7:days',desc:'7 days'},{id:'30:days',desc:'30 days'}];
@@ -21,19 +27,35 @@ export default function MonitoringPageHeader() {
     const [items] = useState([
         { id: 1, color: 'green', type:"SUCCESS"},
         { id: 2, color: 'red', type:"FAILED"},
-        { id: 3, color: 'grey', type:"PROCESSING" },
-        { id: 4, color: 'orange', type:"REPROCESSED" },
+        { id: 3, color: 'grey', type:"PROCESSING" }
       ]);
-    
+    const { notifications, removeNotification,addNotification } = useNotifications();
     const [expandedId, setExpandedId] = useState(null);
-
+    const wrapperVariants = {
+        hidden: {
+          opacity: 0,
+          x: '5vw',
+          transition: { ease: 'easeInOut', delay: 0.1 },
+          display: "none"
+        },
+        visible: {
+          opacity: 1,
+          x: 0,
+          transition: { ease: 'easeInOut', delay: 0.4 },
+          display: "flex"
+        },
+        exit: {
+          x: '5vh',
+          transition: { ease: 'easeInOut' },
+        },
+      };
     const handleExpand = (id) => {
         setExpandedId((prevId) => (prevId === id ? null : id));
     };
     const handleRefreshTiles = (rangeDesc) => {
         const filteredTimeRange = timeRanges.filter(range => range.desc === rangeDesc);
         handleRangeClick(filteredTimeRange[0])
-        setIsRefreshed(!isRefreshed)
+        setRefreshMessages(!refreshMessages)
         setRefreshtime1(moment().format("LLL"))
     }
     const handleRefreshQueues = () => {
@@ -41,7 +63,7 @@ export default function MonitoringPageHeader() {
         setRefreshtime2(moment().format("LLL"))
     }
     const handleRangeClick = (range) => {
-        setMessagesLoaded(true)
+        setGraphLoaded(true)
         let now = moment();
         const dateSelectedSplitted = range.id.split(':')
         let endDate = moment.utc(now).format("YYYY-MM-DD HH:mm:ss")
@@ -63,7 +85,7 @@ export default function MonitoringPageHeader() {
                 }
                 setGraphData(gData)
             }
-            setMessagesLoaded(false)
+            setGraphLoaded(false)
         })
       };
     useEffect(() => {
@@ -83,9 +105,35 @@ export default function MonitoringPageHeader() {
                 }
                 setGraphData(gData)
             }
-            setMessagesLoaded(false)
+            setGraphLoaded(false)
         })
-      }, [])
+        const initializeWorker = async () => {
+            const worker = new Worker(new URL('../helpers/notificationWorker.js', import.meta.url));
+
+            // Listen for messages from the web worker
+            worker.onmessage = (event) => {
+                const { data } = event;
+                if (data.error) {
+                    console.error(data.error);
+                } else {
+                    addNotification(data);
+                }
+            };
+            const accesstoken = await getAccessToken()
+            worker.postMessage({ token: accesstoken });
+            // Clean up the worker when the component unmounts
+            return () => {
+                worker.terminate();
+            };
+        }
+        initializeWorker()
+    }, [])
+    const handleRefreshForMessages = (newValue) => {
+        setMessagesLoaded(newValue);
+    };
+    const handleRefreshForQueues = (newValue) => {
+        setQueuesLoaded(newValue)
+    };
     return (
         <FlexBox direction="Column" alignItems="Stretch" justifyContent="Stretch" fitContainer="true" style={{gap:"10px"}}>
             <Panel className='monitoring-panel'
@@ -94,43 +142,50 @@ export default function MonitoringPageHeader() {
                 headerText="Messages"
                 header={<FlexBox alignItems="Center" justifyContent="SpaceBetween" fitContainer ><Title level="H2">Messages</Title><FlexBox alignItems="Center" justifyContent="SpaceBetween" ><Label showColon="true" style={{fontSize:"12px"}}>Last Refresh</Label><Text style={{fontSize:"12px"}}>{refreshTime1}</Text><Button  design="Transparent" onClick={(e) => handleRefreshTiles(activeRange)} icon="refresh"/></FlexBox></FlexBox>}
                 onToggle={function _a(){}}>
-                    <LayoutGroup >
-                        <GridContainer>
-                            {items.map((item) => (
-                                <MonitoringTile
-                                    key={item.id}
-                                    item={item}
-                                    refresh={isRefreshed}
-                                    isExpanded={expandedId === item.id}
-                                    onExpand={handleExpand}/>
-                            ))}
-                        </GridContainer>
-                    </LayoutGroup >
-                    <LineChart loading={messagesLoaded} loadingDelay={2000} style={{height:"300px",width:"100%"}} dataset={graphData} 
-                        dimensions={[{accessor: 'name'}]} 
-                        axisOptions={{
-                            yAxis: {
-                            min: 0,  // Minimum value
-                            max: 30000 // Maximum value
-                            }
-                        }}
-                        measures={[
-                            {accessor: 'SUCCESS',label: 'SUCCESS', color:"green"},
-                            {accessor: 'FAILED',label: 'FAILED', color:"red"},
-                            {accessor: 'PROCESSED',label: 'PROCESSED', color:"orange"}]}
-                        onClick={function Sa(){}}
-                        onDataPointClick={function Sa(){}}
-                        onLegendClick={function Sa(){}}
-                    />
-                    <div className="time-range-container">
-                        <div className="time-range-selector">
-                            {timeRanges.map((range) => (
-                                <button key={range.desc} className={range.desc === activeRange ? 'active' : ''} onClick={() => handleRangeClick(range)}>
-                                    {range.desc}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
+                    <motion.div style={{width:"100%", display:"flex", flexDirection:"column"}}
+                        variants={wrapperVariants}
+                        initial="visible"
+                        animate={!messagesLoaded ? 'visible' : 'hidden'}
+                        exit="exit">
+                            <LayoutGroup >
+                                <GridContainer>
+                                    {items.map((item) => (
+                                        <MonitoringTile
+                                            key={item.id}
+                                            item={item}
+                                            handleRefresh={handleRefreshForMessages}
+                                            refresh={refreshMessages}
+                                            isExpanded={expandedId === item.id}
+                                            onExpand={handleExpand}/>
+                                    ))}
+                                </GridContainer>
+                            </LayoutGroup >
+                            <LineChart loading={graphLoaded} loadingDelay={2000} style={{height:"300px",width:"100%"}} dataset={graphData} 
+                                dimensions={[{accessor: 'name'}]} 
+                                axisOptions={{
+                                    yAxis: {
+                                    min: 0,  // Minimum value
+                                    max: 30000 // Maximum value
+                                    }
+                                }}
+                                measures={[
+                                    {accessor: 'SUCCESS',label: 'SUCCESS', color:"green"},
+                                    {accessor: 'FAILED',label: 'FAILED', color:"red"},
+                                    {accessor: 'PROCESSING',label: 'PROCESSING', color:"orange"}]}
+                                onClick={function Sa(){}}
+                                onDataPointClick={function Sa(){}}
+                                onLegendClick={function Sa(){}}
+                            />
+                            <div className="time-range-container">
+                                <div className="time-range-selector">
+                                    {timeRanges.map((range) => (
+                                        <button key={range.desc} className={range.desc === activeRange ? 'active' : ''} onClick={() => handleRangeClick(range)}>
+                                            {range.desc}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                    </motion.div>
             </Panel>
             <Panel className='monitoring-panel'
                 accessibleRole="Form"
@@ -138,9 +193,15 @@ export default function MonitoringPageHeader() {
                 headerText="Queues"
                 header={<FlexBox alignItems="Center" justifyContent="SpaceBetween" fitContainer ><Title level="H2">Queues</Title><FlexBox alignItems="Center" justifyContent="SpaceBetween" ><Label showColon="true" style={{fontSize:"12px"}}>Last Refresh</Label><Text style={{fontSize:"12px"}}>{refreshTime2}</Text><Button  design="Transparent" onClick={(e) =>handleRefreshQueues()}icon="refresh"/></FlexBox></FlexBox>}
                 onToggle={function _a(){}}>
-                    <GridContainer>
-                        <JMSTile name="Broker1" refresh={refreshQueues}></JMSTile>
-                    </GridContainer>
+                    <motion.div style={{width:"100%"}}
+                        variants={wrapperVariants}
+                        initial="visible"
+                        animate={!queuesLoaded ? 'visible' : 'hidden'}
+                        exit="exit">
+                            <GridContainer>
+                                <JMSTile name="Broker1" refresh={refreshQueues} handleRefresh={handleRefreshForQueues}></JMSTile>
+                            </GridContainer>
+                    </motion.div>
             </Panel>
         </FlexBox>
     );

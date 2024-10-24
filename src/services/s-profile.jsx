@@ -23,30 +23,18 @@ export const  getAvatar = (getAccessToken) => {
         }
     });
 }
-// const getAccessToken = (accounts,instance) => {
-//     return new Promise(async(resolve, reject) => {
-//         if (accounts.length > 0) {
-//             const request = {
-//                 scopes: 'User.Read',
-//                 account: accounts[0],
-//                 forceRefresh: true,
-//             };
 
-//             try {
-//                 const response = await instance.acquireTokenSilent(request);
-//                 resolve(response.accessToken)
-//             } catch (error) {
-//                 if (error instanceof InteractionRequiredAuthError) {
-//                     try {
-//                         const response = await instance.acquireTokenPopup(request);
-//                         resolve(response.accessToken)
-//                     } catch (popupError) {
-//                         console.error('Failed to acquire token via popup', popupError);
-//                     }
-//                 }
-//                 resolve(null);
-//             }
-//         }
-//         resolve(null);
-//     })
-// };
+export const  getSystemInfo = () => {
+    return new Promise((resolve, reject) => {
+        var config = {
+            method: 'get',
+            withCredentials:true,
+            url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/system/getSystemInfo"
+          };
+          api(config).then(function (response) {
+            resolve(response)
+          }).catch(function (error) {
+            reject(error)
+          });
+    });
+}

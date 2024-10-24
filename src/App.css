@@ -58,9 +58,12 @@ html, body, #root {
 .flash-both {
   width: 100%;
   height: 100%;
-  line-height: 100px;
+  line-height: 120px;
   color: white;
   animation: flashBoth 1s ease-in-out 2;
+}
+.flash-both::part(content){
+  height:58px;
 }
 .circular-timer {
   position: relative;
@@ -87,14 +90,18 @@ html, body, #root {
   font-size: 8px;
   font-weight: bold;
 }
-
-
+.customPositive ui5-icon{
+  color:green!important;
+}
+.customNegative{
+  color:red!important;
+}
 .pagiation{
   box-shadow: var(--_ui5-v1-24-8_side_navigation_box_shadow);
   background: var(--sapList_Background);
   width:100%; 
   border-radius:15px;
-  flex:0 0 10%;
+  flex:1;
 }
 .App-link {
   color: #61dafb;
@@ -158,7 +165,7 @@ ui5-icon:hover {
   justify-content: space-between;
   align-items: stretch;
   flex-direction: column;
-  flex: 1;
+  height:100%;
 }
 .monitoring-tile:hover {
   background-color: whitesmoke;
@@ -212,6 +219,7 @@ ui5-icon:hover {
   gap:10px;
   grid-auto-flow: dense;
   padding-bottom:15px;
+  flex:1 1 auto;
 }
 .jms-grid-container{
   display: grid;

@@ -97,3 +97,21 @@ export const  getPayload = (stepNumber,messageID) => {
           });
     });
 }
+export const  getNotifications = (accessToken,startDate,endDate) => {
+  return new Promise((resolve, reject) => {
+      var config = {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,  // Attach the token to the request
+            'Content-Type': 'application/json'
+          },
+          method: 'get',
+          withCredentials:true,
+          url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/monitoring/getNotifications?startDate="+startDate+"&endDate="+endDate
+        };
+        api(config).then(function (response) {
+          resolve(response)
+        }).catch(function (error) {
+          reject(error)
+        });
+  });
+}

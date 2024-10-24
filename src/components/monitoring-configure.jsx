@@ -98,7 +98,7 @@ export default function MonitoringPage() {
         })
     };
     return (
-        <FlexBox direction="row" alignItems="Stretch" fitContainer="true">
+        <FlexBox direction="Row" alignItems="Stretch" fitContainer="true">
             <motion.div style={{flex:"1 1 auto"}}
                                 variants={wrapperVariants}
                                 initial="visible"

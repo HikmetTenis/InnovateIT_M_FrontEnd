@@ -2,7 +2,7 @@ import "@ui5/webcomponents-icons/dist/AllIcons.js";
 import React, { useState,useEffect,useRef } from 'react';
 import { motion, AnimatePresence, useAnimationControls } from "framer-motion"
 import {getMessagesByDate,getMessagesBySearch} from '../services/s-messages'
-import { Table, IllustratedMessage,TableRow,TableCell, Toolbar,Icon,List,ToolbarSpacer,Text,Bar,ListItemStandard,DynamicPageHeader,Select,Option,Switch,BusyIndicator,Button, Input,FilterGroupItem,FlexBox,Label,Title} from '@ui5/webcomponents-react';
+import { Table, IllustratedMessage,Popover,List,Text,Link,ListItemStandard,DynamicPageHeader,Option,Switch,BusyIndicator,Button, Input,FilterGroupItem,FlexBox,Label,Title} from '@ui5/webcomponents-react';
 import moment from 'moment';
 import momentTZ from 'moment-timezone';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -16,9 +16,18 @@ const MonitoringLane = ({details,laneType, updateData})=> {
     let firstPage = useRef(null);
     let lastPage = useRef(null);
     let currentPage = useRef(null);
+    let popoverBody2  = useRef(null);
     const [messagesLoaded, setMessagesLoaded] = useState(false);
     const [messages, setMessages] = useState([]);
     const [noData, setNoData] = useState(false)
+    const [popoverRef2, setPopoverRef2] = useState(null);
+    const [popoverIsOpen2, setPopoverIsOpen2] = useState(false);
+    const [popoverRef1, setPopoverRef1] = useState(null);
+    const [popoverIsOpen1, setPopoverIsOpen1] = useState(false);
+    const [popoverBody1, setPopoverBody1] = useState([]);
+    const [popoverRef3, setPopoverRef3] = useState(null);
+    const [popoverIsOpen3, setPopoverIsOpen3] = useState(false);
+    const [popoverBody3, setPopoverBody3] = useState([]);
     let worker = useRef(null);
     let limit = useRef(null);
     let skip = useRef(null);
@@ -58,42 +67,169 @@ const MonitoringLane = ({details,laneType, updateData})=> {
         let past = now.subtract(dateSelectedSplitted[0], dateSelectedSplitted[1]);
         startDate = moment.utc(past).format("YYYY-MM-DD HH:mm:ss")
       }
-      // const dateSelectedSplitted = laneDetails.dayFilter.split(":")
-      // let now = moment();
-      // const endDate = moment.utc(now).format("YYYY-MM-DD HH:mm:ss")
-      // let past = now.subtract(dateSelectedSplitted[0], dateSelectedSplitted[1]);
-      
-      // const startDate = moment.utc(past).format("YYYY-MM-DD HH:mm:ss")
       getMessages(startDate,endDate, 0, 10, laneType, laneDetails.customData, laneDetails.artifactSelection)
-      // Create and initialize two worker instances
-      
-      // if(worker.current == null){
-      //   worker.current = createWorker();
-      //   // Send an initial message to each worker to start
-      //   worker.current.postMessage({ taskName: 'Worker 1', action:'start', type:laneType,period:"10000",jobDetails:laneDetails });
-      // }else{
-      //   worker.current.postMessage({ taskName: 'Worker 1', action:'update', type:laneType,period:"10000",jobDetails:laneDetails });
-      // }
-      // // Setup message handling for each worker
-      // worker.current.onmessage = (res) => {
-      //   const result = {
-      //     data:res.data
-      //   }
-      //   upateMessages(result, limit.current, skip.current)
-      // };
-      
     }, [updateData])
     const getMessages  = (startDate,endDate, s, l, status,customData, artifactName) => {
       getMessagesByDate(startDate,endDate, s, l, status, customData,artifactName).then((res)=>{
-        upateMessages(res, 10, 0)
-        updateElements(res,10,0)
+        upateMessages(res)
+        updateElements(res,l,s)
         // setTimer(10)
       })
     }
-    const stopWorker  = () => {
-      worker.current.postMessage({ taskName: 'Worker 1', action:'stop' });
+    function isJsonString(str) {
+      try {
+        JSON.parse(str);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+    function isXmlString(str) {
+      // Create a new DOM parser
+      const parser = new DOMParser();
+      
+      // Parse the string into an XML document
+      const xmlDoc = parser.parseFromString(str, "application/xml");
+      
+      // Check for parsing errors
+      const parseError = xmlDoc.getElementsByTagName("parsererror");
+      if (parseError.length > 0) {
+        return false; // Invalid XML
+      }
+      
+      return true; // Valid XML
+    }
+    const showErrorDetails = (message)=>{
+      setPopoverRef2("err_"+message.messageId)
+      const binaryString = window.atob(message.errorInfo);
+      let formattedOutput = binaryString
+      if(isJsonString(binaryString)){
+        // Parse the JSON string into an object
+        const jsonObject = JSON.parse(binaryString);
+  
+        // Format the JSON object into a readable string with indentation
+        formattedOutput = JSON.stringify(jsonObject, null, 2);
+      }else if(isXmlString(binaryString)){
+        // Parse the XML string
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(binaryString, "application/xml");
+  
+        // Serialize the XML back into a string with formatting
+        const serializer = new XMLSerializer();
+        formattedOutput = serializer.serializeToString(xmlDoc);
+      }
+      popoverBody2.current.innerText=formattedOutput
+      setPopoverIsOpen2(true)  
+    }
+    const openID  = (url) => {
+      const newWindow = window.open(url, '_blank');
+      if (newWindow) {
+        newWindow.focus();  // Ensures the new tab gains focus
+      }
+    }
+    const showDetails = (message) => {
+      setPopoverRef3("dt_"+message.messageId)
+      setPopoverIsOpen3(true)  
+      let listItems = []
+      listItems.push(
+        <ListItemStandard >
+          <FlexBox alignItems="Center" justifyContent="SpaceBetween">
+            <Text>Message ID</Text>
+            <Link
+              design="Default"
+              onClick={() => openID(message.messageIdURL)}>
+              {message.messageId}
+            </Link>
+          </FlexBox>
+        </ListItemStandard>
+      )
+      listItems.push(
+        <ListItemStandard >
+          <FlexBox alignItems="Center" justifyContent="SpaceBetween">
+            <Text>Correlation ID</Text>
+            <Link
+              design="Default"
+              onClick={() => openID(message.correlationIDURL)}>
+              {message.correlationID}
+            </Link>
+          </FlexBox>
+        </ListItemStandard>
+      )
+      listItems.push(
+        <ListItemStandard >
+          <FlexBox alignItems="Center" justifyContent="SpaceBetween">
+            <Text>Artifact ID</Text>
+            <Text Title={message.integrationArtifact.id}>{message.integrationArtifact.id.length > 30?message.integrationArtifact.id.substring(0,30)+"...":message.integrationArtifact.id}</Text>
+          </FlexBox>
+        </ListItemStandard>
+      )
+      listItems.push(
+        <ListItemStandard >
+          <FlexBox alignItems="Center" justifyContent="SpaceBetween">
+            <Text>Artifact Name</Text>
+            <Text Title={message.integrationArtifact.name}>{message.integrationArtifact.name.length > 30?message.integrationArtifact.name.substring(0,30)+"...":message.integrationArtifact.name}</Text>
+          </FlexBox>
+        </ListItemStandard>
+      )
+      listItems.push(
+        <ListItemStandard >
+          <FlexBox alignItems="Center" justifyContent="SpaceBetween">
+            <Text>Package Name</Text>
+            <Text Title={message.integrationArtifact.packageName}>{message.integrationArtifact.packageName.length > 30?message.integrationArtifact.packageName.substring(0,30)+"...":message.integrationArtifact.packageName}</Text>
+          </FlexBox>
+        </ListItemStandard>
+      )
+      listItems.push(
+        <ListItemStandard >
+          <FlexBox alignItems="Center" justifyContent="SpaceBetween">
+            <Text>Log Level</Text>
+            <Text Title={message.logLevel}>{message.logLevel}</Text>
+          </FlexBox>
+        </ListItemStandard>
+      )
+      listItems.push(
+        <ListItemStandard >
+          <FlexBox alignItems="Center" justifyContent="SpaceBetween">
+            <Text>Transaction Id</Text>
+            <Text Title={message.transactionId}>{message.transactionId}</Text>
+          </FlexBox>
+        </ListItemStandard>
+      )
+      listItems.push(
+        <ListItemStandard >
+          <FlexBox alignItems="Center" justifyContent="SpaceBetween">
+            <Text>Status</Text>
+            <Text Title={message.status}>{message.status}</Text>
+          </FlexBox>
+        </ListItemStandard>
+      )
+      if(message.customStatus){
+        listItems.push(
+          <ListItemStandard >
+            <FlexBox alignItems="Center" justifyContent="SpaceBetween">
+              <Text>Custom Status</Text>
+              <Text Title={message.customStatus}>{message.customStatus}</Text>
+            </FlexBox>
+          </ListItemStandard>
+        )
+      }
+      setPopoverBody3(listItems)
+    }
+    const showCustomProperties = (message) => {
+      setPopoverRef1("cp_"+message.messageId)
+      setPopoverIsOpen1(true)  
+      let listItems = []
+      for(const customHeaderProperty of message.customHeaderProperties){
+        listItems.push(
+          <ListItemStandard additionalText={customHeaderProperty.value}>
+            {customHeaderProperty.name}
+          </ListItemStandard>
+        )
+      }
+      setPopoverBody1(listItems)
     }
     const updateElements  = (res,l,s)=>{
+      totalPages.current.innerHTML = Math.ceil(parseInt(res.data.obj.total)/parseInt(l))
       setTimeout(() => {
         if(parseInt(res.data.obj.total) > 0 && parseInt(s) > 0 && parseInt(currentPage.current.value) > 1){
           firstPage.current.style.cursor = "hand"
@@ -127,10 +263,10 @@ const MonitoringLane = ({details,laneType, updateData})=> {
             totalEntries.current.style.color = "orange";
         }
         totalEntries.current.innerHTML = laneType+"("+res.data.obj.total+")"
-        totalPages.current.innerHTML = Math.ceil(parseInt(res.data.obj.total)/parseInt(l))
+        
       }, 2000);
     }
-    const upateMessages  = (res,l,s)=>{
+    const upateMessages  = (res)=>{
       let messageData = []
       setNoData(false)
       
@@ -146,26 +282,39 @@ const MonitoringLane = ({details,laneType, updateData})=> {
     
           let duration = moment.duration(d2.diff(d1))
           let durationText= ""
+          let durationColor = "Positive"
           if(duration._data.days > 0)
             durationText = duration._data.days +" day "
-          if(duration._data.hours > 0)
+          if(duration._data.hours > 0){
+            durationColor = "Negative"
             durationText = durationText+duration._data.hours +" hour "
-          if(duration._data.minutes > 0)
+          }
+          if(duration._data.minutes > 0){
             durationText = durationText+duration._data.minutes +" min "
-          if(duration._data.minutes > 0)
-            durationText = durationText+duration._data.minutes +" min "
+            if(duration._data.minutes > 10){
+              durationColor = "Critical"
+            }
+          }
           if(duration._data.seconds > 0)
             durationText = durationText+duration._data.seconds +" sec "
           if(duration._data.milliseconds > 0)
             durationText = durationText+duration._data.milliseconds +" ms "
-          messageData.push(<ListItemStandard 
+          messageData.push(
+            <ListItemStandard 
                     key={e.id}
                     additionalText={durationText} 
-                    additionalTextState="Success" 
+                    additionalTextState={durationColor}
                     tooltip={e.integrationArtifact.name}
                     className={isItExist.length === 0 ? 'flash-both' : ''}
                     description={localEndDate.format("MMMM DD YYYY, HH:mm:ss")}> 
-                {e.integrationArtifact.name.substring(0,30)+"..."}
+                <FlexBox direction="Row" alignItems="Center" justifyContent="SpaceBetween" fitContainer="true">
+                  <Text>{e.integrationArtifact.name.length > 46?e.integrationArtifact.name.substring(0,45)+"...":e.integrationArtifact.name}</Text>
+                  <div>
+                    <Button design="Transparent" id={"dt_"+e.messageId} icon="detail-view"  onClick={() => showDetails(e)}/>
+                    <Button design="Transparent" id={"cp_"+e.messageId} style={{marginLeft:"3px"}} icon="filter-fields" disabled={e.customHeaderProperties.length === 0} onClick={() => showCustomProperties(e)}/>
+                    <Button style={{ display: laneType === "FAILED" ? "" : "none",marginLeft:"3px" }} design="Transparent" id={"err_"+e.messageId} icon="display" disabled={e.errorInfo === null} onClick={() => showErrorDetails(e)}/>
+                  </div>
+                </FlexBox>
             </ListItemStandard>)
         }
         
@@ -229,14 +378,74 @@ const MonitoringLane = ({details,laneType, updateData})=> {
           limit.current = lSelection
           getMessages(startDate,endDate, offset1,lSelection, laneType, customData, laneDetails.artifactSelection)
           currentPage.current.value = 1
+        }else if(event === "SPECIFIC"){
+          const offset1 = cPage*lSelection
+          getMessages(startDate,endDate, offset1,lSelection, laneType, customData,laneDetails.artifactSelection)
         }
     }
     return (
         <FlexBox direction="Column" alignItems="Start" justifyContent="Start" fitContainer="true" style={{padding:"5px"}}>
+            <Popover
+                className="footerPartNoPadding"
+                header={<FlexBox direction="Row" alignItems="Center" style={{height:"40px"}} justifyContent="Center" fitContainer="true"><Text>Error Details</Text></FlexBox>}
+                horizontalAlign="Start"
+                onBeforeClose={function ks(){}}
+                onBeforeOpen={function ks(){}}
+                onOpen={function ks(){}}
+                opener={popoverRef2}
+                open={popoverIsOpen2}
+                allowTargetOverlap="true"
+                onClose={() => {
+                  setPopoverIsOpen2(false);
+                }}
+                placement="Start"
+                verticalAlign="Top">
+                  <FlexBox direction="Column" alignItems="Stretch" justifyContent="Center" fitContainer="true">
+                      <Text style={{maxWidth:"300px"}} ref={popoverBody2}></Text>
+                  </FlexBox>
+            </Popover>
+            <Popover
+                className="footerPartNoPadding"
+                header={<FlexBox direction="Row" alignItems="Center" style={{height:"40px"}} justifyContent="Center" fitContainer="true"><Text>Message Details</Text></FlexBox>}
+                horizontalAlign="Start"
+                onBeforeClose={function ks(){}}
+                onBeforeOpen={function ks(){}}
+                onOpen={function ks(){}}
+                opener={popoverRef3}
+                open={popoverIsOpen3}
+                allowTargetOverlap="true"
+                onClose={() => {
+                  setPopoverIsOpen3(false);
+                }}
+                placement="Start"
+                verticalAlign="Top">
+                <List style={{minWidth:"400px"}}>
+                  {popoverBody3}
+                </List>
+            </Popover>
+            <Popover
+              className="footerPartNoPadding"
+              header={<FlexBox direction="Row" alignItems="Center" style={{height:"40px"}} justifyContent="Center" fitContainer="true"><Text>Custom Header Properties</Text></FlexBox>}
+              horizontalAlign="Start"
+              onBeforeClose={function ks(){}}
+              onBeforeOpen={function ks(){}}
+              onOpen={function ks(){}}
+              opener={popoverRef1}
+              open={popoverIsOpen1}
+              allowTargetOverlap="true"
+              onClose={() => {
+                setPopoverIsOpen1(false);
+              }}
+              placement="Start"
+              verticalAlign="Top">
+                <List style={{minWidth:"400px"}}>
+                  {popoverBody1}
+                </List>
+            </Popover>
             {/* <div  style={{background:"var(--sapList_Background)",borderTopLeftRadius:"5px",borderTopRightRadius:"5px",flex:"0 0 50px"}} className="generic-shadow" > */}
-            <FlexBox style={{background:"var(--sapList_Background)",borderTopLeftRadius:"5px",borderTopRightRadius:"5px",flex:"0 0 50px",width:"100%"}} direction="Row" alignItems="Center" justifyContent="SpaceBetween" >
+            <FlexBox style={{background:"var(--sapList_Background)",borderBottom:"1px solid whitesmoke",borderTopLeftRadius:"5px",borderTopRightRadius:"5px",flex:"0 0 50px",width:"100%"}} direction="Row" alignItems="Center" justifyContent="SpaceBetween" >
                 <div style={{marginLeft:"15px"}}>
-                  <FontAwesomeIcon style={{marginRight:"5px"}} icon="fa-solid fa-ellipsis-vertical" />
+                  {/* <FontAwesomeIcon style={{marginRight:"5px"}} icon="fa-solid fa-ellipsis-vertical" /> */}
                   <span style={{fontWeight:"600",marginLeft:"5px"}} ref={totalEntries}></span>
                 </div>
                 <div style={{marginRight:"15px"}}> 
@@ -245,7 +454,7 @@ const MonitoringLane = ({details,laneType, updateData})=> {
                             <FlexBox direction="Row" alignItems="Center" justifyContent="Center" fitContainer="true" >
                                 <FontAwesomeIcon ref={firstPage} style={{fontSize:"10px", cursor:"hand"}} icon={['fas', 'fa-angles-left']} onClick={(d) =>  changePage("FIRST")}/>
                                 <FontAwesomeIcon ref={backOnePage} style={{width:"30px",fontSize:"10px", cursor:"hand"}} icon={['fas', 'fa-angle-left']} onClick={(d) =>  changePage("BACK")}/>
-                                <Input ref={currentPage} style={{width:"8px",height:"30px",textAlign:"Center"}} type="Text" valueState="None" value="1"></Input>
+                                <Input onChange={(d) =>  changePage("SPECIFIC")} ref={currentPage} style={{width:"8px",height:"30px",textAlign:"Center"}} type="Text" valueState="None" value="1"></Input>
                                 <Text style={{marginLeft:"5px",marginRight:"5px"}}> / </Text>
                                 <Text ref={totalPages}></Text>
                                 <FontAwesomeIcon ref={forwardOnePage} style={{width:"30px",fontSize:"10px", cursor:"hand"}} icon={['fas', 'fa-angle-right']} onClick={(d) =>  changePage("FORWARD")}/>
@@ -255,7 +464,7 @@ const MonitoringLane = ({details,laneType, updateData})=> {
                     </FlexBox>
                 </div>
             </FlexBox>
-            <List loading={!messagesLoaded} className="generic-shadow" loadingDelay="2000" style={{borderBottomLeftRadius:"5px",borderBottomRightRadius:"5px",overflow:"auto",height:"70%"}}
+            <List loading={!messagesLoaded} className="generic-shadow" loadingDelay="2000" style={{borderBottomLeftRadius:"5px",borderBottomRightRadius:"5px",overflow:"auto",height:"75%"}}
                 growing="None" 
                 header={<DynamicPageHeader style={{padding:"0px",display:"Block",height:"0px",width:"100%"}}/>}
                 mode="SingleSelect"

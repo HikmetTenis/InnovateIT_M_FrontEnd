@@ -1,4 +1,8 @@
 import api from '../helpers/axios-custom';
+const alphabet = [
+  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+  'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+];
 export const  getPackages = async() => {
     return new Promise(async(resolve, reject) => {
         var config = {
@@ -37,7 +41,7 @@ export const getElementType = (element) => {
   }  
   return null
 }
-export const processIntegrationProcesses = async(processName, processId,intProcessChildren, everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore, parentStepNumber, status,keepPayloadAsDefault,reprocessingAsDefault) => {
+export const processIntegrationProcesses = async(processName, processId,intProcessChildren, everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore, parentStepNumber, status,keepPayloadAsDefault,reprocessingAsDefault,stepLetter) => {
   let sequenceList = []
   let stepNumber = 1
   return new Promise(async(resolve, reject) => {
@@ -56,6 +60,12 @@ export const processIntegrationProcesses = async(processName, processId,intProce
                 if(outgoing.id.indexOf("MessageFlow") === -1)
                   ll.push(outgoing.id)
               }
+              let taskName = null
+              if(child.name){
+                taskName = child.name
+              }else if(child.businessObject.name){
+                taskName = child.businessObject.name
+              }
               let isReprocessingpossible = true
               if(status === "FAILED"){
                 isReprocessingpossible= false
@@ -65,18 +75,19 @@ export const processIntegrationProcesses = async(processName, processId,intProce
                   id2:child.id,
                   sequences:ll,
                   keepPayload: keepPayloadAsDefault,
+                  taskName:taskName,
                   reprocessing: reprocessingAsDefault,
                   reprocessingpossible: isReprocessingpossible,
                   stepType: "AUTO",
                   status:status,
                   type:ttype,
-                  stepNumber:stepNumber,
+                  stepNumber:"Task_"+child.id,
                   parentName:processName,
                   parentID: processId,
-                  name:"STEP"+stepNumber,
+                  name:"Task_"+child.id,
                   x:x,
                   y:y,
-                  desc:"STEP"+stepNumber+" for "+processName, 
+                  desc:"Task_"+child.id+" for "+processName, 
               }
               sequenceList.push(data)
               stepNumber++
@@ -98,23 +109,30 @@ export const processIntegrationProcesses = async(processName, processId,intProce
                       if(incoming.id.indexOf("MessageFlow") === -1)
                         ll.push(incoming.id)
                     }
+                    let taskName = null
+                    if(child.name){
+                      taskName = child.name
+                    }else if(child.businessObject.name){
+                      taskName = child.businessObject.name
+                    }
                     const data = {
                         id:child.id,
                         id2:child.id,
                         stepType: "AUTO",
                         type:ttype,
                         keepPayload: keepPayloadAsDefault,
-                        stepNumber:stepNumber,
+                        taskName:taskName,
+                        stepNumber:"TaskB_"+child.id,
                         reprocessing: false,
                         reprocessingpossible: false,
                         status:status,
                         parentID: processId,
                         parentName:processName,
                         sequences:ll,
-                        name:"STEP"+stepNumber,
+                        name:"TaskB_"+child.id,
                         x:x,
                         y:y,
-                        desc:"STEP"+stepNumber+" for "+processName,
+                        desc:"TaskB_"+child.id+" for "+processName,
                     }
                     sequenceList.push(data)
                     stepNumber++
@@ -135,23 +153,30 @@ export const processIntegrationProcesses = async(processName, processId,intProce
                       if(outgoing.id.indexOf("MessageFlow") === -1)
                         ll.push(outgoing.id)
                     }
+                    let taskName = null
+                    if(child.name){
+                      taskName = child.name
+                    }else if(child.businessObject.name){
+                      taskName = child.businessObject.name
+                    }
                     const data = {
                         id:child.id,
                         id2:child.id,
                         type:ttype,
                         stepType: "AUTO",
+                        taskName:taskName,
                         keepPayload: keepPayloadAsDefault,
-                        stepNumber:stepNumber,
+                        stepNumber:"TaskA_"+child.id,
                         reprocessing: false,
                         reprocessingpossible: false,
                         status:status,
                         sequences:ll,
                         parentID: processId,
                         parentName:processName,
-                        name:"STEP"+stepNumber,
+                        name:"TaskA_"+child.id,
                         x:x,
                         y:y,
-                        desc:"STEP"+stepNumber+" for "+processName,
+                        desc:"TaskA_"+child.id+" for "+processName,
                     }
                     sequenceList.push(data)
                     stepNumber++
@@ -172,36 +197,42 @@ export const processIntegrationProcesses = async(processName, processId,intProce
                   if(incoming.id.indexOf("MessageFlow") === -1)
                     ll.push(incoming.id)
                 }
-                
+                let taskName = null
+                if(child.name){
+                  taskName = child.name
+                }else if(child.businessObject.name){
+                  taskName = child.businessObject.name
+                }
                 const data = {
                     id:child.id,
                     id2:child.id,
                     type:ttype,
                     stepType: "AUTO",
                     keepPayload: keepPayloadAsDefault,
-                    stepNumber:stepNumber,
+                    taskName:taskName,
+                    stepNumber:"Task_"+child.id,
                     status:status,
                     reprocessing: false,
                     reprocessingpossible: false,
                     parentName:processName,
                     sequences:ll,
                     parentID: processId,
-                    name:"STEP"+stepNumber, 
+                    name:"Task_"+child.id, 
                     x:x,
                     y:y,
-                    desc:"STEP"+stepNumber+" for "+processName,
+                    desc:"Task_"+child.id+" for "+processName,
                 } 
                 sequenceList.push(data)
                 stepNumber++
             }
         }
     }
-    const subList = await processSubProcesses(processName, processId,intProcessChildren, everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore, stepNumber, status,keepPayloadAsDefault,reprocessingAsDefault) 
+    const subList = await processSubProcesses(processName, processId,intProcessChildren, everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore, stepNumber, status,keepPayloadAsDefault,reprocessingAsDefault,stepLetter) 
     sequenceList = [...sequenceList, ...subList] 
     resolve(sequenceList)
   })
 }
-export const processSubProcesses = async(processName, processId,intProcessChildren, everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore, parentStepNumber, status,keepPayloadAsDefault,reprocessingAsDefault) => {
+export const processSubProcesses = async(processName, processId,intProcessChildren, everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore, parentStepNumber, status,keepPayloadAsDefault,reprocessingAsDefault,stepLetter) => {
   return new Promise(async(resolve, reject) => {
     for(let child of intProcessChildren){
       if(child.type === "bpmn:SubProcess"){
@@ -209,7 +240,7 @@ export const processSubProcesses = async(processName, processId,intProcessChildr
         if(pType === "EP")
           status = "FAILED"
         const subChildren = child.businessObject.flowElements
-        const sequenceList = await processIntegrationProcesses(processName, child.id,subChildren, everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore, parentStepNumber, status,keepPayloadAsDefault,reprocessingAsDefault)
+        const sequenceList = await processIntegrationProcesses(child.businessObject.name, child.businessObject.id,subChildren, everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore, parentStepNumber, status,keepPayloadAsDefault,reprocessingAsDefault,stepLetter)
         resolve(sequenceList)
       }
     }
@@ -222,33 +253,38 @@ export const modifyOverlays = async(modeler,everyEvent, everyReceiverSenderAfter
     const elements = elementRegistry.getAll()
     const integrationProcesses = await getIntegrationProcesses(elements, "IP")
     let mergedArray = []
+    let alphabetCounter = 0
     for(let integrationProcess of integrationProcesses){
+        let stepLetter = alphabet[alphabetCounter]
         const intProcessChildren = integrationProcess.children
         const processName = integrationProcess.businessObject.name
         const processId = integrationProcess.businessObject.processRef.id
-        let sequenceList = await processIntegrationProcesses(processName, processId,intProcessChildren, everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore, null, "SUCCESS",keepPayloadAsDefault,reprocessingAsDefault)
+        let sequenceList = await processIntegrationProcesses(processName, processId,intProcessChildren, everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore, null, "SUCCESS",keepPayloadAsDefault,reprocessingAsDefault,stepLetter)
         mergedArray = [...sequenceList, ...mergedArray]
         integrationProcess.businessObject.processRef.stepNumber = sequenceList.length
+        alphabetCounter++
     }
     const localIntegrationProcesses = await getIntegrationProcesses(elements, "LP")
     for(let integrationProcess of localIntegrationProcesses){
-      
+        let stepLetter = alphabet[alphabetCounter]
         const intProcessChildren = integrationProcess.children
         const processName = integrationProcess.businessObject.name
         const processId = integrationProcess.businessObject.processRef.id
-        let sequenceList = await processIntegrationProcesses(processName, processId,intProcessChildren, everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore, null, "SUCCESS",keepPayloadAsDefault,reprocessingAsDefault)
+        let sequenceList = await processIntegrationProcesses(processName, processId,intProcessChildren, everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore, null, "SUCCESS",keepPayloadAsDefault,reprocessingAsDefault,stepLetter)
         mergedArray = [...sequenceList, ...mergedArray]
         integrationProcess.businessObject.processRef.stepNumber = sequenceList.length
+        alphabetCounter++
     }
     const exceptionIntegrationProcesses = await getIntegrationProcesses(elements, "EP")
     for(let integrationProcess of exceptionIntegrationProcesses){
-      
+      let stepLetter = alphabet[alphabetCounter]
         const intProcessChildren = integrationProcess.children
         const processName = integrationProcess.businessObject.name
         const processId = integrationProcess.businessObject.processRef.id
-        let sequenceList = await processIntegrationProcesses(processName, processId,intProcessChildren, everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore,null, "FAILED",keepPayloadAsDefault,reprocessingAsDefault)
+        let sequenceList = await processIntegrationProcesses(processName, processId,intProcessChildren, everyEvent, everyReceiverSenderAfter,everyReceiverSenderBefore,null, "FAILED",keepPayloadAsDefault,reprocessingAsDefault,stepLetter)
         mergedArray = [...sequenceList, ...mergedArray]
         integrationProcess.businessObject.processRef.stepNumber = sequenceList.length
+        alphabetCounter++
     }
     resolve(mergedArray)
   })
@@ -280,13 +316,13 @@ export const  getIntegrationProcesses = async(elements, type) => {
           for(const extension of extentionElements.values){
               const children = extension.$children
               for(const c of children) {
-                  if(c.$body.indexOf("cname::IntegrationProcess") !== -1 && type ==='IP'){
-                      list.push(e)
-                  }else if(c.$body.indexOf("cname::LocalIntegrationProcess") !== -1 && type ==='LP'){
-                    list.push(e)
-                  }else if(c.$body.indexOf("cname::ErrorEventSubProcessTemplate") !== -1 && type ==='EP'){
-                    list.push(e)
-                  }
+                if(c.$body.indexOf("cname::IntegrationProcess") !== -1 && type ==='IP'){
+                  list.push(e)
+                }else if(c.$body.indexOf("cname::LocalIntegrationProcess") !== -1 && type ==='LP'){
+                  list.push(e)
+                }else if(c.$body.indexOf("cname::ErrorEventSubProcessTemplate") !== -1 && type ==='EP'){
+                  list.push(e)
+                }
               }
           }
       }
@@ -296,7 +332,7 @@ export const  getIntegrationProcesses = async(elements, type) => {
 }
 export const  getArtifactDetails = async(artifactID, name,version) => {
   return new Promise(async(resolve, reject) => {
-    var config = {
+    const config = {
       method: 'get',
       withCredentials:true,
       url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/artifacts/getArtifactDetails?name="+name+"&version="+version+"&artifactID="+artifactID

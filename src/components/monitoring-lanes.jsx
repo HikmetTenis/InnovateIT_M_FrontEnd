@@ -181,7 +181,7 @@ const MonitoringLanes = props => {
         {/* <Bar design="Header" style={{borderTopLeftRadius:"15px",borderTopRightRadius:"15px",width:"99.5%"}}>
           <Button design="Transparent" icon="slim-arrow-left" slot="startContent" ui5-button="" icon-only="" has-icon="" onClick={props.onClick}>Back</Button>
         </Bar> */}
-        <FlexBox direction="Column" alignItems="Start" justifyContent="Start" style={{width:"99.5%", backgroundColor:"white",borderRadius:"15px"}}>
+        <FlexBox direction="Column" alignItems="Start" justifyContent="Start" style={{width:"100%", backgroundColor:"white",borderRadius:"15px"}}>
           <FlexBox direction="Row" alignItems="Start" justifyContent="SpaceBetween" fitContainer="true">
             <Title level="H4" style={{marginBottom:"20px",marginTop:"20px", backgroundColor:"white", paddingLeft:"30px"}}>Monitor Message Processing</Title>
             <FlexBox direction="Row" alignItems="Start" justifyContent="Start">
@@ -198,7 +198,7 @@ const MonitoringLanes = props => {
                 </MultiComboBox>
               </FilterGroupItem> */}
               <FilterGroupItem groupName="Group 2" label="Time" style={{flex:"0 0 15%"}}>
-                <Select ref={dateSelection} className="generic-shadow" onChange={(e) => dateChanged(e)}>
+                <Select ref={dateSelection} onChange={(e) => dateChanged(e)}>
                   <Option value="1:hours" selected>Past Hour</Option>
                   <Option value="2:hours" >Past 2 Hours</Option>
                   <Option value="3:hours" >Past 3 Hours</Option>
@@ -212,26 +212,18 @@ const MonitoringLanes = props => {
                 </Select>
               </FilterGroupItem>
               <FilterGroupItem groupName="Group 3" label="Artifact Name" style={{flex:"0 0 25%"}}>
-                <Select ref={artifactSelection} className="generic-shadow">
+                <Select ref={artifactSelection} >
                   {allArtifacts}
                 </Select>
               </FilterGroupItem>
               <Text style={{marginRight:"15px"}}>Or</Text>
               <FilterGroupItem groupName="Group 4" label="Search" style={{flex:"0 0 30%"}}>
-                <Input className="generic-shadow" ref={searchSelection} onChange={(d) =>  searchChanged(d)} icon={<Icon name="search" />} onInput={(d) =>  searchChanged(d)}></Input>
+                <Input  ref={searchSelection} onChange={(d) =>  searchChanged(d)} icon={<Icon name="search" />} onInput={(d) =>  searchChanged(d)}></Input>
               </FilterGroupItem>
               <Link design="Emphasized" onClick={(d) =>  filterChanged(d)}>Filter</Link>
             </FlexBox>
             </FlexBox>}>
             <FlexBox direction="Row" alignItems="Center" justifyContent="Start" fitContainer="true">
-              {/* <FilterGroupItem groupName="Group 4" label="Step Number:" style={{flex:"1 1 5%"}}>
-                <MultiComboBox ref={customStepNumber} className="generic-shadow" onOpenChange = {(d) =>  multiSelectionToggled(d, 'selecAllID')} onSelectionChange={(d) =>  multiSelectionChanged(d, 'selecAllID')}>
-                    {stepNumbers}
-                </MultiComboBox>
-              </FilterGroupItem>
-              <FilterGroupItem groupName="Group 4" label="Step Status:" style={{flex:"1 1 25%"}}>
-                  <Input ref={stepStatus} className="generic-shadow"   type="Text" valueState="None" placeholder="SUCCESS or FAILED, etc.. (one status ONLY)"></Input>
-              </FilterGroupItem> */}
               <FilterGroupItem groupName="Group 1" label="Start Date" style={{flex:"1 1 5%"}}>
                     <DateTimePicker  ref={customStartdate} onChange={function Sa(){}} primaryCalendarType="Gregorian" valueState="None"/>
                   </FilterGroupItem>
@@ -240,7 +232,7 @@ const MonitoringLanes = props => {
                   </FilterGroupItem>
               <FilterGroupItem groupName="Group 4" label="Custom Header Properties" style={{flex:"1 1 70%"}}>
                 <FlexBox direction="Row" alignItems="Center" justifyContent="Start" fitContainer="true">
-                  <Input ref={customHeaderProperties} className="generic-shadow" style={{width:"80%"}} type="Text" valueState="None" placeholder="Name = Value or/and Name=Value ..."></Input>
+                  <Input ref={customHeaderProperties}  style={{width:"80%"}} type="Text" valueState="None" placeholder="Name = Value or/and Name=Value ..."></Input>
                   {/* <Switch checked="true"/>
                   <Label>Add Custom Header Properties to Table as columns</Label> */}
                 </FlexBox>
@@ -252,7 +244,7 @@ const MonitoringLanes = props => {
           <MonitoringLane index={2} details={laneDedatils} laneType="SUCCESS" updateData={updateLanes}></MonitoringLane>
           <MonitoringLane index={1} details={laneDedatils} laneType="FAILED" updateData={updateLanes}></MonitoringLane>
           <MonitoringLane index={3} details={laneDedatils} laneType="PROCESSING" updateData={updateLanes}></MonitoringLane>
-          <MonitoringLane index={4} details={laneDedatils} laneType="REPROCESSED" updateData={updateLanes}></MonitoringLane>
+          {/* <MonitoringLane index={4} details={laneDedatils} laneType="REPROCESSED" updateData={updateLanes}></MonitoringLane> */}
         </FlexBox>
       </FlexBox>
     </FlexBox>

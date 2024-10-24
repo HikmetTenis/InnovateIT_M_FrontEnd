@@ -37,21 +37,24 @@ function MonitoringJMSGraph({ refresh,isExpanded}) {
     let startDate = moment.utc(past).format("YYYY-MM-DD HH:mm:ss")
     setActiveRange(range.desc); // Update the active state when a button is clicked
     getJMSGraphData(startDate,endDate,range.desc).then((res)=>{
-        if(res.data.obj.length > 0){
-            const localTimezone = moment.tz.guess();
-            let gData = []
-            //2024-09-21T01:46:31.000Z
-            for(const e of res.data.obj){
-                const utcDate = moment.utc(e.createdAt);
-                let intervalFormat = 'HH:mm'
-                if(range.id !== "1:hours")
-                    intervalFormat = 'MMM DD, HH:mm'
-                const convertedLocalTime = utcDate.tz(localTimezone).format(intervalFormat);
-                gData.push({name:convertedLocalTime, capacity:parseInt(e.stat)})
-            }
-            setGraphData(gData)
+      let gData = []
+      if(res.data.obj.length > 0){
+        const localTimezone = moment.tz.guess();
+        
+        //2024-09-21T01:46:31.000Z
+        for(const e of res.data.obj){
+            const utcDate = moment.utc(e.createdAt);
+            let intervalFormat = 'HH:mm'
+            if(range.id !== "1:hours")
+                intervalFormat = 'MMM DD, HH:mm'
+            const convertedLocalTime = utcDate.tz(localTimezone).format(intervalFormat);
+            gData.push({name:convertedLocalTime, capacity:parseInt(e.stat)})
         }
-        setMessagesLoaded(false)
+        setGraphData(gData)
+      }else{
+        setGraphData(gData)
+      }
+      setMessagesLoaded(false)
     })
   };
   useEffect(() => {
@@ -63,22 +66,23 @@ function MonitoringJMSGraph({ refresh,isExpanded}) {
     
     let startDate = moment.utc(past).format("YYYY-MM-DD HH:mm:ss")
     getJMSGraphData(startDate,endDate,activeRange).then((res)=>{
-        if(res.data.obj.length > 0){
-            const localTimezone = moment.tz.guess();
-            console.log(localTimezone)
-            let gData = []
-            //2024-09-21T01:46:31.000Z
-            for(const e of res.data.obj){
-                const utcDate = moment.utc(e.createdAt);
-                let intervalFormat = 'HH:mm'
-                if(filteredTimeRange[0].id !== "1:hours")
-                    intervalFormat = 'MMM DD, HH:mm'
-                const convertedLocalTime = utcDate.tz(localTimezone).format(intervalFormat);
-                gData.push({name:convertedLocalTime, capacity:parseInt(e.stat)})
-            }
-            setGraphData(gData)
+      let gData = []
+      if(res.data.obj.length > 0){ 
+        const localTimezone = moment.tz.guess();
+        //2024-09-21T01:46:31.000Z
+        for(const e of res.data.obj){
+            const utcDate = moment.utc(e.createdAt);
+            let intervalFormat = 'HH:mm'
+            if(filteredTimeRange[0].id !== "1:hours")
+                intervalFormat = 'MMM DD, HH:mm'
+            const convertedLocalTime = utcDate.tz(localTimezone).format(intervalFormat);
+            gData.push({name:convertedLocalTime, capacity:parseInt(e.stat)})
         }
-        setMessagesLoaded(false)
+        setGraphData(gData)
+      }else{
+        setGraphData(gData)
+      }
+      setMessagesLoaded(false)
     })
   }, [refresh])
   return (
@@ -93,7 +97,7 @@ function MonitoringJMSGraph({ refresh,isExpanded}) {
         width:"90%"
       }}
       
-    ><LineChart loading={messagesLoaded} loadingDelay={2000} style={{height:"90%"}}
+    ><LineChart loading={messagesLoaded} style={{height:"90%"}}
     dataset={graphData}
     dimensions={[
       {
