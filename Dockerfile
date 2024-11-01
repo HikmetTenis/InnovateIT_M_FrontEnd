@@ -4,20 +4,15 @@ FROM node:21.6.2
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy package.json and yarn.lock to the container
-COPY package.json yarn.lock ./
-
-# Install dependencies
-RUN yarn install --frozen-lockfile
-
-# Install dependencies
-RUN yarn install
+# Copy the package.json and install dependencies
+COPY package*.json ./
+RUN npm install
 
 # Copy the app's source code to the container
 COPY . .
 
 # Build the React app
-RUN yarn build
+RUN npm run build
 
 # Serve the build
 CMD ["npx", "serve", "-s", "build"]
