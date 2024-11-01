@@ -9,8 +9,8 @@ spec:
     app: frontend
   ports:
     - protocol: TCP
-      port: 3000     # Port exposed by the service
-      targetPort: 80  # Port exposed by the PostgreSQL container
+      port: 80     # Port exposed by the service
+      targetPort: 3000  # Port exposed by the PostgreSQL container
   type: ClusterIP 
 ---
 apiVersion: apps/v1
