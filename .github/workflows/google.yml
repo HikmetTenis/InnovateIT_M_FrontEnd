@@ -44,4 +44,4 @@ jobs:
     - name: Apply deployment if not exists
       run: |-
         kubectl apply -f deployment.yaml
-    
+        kubectl apply -f ingress.yaml
