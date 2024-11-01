@@ -9,9 +9,25 @@ spec:
     app: frontend
   ports:
     - protocol: TCP
-      port: 80     # Port exposed by the service
-      targetPort: 3000  # Port exposed by the PostgreSQL container
+      port: 3000     # Port exposed by the service
+      targetPort: 3000  
   type: ClusterIP 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: store-v1-lb-svc
+  annotations:
+    cloud.google.com/l4-rbs: "enabled"
+spec:
+  type: LoadBalancer
+  selector:
+    app: frontend
+  ports:
+  - name: tcp-port
+    protocol: TCP
+    port: 80
+    targetPort: 3000
 ---
 apiVersion: apps/v1
 kind: Deployment
