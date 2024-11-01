@@ -18,4 +18,4 @@ ENV SSL_KEY_FILE=./cert/key.pem
 RUN npm run build
 
 # Serve the build
-CMD ["npx", "serve", "-s", "build"]
+CMD ["npm", "start"]

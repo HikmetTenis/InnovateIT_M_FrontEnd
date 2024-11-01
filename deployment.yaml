@@ -7,11 +7,14 @@ metadata:
 spec:
   selector:
     app: frontend
+  type: NodePort
   ports:
-    - protocol: TCP
-      port: 3000     # Port exposed by the service
-      targetPort: 3000  
-  type: ClusterIP 
+  - name: my-https-port
+    port: 443
+    targetPort: 8443
+  - name: my-http-port
+    port: 80
+    targetPort: 3000
 ---
 apiVersion: v1
 kind: Service
