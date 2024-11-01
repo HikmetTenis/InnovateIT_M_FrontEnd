@@ -10,7 +10,7 @@ jobs:
       IMAGE_NAME: frontend
       PROJECT_ID: watchmen-monitoring
       REPOSITORY: repo
-      GKE_LOCATION: us-central1
+      GKE_LOCATION: us-central1 
       GKE_CLUSTER: cluster-1 
     steps:
     - name: Checkout   
