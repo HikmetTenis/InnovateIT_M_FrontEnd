@@ -14,10 +14,10 @@ spec:
   ports:
   - name: my-https-port
     port: 443
-    targetPort: 3000
+    targetPort: 443
   - name: my-http-port
     port: 80
-    targetPort: 3000
+    targetPort: 80
 ---
 apiVersion: v1
 kind: Service
@@ -33,11 +33,11 @@ spec:
   - name: tcp-port
     protocol: TCP
     port: 80
-    targetPort: 3000
+    targetPort: 80
   - name: ssl
     protocol: TCP
     port: 443
-    targetPort: 3000
+    targetPort: 443
 ---
 apiVersion: apps/v1
 kind: Deployment
