@@ -9,7 +9,7 @@ metadata:
 spec:
   selector:
     app: frontend
-  type: NodePort
+  type: NodePort 
   ports:
   - name: my-https-port
     port: 443
