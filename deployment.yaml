@@ -31,6 +31,10 @@ spec:
     protocol: TCP
     port: 80
     targetPort: 3000
+  - name: ssl
+    protocol: TCP
+    port: 443
+    targetPort: 3000
 ---
 apiVersion: apps/v1
 kind: Deployment
