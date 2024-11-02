@@ -3,8 +3,7 @@ kind: Service
 metadata:
   name: frontend 
   annotations:
-    cloud.google.com/backend-config: '{"default": "api-default-config"}'
-    cloud.google.com/app-protocols: '{"my-https-port":"HTTPS"}' # new line
+    cloud.google.com/app-protocols: '{"my-https-port":"HTTPS","my-http-port":"HTTP"}'
   labels:
     app: frontend
 spec:
