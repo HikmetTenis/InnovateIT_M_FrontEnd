@@ -1,7 +1,5 @@
 import "@ui5/webcomponents-icons/dist/AllIcons.js";
-import {Text} from '@ui5/webcomponents-react';
 import {getJMSStats} from '../services/s-monitoring'
-import moment from 'moment'
 import {BusyIndicator,FlexBox} from '@ui5/webcomponents-react';
 import React, { useState,useEffect,useRef } from 'react';
 import { motion } from 'framer-motion';
@@ -41,10 +39,12 @@ function JMSTile({ name, refresh, handleRefresh}) {
       },
     };
     useEffect(() => {
-      setLoading(true)
+      const getJMS = async () => {
+        setLoading(true)
       handleRefresh(true)
-      getJMSStats(name).then((res)=>{
-        const result = res.data.obj.d
+      try{
+        const data = await getJMSStats(name)
+        const result = data.data.obj.d
         setQueueCount(result.QueueNumber)
         setJmsProperties({
           capaticy: result.Capacity,
@@ -80,7 +80,13 @@ function JMSTile({ name, refresh, handleRefresh}) {
         }
         setLoading(false)
         handleRefresh(false)
-      })
+      }catch(err){
+        setLoading(false)
+        console.log(err)
+      }
+    }
+    getJMS()
+      
     }, [refresh])
     const handleExpand = (id) => {
         setIsExpanded(!isExpanded);

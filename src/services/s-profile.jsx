@@ -1,5 +1,4 @@
-import api from '../helpers/axios-custom';
-import { InteractionRequiredAuthError } from '@azure/msal-browser';
+import axiosInstance from '../helpers/axios-custom';
 export const  getAvatar = (getAccessToken) => {
     return new Promise(async(resolve, reject) => {
         const token = await getAccessToken()
@@ -23,18 +22,41 @@ export const  getAvatar = (getAccessToken) => {
         }
     });
 }
-
+export const  login = () => {
+  const config = {
+    method: 'get',
+    withCredentials:true,
+    url: "https://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/login"
+  };
+  axiosInstance(config).then(function (response) {
+    return response
+  }).catch(function (error) {
+    return error
+  });
+}
+export const  checkUser = () => {
+  const config = {
+    method: 'get',
+    withCredentials:true,
+    url: "https://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/user"
+  };
+  axiosInstance(config).then(function (response) {
+    return response
+  }).catch(function (error) {
+    return error
+  });
+}
 export const  getSystemInfo = () => {
     return new Promise((resolve, reject) => {
-        var config = {
-            method: 'get',
-            withCredentials:true,
-            url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/system/getSystemInfo"
-          };
-          api(config).then(function (response) {
-            resolve(response)
-          }).catch(function (error) {
-            reject(error)
-          });
+      const config = {
+        method: 'get',
+        withCredentials:true,
+        url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/system/getSystemInfo"
+      };
+      axiosInstance(config).then(function (response) {
+        resolve(response)
+      }).catch(function (error) {
+        reject(error)
+      });
     });
 }

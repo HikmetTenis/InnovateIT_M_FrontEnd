@@ -238,6 +238,24 @@ ui5-icon:hover {
 {
   background: #ddd;
 }
+#login-picture-wrapper{
+  width:500px;
+  height:500px;
+  border:1px solid lightgrey;
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
+  background-color:#333333;
+}
+#login-bottom-window{
+  width:500px;
+  height:500px;
+  border:1px solid lightgrey;
+  border-top-right-radius: 20px;
+  border-bottom-right-radius: 20px;
+  justify-content:center;
+  align-items:stretch;
+  background-color:white;
+}
 .grid-item {
   box-shadow: var(--sapContent_Shadow2)!important;
   position: relative;

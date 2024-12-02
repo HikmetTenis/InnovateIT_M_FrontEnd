@@ -4,20 +4,18 @@ import {LineChart}  from '@ui5/webcomponents-react-charts';
 import MonitoringTile from './monitoring-tile';
 import GridContainer from './monitoring-tile-container';
 import JMSTile from "./monitoring-jms-stats";
-import React, { useState,useEffect,useContext,useRef } from 'react';
+import React, { useState,useEffect} from 'react';
 import { LayoutGroup  } from 'framer-motion';
 import moment from 'moment'; 
 import {getGraphAllData} from '../services/s-monitoring'
 import momentTZ from 'moment-timezone';
-import { useNotifications } from '../helpers/notification-context';
 import { motion} from "framer-motion"
-import { AuthContext } from '../helpers/authcontext';
 export default function MonitoringPageHeader() {
     const [refreshMessages, setRefreshMessages] = useState(false);
     const [refreshQueues, setRefreshQueues] = useState(false);
-    const {getAccessToken } = useContext(AuthContext);
     const [refreshTime1, setRefreshtime1] = useState(moment().format("LLL"));
     const [refreshTime2, setRefreshtime2] = useState(moment().format("LLL"));
+
     const [graphLoaded, setGraphLoaded] = useState(true);
     const [queuesLoaded, setQueuesLoaded] = useState(true);
     const [messagesLoaded, setMessagesLoaded] = useState(true);
@@ -29,7 +27,6 @@ export default function MonitoringPageHeader() {
         { id: 2, color: 'red', type:"FAILED"},
         { id: 3, color: 'grey', type:"PROCESSING" }
       ]);
-    const { notifications, removeNotification,addNotification } = useNotifications();
     const [expandedId, setExpandedId] = useState(null);
     const wrapperVariants = {
         hidden: {
@@ -87,9 +84,8 @@ export default function MonitoringPageHeader() {
             }
             setGraphLoaded(false)
         })
-      };
+    };
     useEffect(() => {
-        
         let now = moment();
         const endDate = moment.utc(now).format("YYYY-MM-DD HH:mm:ss")
         let past = now.subtract("1", "hours");
@@ -107,27 +103,8 @@ export default function MonitoringPageHeader() {
             }
             setGraphLoaded(false)
         })
-        const initializeWorker = async () => {
-            const worker = new Worker(new URL('../helpers/notificationWorker.js', import.meta.url));
-
-            // Listen for messages from the web worker
-            worker.onmessage = (event) => {
-                const { data } = event;
-                if (data.error) {
-                    console.error(data.error);
-                } else {
-                    addNotification(data);
-                }
-            };
-            const accesstoken = await getAccessToken()
-            worker.postMessage({ token: accesstoken });
-            // Clean up the worker when the component unmounts
-            return () => {
-                worker.terminate();
-            };
-        }
-        initializeWorker()
-    }, [])
+    }, []);
+       
     const handleRefreshForMessages = (newValue) => {
         setMessagesLoaded(newValue);
     };
@@ -196,7 +173,7 @@ export default function MonitoringPageHeader() {
                     <motion.div style={{width:"100%"}}
                         variants={wrapperVariants}
                         initial="visible"
-                        animate={!queuesLoaded ? 'visible' : 'hidden'}
+                        animate={queuesLoaded ? 'visible' : 'hidden'}
                         exit="exit">
                             <GridContainer>
                                 <JMSTile name="Broker1" refresh={refreshQueues} handleRefresh={handleRefreshForQueues}></JMSTile>

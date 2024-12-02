@@ -11,11 +11,11 @@ RUN npm install
 # Copy the app's source code to the container
 COPY . .
 RUN npm ci
-ENV HTTPS=true
-ENV SSL_CRT_FILE=./cert/cert.pem
-ENV SSL_KEY_FILE=./cert/key.pem
+# ENV HTTPS=true
+# ENV SSL_CRT_FILE=./cert/cert.pem
+# ENV SSL_KEY_FILE=./cert/key.pem
 # Build the React app
-RUN npm run build
+#RUN npm run build
 
 # Serve the build
-CMD ["npm", "start"]
+CMD ["npm", "run", "build", "start"]

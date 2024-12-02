@@ -1,10 +1,11 @@
-import api from '../helpers/axios-custom';
+import getApiInstance from '../helpers/axios-custom';
 export const  reprocess = (stepNumber,messageID) => {
+  const api = getApiInstance();
     return new Promise((resolve, reject) => {
-        var config = {
+        const config = {
             method: 'get',
             withCredentials:true,
-            url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/monitoring/reprocess?step="+stepNumber+"&messageID="+messageID
+            url: "/monitoring/reprocess?step="+stepNumber+"&messageID="+messageID
           };
           api(config).then(function (response) {
             resolve(response)
@@ -14,11 +15,12 @@ export const  reprocess = (stepNumber,messageID) => {
     });
 }
 export const  getGraphAllData = (startDate, endDate, period) => {
+  const api = getApiInstance();
   return new Promise((resolve, reject) => {
-      var config = {
+      const config = {
           method: 'get',
           withCredentials:true,            
-          url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/monitoring/getGraphAllData?period="+period+"&startDate='"+startDate+"'&endDate='"+endDate+"'"
+          url: "/monitoring/getGraphAllData?period="+period+"&startDate='"+startDate+"'&endDate='"+endDate+"'"
         };
         api(config).then(function (response) {
           resolve(response)
@@ -28,11 +30,12 @@ export const  getGraphAllData = (startDate, endDate, period) => {
   });
 }
 export const  getGraphData = (startDate, endDate, status, period) => {
+  const api = getApiInstance();
   return new Promise((resolve, reject) => {
-      var config = {
+      const config = {
           method: 'get',
           withCredentials:true,            
-          url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/monitoring/getGraphData?period="+period+"&status="+status+"&startDate='"+startDate+"'&endDate='"+endDate+"'"
+          url: "/monitoring/getGraphData?period="+period+"&status="+status+"&startDate='"+startDate+"'&endDate='"+endDate+"'"
         };
         api(config).then(function (response) {
           resolve(response)
@@ -42,11 +45,12 @@ export const  getGraphData = (startDate, endDate, status, period) => {
   });
 }
 export const  getJMSGraphData = (startDate, endDate, period) => {
+  const api = getApiInstance();
   return new Promise((resolve, reject) => {
-      var config = {
+      const config = {
           method: 'get',
           withCredentials:true,            
-          url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/monitoring/getJMSGraphData?period="+period+"&startDate='"+startDate+"'&endDate='"+endDate+"'"
+          url: "/monitoring/getJMSGraphData?period="+period+"&startDate='"+startDate+"'&endDate='"+endDate+"'"
         };
         api(config).then(function (response) {
           resolve(response)
@@ -56,11 +60,12 @@ export const  getJMSGraphData = (startDate, endDate, period) => {
   });
 }
 export const getJMSStats = (broker) => {
+  const api = getApiInstance();
   return new Promise((resolve, reject) => {
-      var config = {
+      const config = {
           method: 'get',
           withCredentials:true,
-          url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/monitoring/getJMSStats?broker='"+broker+"'"
+          url: "/monitoring/getJMSStats?broker='"+broker+"'"
         };
         api(config).then(function (response) {
           resolve(response)
@@ -70,11 +75,12 @@ export const getJMSStats = (broker) => {
   });
 }
 export const getJMSStatsQueueNamesHigh = (broker) => {
+  const api = getApiInstance();
   return new Promise((resolve, reject) => {
-      var config = {
+      const config = {
           method: 'get',
           withCredentials:true,
-          url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/monitoring/getJMSStatsInactiveQueues?broker='"+broker+"'"
+          url: "/monitoring/getJMSStatsInactiveQueues?broker='"+broker+"'"
         };
         api(config).then(function (response) {
           resolve(response)
@@ -84,34 +90,36 @@ export const getJMSStatsQueueNamesHigh = (broker) => {
   });
 }
 export const  getPayload = (stepNumber,messageID) => {
-    return new Promise((resolve, reject) => {
-        var config = {
-            method: 'get',
-            withCredentials:true,
-            url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/monitoring/getPayload?step="+stepNumber+"&messageID="+messageID
-          };
-          api(config).then(function (response) {
-            resolve(response)
-          }).catch(function (error) {
-            reject(error)
-          });
-    });
-}
-export const  getNotifications = (accessToken,startDate,endDate) => {
+  const api = getApiInstance();
   return new Promise((resolve, reject) => {
-      var config = {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,  // Attach the token to the request
-            'Content-Type': 'application/json'
-          },
+      const config = {
           method: 'get',
           withCredentials:true,
-          url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/monitoring/getNotifications?startDate="+startDate+"&endDate="+endDate
+          url: "/monitoring/getPayload?step="+stepNumber+"&messageID="+messageID
         };
         api(config).then(function (response) {
           resolve(response)
         }).catch(function (error) {
           reject(error)
         });
+  });
+}
+export const  getNotifications = (accessToken,startDate,endDate) => {
+  const api = getApiInstance();
+  return new Promise((resolve, reject) => {
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,  // Attach the token to the request
+        'Content-Type': 'application/json'
+      },
+      method: 'get',
+      withCredentials:true,
+      url: "/monitoring/getNotifications?startDate="+startDate+"&endDate="+endDate
+    };
+    api(config).then(function (response) {
+      resolve(response)
+    }).catch(function (error) {
+      reject(error)
+    });
   });
 }

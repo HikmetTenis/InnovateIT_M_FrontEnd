@@ -1,9 +1,10 @@
-import api from '../helpers/axios-custom';
+import getApiInstance from '../helpers/axios-custom';
 const alphabet = [
   'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
   'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
 ];
 export const  getPackages = async() => {
+  const api = getApiInstance();
     return new Promise(async(resolve, reject) => {
         var config = {
             method: 'get',
@@ -18,6 +19,7 @@ export const  getPackages = async() => {
     });
 }
 export const  getArtifacts = async(artifactID) => {
+  const api = getApiInstance();
   return new Promise(async(resolve, reject) => {
     var config = {
       method: 'get',
@@ -331,11 +333,12 @@ export const  getIntegrationProcesses = async(elements, type) => {
   })
 }
 export const  getArtifactDetails = async(artifactID, name,version) => {
+  const api = getApiInstance();
   return new Promise(async(resolve, reject) => {
     const config = {
       method: 'get',
       withCredentials:true,
-      url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/artifacts/getArtifactDetails?name="+name+"&version="+version+"&artifactID="+artifactID
+      url: "/artifacts/getArtifactDetails?name="+name+"&version="+version+"&artifactID="+artifactID
     };
     api(config).then(function (response) {
       resolve(response)
@@ -345,11 +348,12 @@ export const  getArtifactDetails = async(artifactID, name,version) => {
   });
 }
 export const  getArtifactRuntimeDetails = async(artifactID) => {
+  const api = getApiInstance();
   return new Promise(async(resolve, reject) => {
     var config = {
       method: 'get',
       withCredentials:true,
-      url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/artifacts/getArtifactRuntimeDetails?&artifactID="+artifactID
+      url: "/artifacts/getArtifactRuntimeDetails?&artifactID="+artifactID
     };
     api(config).then(function (response) {
       resolve(response)
@@ -359,11 +363,12 @@ export const  getArtifactRuntimeDetails = async(artifactID) => {
   });
 }
 export const  saveArtifact = async(artifact) => {
+  const api = getApiInstance();
   return new Promise(async(resolve, reject) => {
     var config = {
       method: 'post',
       withCredentials:true,
-      url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/artifacts/saveArtifact",
+      url: "/artifacts/saveArtifact",
       data:artifact
     };
     api(config).then(function (response) {
@@ -374,13 +379,13 @@ export const  saveArtifact = async(artifact) => {
   });
 }
 export const  modifyArtifact = (artifact) => {
-  console.log(artifact)
+  const api = getApiInstance();
   return new Promise((resolve, reject) => {
     var config = {
       method: 'post',
       maxBodyLength: Infinity,
       withCredentials:true,
-      url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/artifacts/modifyArtifact",
+      url: "/artifacts/modifyArtifact",
       data:artifact
     };
     api(config).then(function (response) {
