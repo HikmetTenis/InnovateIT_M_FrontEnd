@@ -6,10 +6,10 @@ const alphabet = [
 export const  getPackages = async() => {
   const api = getApiInstance();
     return new Promise(async(resolve, reject) => {
-        var config = {
+        const config = {
             method: 'get',
             withCredentials:true,
-            url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/artifacts/getPackages"
+            url: "/artifacts/getPackages"
           };
           api(config).then(function (response) {
             resolve(response)
@@ -21,10 +21,10 @@ export const  getPackages = async() => {
 export const  getArtifacts = async(artifactID) => {
   const api = getApiInstance();
   return new Promise(async(resolve, reject) => {
-    var config = {
+    const config = {
       method: 'get',
       withCredentials:true,
-      url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/artifacts/getArtifacts?artifactID="+artifactID
+      url: "/artifacts/getArtifacts?artifactID="+artifactID
     };
     api(config).then(function (response) {
       resolve(response)
@@ -350,7 +350,7 @@ export const  getArtifactDetails = async(artifactID, name,version) => {
 export const  getArtifactRuntimeDetails = async(artifactID) => {
   const api = getApiInstance();
   return new Promise(async(resolve, reject) => {
-    var config = {
+    const config = {
       method: 'get',
       withCredentials:true,
       url: "/artifacts/getArtifactRuntimeDetails?&artifactID="+artifactID
@@ -365,7 +365,7 @@ export const  getArtifactRuntimeDetails = async(artifactID) => {
 export const  saveArtifact = async(artifact) => {
   const api = getApiInstance();
   return new Promise(async(resolve, reject) => {
-    var config = {
+    const config = {
       method: 'post',
       withCredentials:true,
       url: "/artifacts/saveArtifact",
@@ -381,7 +381,7 @@ export const  saveArtifact = async(artifact) => {
 export const  modifyArtifact = (artifact) => {
   const api = getApiInstance();
   return new Promise((resolve, reject) => {
-    var config = {
+    const config = {
       method: 'post',
       maxBodyLength: Infinity,
       withCredentials:true,

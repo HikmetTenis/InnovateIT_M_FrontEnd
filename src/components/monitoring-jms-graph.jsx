@@ -1,9 +1,11 @@
 import { motion } from 'framer-motion';
-import {LineChart}  from '@ui5/webcomponents-react-charts';
+import {LineChart,}  from '@ui5/webcomponents-react-charts';
+import { IllustratedMessage,FlexBox} from '@ui5/webcomponents-react';
 import React, { useState,useEffect,useRef } from 'react';
 import moment from 'moment'; 
 import {getJMSGraphData} from '../services/s-monitoring'
 import momentTZ from 'moment-timezone';
+import "@ui5/webcomponents-fiori/dist/illustrations/NoFilterResults.js"
 function MonitoringJMSGraph({ refresh,isExpanded}) {
   const boxVariants = {
     hidden: {
@@ -97,36 +99,60 @@ function MonitoringJMSGraph({ refresh,isExpanded}) {
         width:"90%"
       }}
       
-    ><LineChart loading={messagesLoaded} style={{height:"90%"}}
-    dataset={graphData}
-    dimensions={[
-      {
-        accessor: 'name'
-      }
-    ]}
-    measures={[
-      {
-        accessor: 'capacity',
-        label: 'Capacity',
-      }
-    ]}
-    onClick={function Sa(){}}
-    onDataPointClick={function Sa(){}}
-    onLegendClick={function Sa(){}}
-  />
-  <div className="time-range-container">
-    <div className="time-range-selector">
-        {timeRanges.map((range) => (
-            <button
-                key={range.desc}
-                className={range.desc === activeRange ? 'active' : ''}
-                onClick={(e) => handleRangeClick(range,e)}
-        >
-        {range.desc}
-        </button>
-    ))}
-    </div>
-    </div>
+    >{graphData.length === 0 ?
+      <FlexBox direction="Column" alignItems="Center" justifyContent="Start" fitContainer="true">
+        <IllustratedMessage
+          name="NoFilterResults"
+          subtitleText="Crickets.."
+        />
+        <div className="time-range-container">
+            <div className="time-range-selector">
+                {timeRanges.map((range) => (
+                    <button
+                        key={range.desc}
+                        className={range.desc === activeRange ? 'active' : ''}
+                        onClick={(e) => handleRangeClick(range,e)}
+                >
+                {range.desc}
+                </button>
+            ))}
+            </div>
+          </div>
+        </FlexBox>
+      :
+      <FlexBox direction="Row" alignItems="Center" justifyContent="Start" fitContainer="true">
+        <LineChart loading={messagesLoaded} style={{height:"90%"}}
+          dataset={graphData}
+          dimensions={[
+            {
+              accessor: 'name'
+            }
+          ]}
+          measures={[
+            {
+              accessor: 'capacity',
+              label: 'Capacity',
+            }
+          ]}
+          onClick={function Sa(){}}
+          onDataPointClick={function Sa(){}}
+          onLegendClick={function Sa(){}}
+        />
+        <div className="time-range-container">
+          <div className="time-range-selector">
+              {timeRanges.map((range) => (
+                  <button
+                      key={range.desc}
+                      className={range.desc === activeRange ? 'active' : ''}
+                      onClick={(e) => handleRangeClick(range,e)}
+              >
+              {range.desc}
+              </button>
+          ))}
+          </div>
+        </div>
+      </FlexBox>
+    }
     </motion.div>
   );
 }

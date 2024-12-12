@@ -23,7 +23,13 @@ export const AuthProvider = ({ children }) => {
         try {
           const config = {
             method: 'get',
-            withCredentials:true,
+            headers: {
+              'Content-Type': 'application/json',
+              // 'Access-Control-Allow-Headers': 'content-type',
+              // 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PUT, DELETE',
+              // 'Access-Control-Allow-Origin': 'http://localhost:5000', // Explicitly set the Origin header
+            },
+            withCredentials: true,
             url: "https://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/user"
           };
           const response = await api(config)
@@ -32,7 +38,7 @@ export const AuthProvider = ({ children }) => {
           setLoading(false)
         } catch (error) {
           console.error("Token verification failed:", error);
-          if(error.response.status === 401 || error.response.status === 403){
+          if(error.response && (error.response.status === 401 || error.response.status === 403)){
             if(AUTHTYPE === "SAML"){
               window.location.href ="https://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/loginSAML"
             }else{
@@ -95,6 +101,11 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem("jwtToken");
         setUser(null);
         setIsAuthenticated(false);
+        if(AUTHTYPE === "SAML"){
+          window.location.href = "https://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/loginSAML"
+        }else{
+          window.location.href = "/login"
+        }
     };
 
     // Check Authentication Status

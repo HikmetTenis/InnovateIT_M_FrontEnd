@@ -8,7 +8,11 @@ const createApiInstance = () => {
     baseURL: `https://${process.env.REACT_APP_SERVER_URL}:${process.env.REACT_APP_SERVER_PORT}`,
     headers: {
       'Content-Type': 'application/json',
+      // 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PUT, DELETE',
+      // 'Access-Control-Allow-Headers': 'content-type',
+      // 'Access-Control-Allow-Origin': 'http://localhost:5000', // Explicitly set the Origin header
     },
+    withCredentials: true
   });
 };
 

@@ -77,21 +77,6 @@ const LoginPage = () => {
                 });
                 setMessage({open:false, toastMessage:"Login failed.!", result:null, callback:null, toast:true})
             }
-            // try {
-            //     const credentials = {
-            //         username:username,
-            //         password: password
-            //     }
-            //     const response = await signIn( credentials );
-            //     localStorage.setItem('token', response.obj);
-            //     navigate('/dashboard'); // Redirect to a protected page
-            // } catch (error) {
-            //     setErrors({
-            //         username: validateField("username", '', 'Login failed, Username may not be correct.'),
-            //         password: validateField("password", '', 'Login failed, Password may not be correct.')
-            //     });
-            //     setMessage({open:false, toastMessage:"Login failed.!", result:null, callback:null, toast:true})
-            // }
         }
     };
     const resetPasswordDialog = async (e) => {

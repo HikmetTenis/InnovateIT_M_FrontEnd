@@ -347,6 +347,16 @@ const MonitoringPageDetails = props => {
         diagramData = meta.diagramData
         desc = meta.description
       }
+      let everyEvent = false
+      let everyReceiverSenderAfter = false
+      let everyReceiverSenderBefore = false
+      let keepPayloadAsDefault = false
+      if(metadatas.data.obj != null){
+        everyEvent=metadatas.data.obj.everyEvent
+        everyReceiverSenderAfter=metadatas.data.obj.everyReceiverSenderAfter
+        everyReceiverSenderBefore=metadatas.data.obj.everyReceiverSenderBefore
+        keepPayloadAsDefault=metadatas.data.obj.keepPayloadAsDefault
+      }
       messageData.push({
         messageId:runtime.messageId,
         messageIdURL:runtime.messageIdURL,
@@ -365,10 +375,10 @@ const MonitoringPageDetails = props => {
         durationColor:durationColor,
         errorInfo:runtime.errorInfo,
         version:version,
-        everyEvent:metadatas.data.obj.everyEvent,
-        everyReceiverSenderAfter:metadatas.data.obj.everyReceiverSenderAfter,
-        everyReceiverSenderBefore:metadatas.data.obj.everyReceiverSenderBefore,
-        keepPayloadAsDefault:metadatas.data.obj.keepPayloadAsDefault,
+        everyEvent:everyEvent,
+        everyReceiverSenderAfter:everyReceiverSenderAfter,
+        everyReceiverSenderBefore:everyReceiverSenderBefore,
+        keepPayloadAsDefault:keepPayloadAsDefault,
         description:desc,
         updatedAt:updatedAt,
         updatedBy:updatedBy,

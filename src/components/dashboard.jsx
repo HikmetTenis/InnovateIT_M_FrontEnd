@@ -8,7 +8,6 @@ import { motion, AnimatePresence } from "framer-motion"
 import MessageBoxComponent from "./message-box"
 import MessageToastComponent from "./message-toast"
 import '@ui5/webcomponents-react/dist/Assets' 
-import messageContext from "../helpers/message-context";
 import $ from 'jquery';
 import { useNotifications } from '../helpers/notification-context';
 import { useAuth } from "../helpers/authcontext";
@@ -89,7 +88,7 @@ function Dashboard() {
   useEffect(() => {
     setFullname(localStorage.getItem("fullname"))
   },[user])
-  const [message,setMessage] = useState({open:false,message:"",result:null, callback:null, toast:false})
+  
   const showDetails = (newpage) =>{ 
     setpage(newpage) 
   } 
@@ -168,9 +167,7 @@ function Dashboard() {
     }
   }
   return  !isAuthenticated ? <BusyIndicator active={!isAuthenticated} style={{width:"100%", height:"100%"}} size="M"></BusyIndicator>:(
-    <div className="App">
-      
-      <messageContext.Provider value={{message,setMessage}}>
+    <FlexBox direction="Row" alignItems="Center" justifyContent="Center" fitContainer="true">
         <Menu
             opener={buttonRef.current}
             open={menuIsOpen}
@@ -180,7 +177,7 @@ function Dashboard() {
             }}>
             <MenuItem icon="log" text="Logout" />
         </Menu>
-        <body>
+        <body style={{flex:"1 1 auto"}}>
           <div className="main">
               <div className='App-Header'>
                 <Button style={{display:"block",position:"fixed",left:"20px", top:"20px", zIndex:"100", color:"black"}} onClick={() => setIsCollapsed(!isCollapsed)} design="Transparent"  icon="menu2"/>
@@ -302,8 +299,8 @@ function Dashboard() {
 
           </div>
         </body>
-      </messageContext.Provider>
-    </div>
+        </FlexBox>
+
     );
 
 }
