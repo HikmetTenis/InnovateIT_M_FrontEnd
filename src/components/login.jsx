@@ -1,11 +1,11 @@
 import React, { useState,useContext } from 'react';
 import "@ui5/webcomponents-icons/dist/AllIcons.js";
 import {FlexBox, Input, Label, Text,Button,Link,Icon} from '@ui5/webcomponents-react';
-import { useNavigate } from 'react-router-dom';
 import MessageContext from "../helpers/message-context";
 import '@ui5/webcomponents-react/dist/Assets'
-import {signIn,resetPassword} from '../services/s-account'
+import {resetPassword} from '../services/s-account'
 import { useAuth } from "../helpers/authcontext";
+import CustomError from '../helpers/custom-error';
 const LoginPage = () => {
     const { login } = useAuth();
     const [username, setUsername] = useState('');
@@ -13,7 +13,6 @@ const LoginPage = () => {
     const {message,setMessage} = useContext(MessageContext);
     const [passwordIcon, setPasswordIcon] = useState('show');
     const [passwordType, setPasswordType] = useState('Password');
-    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         username: '',
         password:''
@@ -63,19 +62,27 @@ const LoginPage = () => {
         setErrors(newErrors);
         if (isValid) {
             try {
-                console.log(process.env.REACT_APP_AUTHTYPE)
                 const credentials = {
                     username:username,
-                    password: password
+                    password: password,
+                    serviceID: process.env.REACT_APP_SERVICE_ID
                 }
-                await login(credentials); // Handles either JWT or SAML login based on AUTHTYPE
-                window.location.href = "/dashboard";
+                const user = await login(credentials); // Handles either JWT or SAML login based on AUTHTYPE
+                if(user.data.isPasswordInitial){
+                    window.location.href = "/changePassword";
+                }else{
+                    window.location.href = "/dashboard";
+                }
             } catch (err) {
-                setErrors({
-                    username: validateField("username", '', 'Login failed, Username may not be correct.'),
-                    password: validateField("password", '', 'Login failed, Password may not be correct.')
-                });
-                setMessage({open:false, toastMessage:"Login failed.!", result:null, callback:null, toast:true})
+                if (err instanceof CustomError) {
+                    setMessage({open:false, toastMessage:err.message, result:null, callback:null, toast:true})
+                } else {
+                    setErrors({
+                        username: validateField("username", '', 'Login failed, Username may not be correct.'),
+                        password: validateField("password", '', 'Login failed, Password may not be correct.')
+                    });
+                    setMessage({open:false, toastMessage:"Login failed.!", result:null, callback:null, toast:true})
+                }
             }
         }
     };
@@ -113,6 +120,7 @@ const LoginPage = () => {
     }
     return (
         <FlexBox direction="Row" alignItems="Center" justifyContent="Center" fitContainer="true">
+            <Text style={{top:"10px", position:"absolute", right:"50px"}}>{process.env.REACT_APP_VERSION}</Text>
             <FlexBox direction="Column" alignItems="Center" justifyContent="Center" id="login-picture-wrapper">
                 <div style={{height:"100%", display:"Flex", justiftContent:"Center"}}>
                     <img style={{width:"500px",height:"400px",margin:"auto"}} alt="Innovate IT" src={process.env.PUBLIC_URL + '/logo2.svg'} />
@@ -148,7 +156,6 @@ const LoginPage = () => {
                     <Button style={{width:"100%"}} design="Emphasized" icon="unlocked" onClick={(e) => handleLogin(e)}>Sign In</Button>
                 
                     <FlexBox direction="Row" alignItems="Center" justifyContent="SpaceBetween" style={{width:"100%", height:"30px"}}>
-                        <Link design="Default" onClick={() => navigate("/register")}> Register</Link>
                         <Link design="Default" onClick={(e) => resetPasswordDialog(e)}>Forgot Password </Link>
                     </FlexBox>
                 </FlexBox>

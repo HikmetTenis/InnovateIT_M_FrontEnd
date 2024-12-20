@@ -42,6 +42,7 @@ function Dashboard() {
   const [popoverIsOpen, setPopoverIsOpen] = useState(false);
   const [popoverBody1, setPopoverBody1] = useState([]);
   const [popoverIsOpen1, setPopoverIsOpen1] = useState(false);
+  const [messageStatus, setMessageStatus] = useState("ALL");
   const [notificationCount, setNotificationCount] = useState(0);
   const buttonRef = useRef(null);
   const [menuIsOpen, setMenuIsOpen] = useState(false);
@@ -161,6 +162,10 @@ function Dashboard() {
     }
     setPopoverBody1(listItems)
   }
+  const tileClicked  = (e) => {
+    setMessageStatus(e)
+    setpage("monitoring") 
+  }
   const menuItemClicked = (e) => {
     if(e.detail.text === "Logout"){
       logout()
@@ -180,7 +185,7 @@ function Dashboard() {
         <body style={{flex:"1 1 auto"}}>
           <div className="main">
               <div className='App-Header'>
-                <Button style={{display:"block",position:"fixed",left:"20px", top:"20px", zIndex:"100", color:"black"}} onClick={() => setIsCollapsed(!isCollapsed)} design="Transparent"  icon="menu2"/>
+                <Button style={{display:"block",position:"absolute",left:"20px", top:"20px", zIndex:"100", color:"black"}} onClick={() => setIsCollapsed(!isCollapsed)} design="Transparent"  icon="menu2"/>
                 <ShellBar className='app-shellbar'
                     logo={<img style={{maxHeight:"2.5rem", marginTop:"-5px", marginRight:"-25px", paddingRight:"20px"}}alt="Innovate IT" src={process.env.PUBLIC_URL + '/shield.png'} />}
                     //menuItems={<><StandardListItem data-key="1">Menu Item 1</StandardListItem><StandardListItem data-key="2">Menu Item 2</StandardListItem><StandardListItem data-key="3">Menu Item 3</StandardListItem></>}
@@ -269,14 +274,14 @@ function Dashboard() {
                       variants={wrapperVariants}
                       initial="visible"
                       animate={page === 'home' ? 'visible' : 'hidden'}
-                      exit="exit">{page === "home" && isAuthenticated && (<Home></Home>)} </motion.div>
+                      exit="exit">{page === "home" && isAuthenticated && (<Home tileClicked={tileClicked}></Home>)} </motion.div>
                 </AnimatePresence>
                 <AnimatePresence>
                   <motion.div style={{flex:"1 1 auto",width:"100%", height:"100%"}}
                       variants={wrapperVariants}
                       initial="visible"
                       animate={page === "monitoring" ? 'visible' : 'hidden'}
-                      exit="exit">{page === "monitoring" && isAuthenticated && (<MonitoringPageDetails style={{width:"100%", height:"100%"}}></MonitoringPageDetails>)}</motion.div>
+                      exit="exit">{page === "monitoring" && isAuthenticated && (<MonitoringPageDetails status={messageStatus} style={{width:"100%", height:"100%"}}></MonitoringPageDetails>)}</motion.div>
                 </AnimatePresence>
                 <AnimatePresence>
                   <motion.div style={{flex:"1 1 auto",width:"100%", height:"100%"}}

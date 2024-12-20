@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState,useCallback,useEffect} from "react";
 import getApiInstance from './axios-custom';
-import { useLocation } from "react-router-dom";
+import CustomError from './custom-error';
+import { useLocation,useMatch } from "react-router-dom";
 // Create the AuthContext
 const AuthContext = createContext();
 
@@ -13,10 +14,12 @@ export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [loading, setLoading] = useState(true);
     const [token, setToken] = useState(null);
+    const matchLogin = useMatch('/login');
+    const matchResetPassword = useMatch('/reset-password/:userId/:link');
     const location = useLocation();
     const api = getApiInstance();
     useEffect(() => {
-      if (location.pathname === "/login") {
+      if (matchLogin || matchResetPassword) {
         return children;
       }
       const verifyToken = async () => {
@@ -25,15 +28,12 @@ export const AuthProvider = ({ children }) => {
             method: 'get',
             headers: {
               'Content-Type': 'application/json',
-              // 'Access-Control-Allow-Headers': 'content-type',
-              // 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PUT, DELETE',
-              // 'Access-Control-Allow-Origin': 'http://localhost:5000', // Explicitly set the Origin header
             },
             withCredentials: true,
             url: "https://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/user"
           };
           const response = await api(config)
-            // Assuming the backend sends user details
+          setUser(response.data.user.email);
           setIsAuthenticated(true);
           setLoading(false)
         } catch (error) {
@@ -41,8 +41,8 @@ export const AuthProvider = ({ children }) => {
           if(error.response && (error.response.status === 401 || error.response.status === 403)){
             if(AUTHTYPE === "SAML"){
               window.location.href ="https://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/loginSAML"
-            }else{
-              window.location.href ="/login"
+            }else if(window.location.pathname !== "/login"){
+                window.location.href ="/login"
             }
           }
         }
@@ -82,11 +82,15 @@ export const AuthProvider = ({ children }) => {
             setToken(token)
             // Decode user information (optional, if provided in token)
             const decodedUser = JSON.parse(atob(token.split(".")[1])); // Decode payload
-            setUser(decodedUser);
+            setUser(decodedUser.signature.username);
             setIsAuthenticated(true);
+            return response
         } catch (error) {
             console.error("JWT login failed", error);
-            throw new Error("JWT login failed");
+            if(error.response.status === 403){
+              throw new CustomError("No permission for Monitoring Tool, contact your admin and make sure that you are given access for Monitoring Tool.", 403);
+            }else
+              throw new Error("JWT login failed");
         }
     };
 
@@ -117,7 +121,7 @@ export const AuthProvider = ({ children }) => {
             if (token) {
                 // Simulate a network request
                 const response = await api("https://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/user");
-                setUser(response.data.user);
+                setUser(response.data.email);
                 setIsAuthenticated(true);
             } else {
                 setIsAuthenticated(false);
@@ -162,110 +166,4 @@ export const useAuth = () => {
     return context;
 };
 
-// import React, { createContext, useState,useEffect } from "react";
-// import { useLocation } from "react-router-dom";
-// import api from './axios-custom';
-// const AuthContext = createContext();
 
-// export const AuthProvider = ({ children }) => {
-//   const [user, setUser] = useState(null);
-//   const [token, setToken] = useState(localStorage.getItem("token") || null);
-//   const [isAuthenticated, setIsAuthenticated] = useState(false);
-//   const location = useLocation();
-//   useEffect(() => {
-//     if (location.pathname === "/login") {
-//       return children;
-//     }
-//     const verifyToken = async () => {
-//       try {
-//         const config = {
-//           method: 'get',
-//           withCredentials:true,
-//           url: "https://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/user"
-//         };
-//         const response = await api(config)
-//          // Assuming the backend sends user details
-//         setIsAuthenticated(true);
-//       } catch (error) {
-//         console.error("Token verification failed:", error);
-//         if(error.response.status === 401 || error.response.status === 403){
-//           if(process.env.AUTHTYPE === "SAML"){
-//             window.location.href ="https://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/login"
-//           }else{
-//             window.location.href ="/login"
-//           }
-//         }
-//       }
-//     };
-//     if(process.env.AUTHTYPE === "SAML"){
-//       const queryParams = new URLSearchParams(window.location.search);
-//       const tokenFromUrl = queryParams.get("token");
-//       if(tokenFromUrl){
-//         localStorage.setItem("token",tokenFromUrl);
-//         const fullname = queryParams.get("fullname");
-//         const email = queryParams.get("email");
-//         setUser({fullname:fullname, email: email});
-//         localStorage.setItem("fullname",fullname);
-//         localStorage.setItem("email",email);
-//         setToken(tokenFromUrl)
-//         setIsAuthenticated(true);
-//         window.location.href = "/dashboard"
-//       }else{
-//         verifyToken();
-//       }
-//     }else{
-//       verifyToken();
-//     }
-//   }, [token]);
-//   const login = () => {
-//     window.location.href = "https://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/login"
-//   };
-
-//   const logout = () => {
-//     setToken(null);
-//     setUser(null);
-//     localStorage.removeItem("token");
-
-//     window.location.href = "https://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/logout"
-//   };
-
-//   // const isAuthenticated = async () => {
-//   //   try {
-//   //     const config = {
-//   //       method: 'get',
-//   //       withCredentials:true,
-//   //       url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/user"
-//   //     };
-//   //     const response = await api(config)
-//   //     // const response = await axios.post(
-//   //     //   "https://your-backend.com/api/auth/verify-token",
-//   //     //   {},
-//   //     //   {
-//   //     //     headers: {
-//   //     //       Authorization: `Bearer ${token}`,
-//   //     //     },
-//   //     //   }
-//   //     // );
-
-//   //     setUser(response.data.user); // Assuming the backend sends user details
-
-//   //   } catch (error) {
-//   //     console.error("Token verification failed:", error);
-//   //     login(); // Clear invalid token
-//   //   } 
-//   // }
-
-//   return (
-//     <AuthContext.Provider value={{ user, token, isAuthenticated, login, logout }}>
-//       {children}
-//     </AuthContext.Provider>
-//   );
-// };
-
-// export const useAuth = () => {
-//   const context = React.useContext(AuthContext);
-//   if (!context) {
-//     throw new Error("useAuth must be used within an AuthProvider");
-//   }
-//   return context;
-// };

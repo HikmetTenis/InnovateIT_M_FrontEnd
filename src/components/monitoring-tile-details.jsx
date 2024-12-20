@@ -11,7 +11,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {getPayload} from '../services/s-monitoring'
 import { ListItemStandard ,List,Popover,Timeline,TimelineItem,AnalyticalTable,AnalyticalTableSubComponentsBehavior,TimelineGroupItem, DateTimePicker,Panel,Icon,Link,Text,Bar,MultiComboBox,MultiComboBoxItem,Select,Option,Switch,BusyIndicator,Button, Input,FilterGroupItem,FlexBox,Label,Title} from '@ui5/webcomponents-react';
 
-const MonitoringPageDetails = props => {
+function MonitoringPageDetails({status}){
   const [details, setDetails] = useState(false);
   const [messages, setMessages] = useState([]);
   const [messagesLoaded, setMessagesLoaded] = useState(false);
@@ -119,7 +119,7 @@ const MonitoringPageDetails = props => {
     let past = now.subtract(60, 'minutes');
     
     const startDate = moment.utc(past).format("YYYY-MM-DD HH:mm:ss")
-    getMessages(startDate,endDate, s, l, "ALL", "NONE", "ALL")
+    getMessages(startDate,endDate, s, l, status, "NONE", "ALL")
     const fetchData = async () => {
       const artifacts = await getAllArtifacts()
       let allArtifacts = [<Option key='0' value="ALL" selected>All</Option>]
@@ -129,7 +129,7 @@ const MonitoringPageDetails = props => {
         c++
       }
       const statuses = await getAllStatus()
-      let allStatus = [<MultiComboBoxItem text="ALL" key={0} selected id="selecAllID1" data-selected='true'>ALL</MultiComboBoxItem>]
+      let allStatus = [<MultiComboBoxItem text={status} key={0} selected id="selecAllID1" data-selected='true'>ALL</MultiComboBoxItem>]
       for (let i = 1; i < statuses.data.obj.length; i++) {
         if(statuses.data.obj[i] !== "DISCARDED")
           allStatus.push(<MultiComboBoxItem key = {i} text={statuses.data.obj[i]}>{statuses.data.obj[i]}</MultiComboBoxItem>)
@@ -138,7 +138,7 @@ const MonitoringPageDetails = props => {
       setStatusList(allStatus)
     }
     fetchData();
-  }, [])
+  }, [status])
   const handleExpandChange = (row) => {
     setTimeout(() => {
       // Select all elements with class 'customPositive' (which contains multiple ui5-icons)
@@ -873,7 +873,7 @@ const MonitoringPageDetails = props => {
             </FlexBox>
             <FlexBox direction="Column" alignItems="Stretch" justifyContent="Start" fitContainer="true">
               <div style={{paddingTop:"10px", paddingBottom:"10px", backgroundColor:"#f5f6f7", flex:"1 1 auto", display:"flex", alignItems:"Start",justifyContent:"Start"}}>
-               <AnalyticalTable style={{flex:"1 1 auto"}}
+               <AnalyticalTable style={{flex:"1 1 auto", borderRadius:"10px"}}
                   filterable
                   data={messages}
                   rowHeight={44}

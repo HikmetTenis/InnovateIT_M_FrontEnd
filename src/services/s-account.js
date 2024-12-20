@@ -80,6 +80,22 @@ export const savePassword = (reqData) => {
     });
   })
 }
+export const changeInitialPassword = (reqData) => {
+  const api = getApiInstance();
+  return new Promise((resolve, reject) => {
+    let url = "/account/changeInitialPassword"
+    const config = {
+      method: 'post',
+      url: url,
+      data:reqData 
+    };
+    api(config).then(function (response) {
+      resolve(response.data)
+    }).catch(function (error) {
+      reject(error)
+    });
+  })
+}
 export const getAccount = (reqData) => {
   const api = getApiInstance();
   return new Promise((resolve, reject) => {

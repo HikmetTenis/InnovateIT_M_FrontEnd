@@ -120,7 +120,7 @@ function MonitoringJMSGraph({ refresh,isExpanded}) {
           </div>
         </FlexBox>
       :
-      <FlexBox direction="Row" alignItems="Center" justifyContent="Start" fitContainer="true">
+      <FlexBox direction="Column" alignItems="Center" justifyContent="Start" fitContainer="true">
         <LineChart loading={messagesLoaded} style={{height:"90%"}}
           dataset={graphData}
           dimensions={[

@@ -8,13 +8,13 @@ import { fas } from '@fortawesome/free-solid-svg-icons'
 import { far } from '@fortawesome/free-regular-svg-icons'
 import { AuthProvider } from './helpers/authcontext'; 
 import LoginPage from './components/login'
-import RegisterPage from './components/register'
 import ResetPassword from './components/reset-password'
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import RouteProtecter from './components/C_route-protecter';
 import messageContext from "./helpers/message-context";
 import MessageBoxComponent from "./components/message-box"
 import MessageToastComponent from "./components/message-toast"
+import ChangePassword from "./components/change-initial-password"
 function App() {
   const [message,setMessage] = useState({open:false,message:"",result:null, callback:null, toast:false})
   return (
@@ -25,7 +25,12 @@ function App() {
         <AuthProvider>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/changePassword" element={
+                <RouteProtecter>
+                  <ChangePassword />
+                </RouteProtecter> 
+              }
+            />
             <Route path="/reset-password/:userId/:link" element={<ResetPassword />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/*" element={

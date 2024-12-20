@@ -47,7 +47,8 @@ function JMSTile({ name, refresh, handleRefresh}) {
         const result = data.data.obj.d
         setQueueCount(result.QueueNumber)
         setJmsProperties({
-          capaticy: result.Capacity,
+          capacity: result.Capacity,
+          currentQueueNumber:result.QueueNumber,
           isTransactedSessionsHigh:result.IsTransactedSessionsHigh,
           isConsumersHigh: result.IsConsumersHigh,
           isProducersHigh: result.IsProducersHigh,
@@ -79,7 +80,7 @@ function JMSTile({ name, refresh, handleRefresh}) {
           setTextColor6({color:"red"})
         }
         setLoading(false)
-        handleRefresh(false)
+        handleRefresh(true)
       }catch(err){
         setLoading(false)
         console.log(err)
@@ -93,17 +94,14 @@ function JMSTile({ name, refresh, handleRefresh}) {
         setShowDetails(!showDetails)
     };
     return (
-      <motion.div
+      <div
         className="grid-item"
-        layout
-        initial={false}
-        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
         data-is-expanded={isExpanded}
         style={{
           gridColumnEnd: gridColumn,
           gridRowEnd: gridRow,
-        }}
-        onClick={() => handleExpand(name)}>
+        }}>
+        
         <div className="monitoring-tile">
           <div className='tile-text'>
             <span className='tile-text-text'>{name}</span><FontAwesomeIcon style={{fontSize:"12px", cursor:"hand", marginLeft:"5px", color:"grey"}} icon={['fas', 'fa-circle-info']} onClick={(e) => {
@@ -133,35 +131,39 @@ function JMSTile({ name, refresh, handleRefresh}) {
                   </div>
                   <div>
                     <div class="jms-property-key">Capacity</div>
-                    <div class="jms-property-value">{jmsProperties.capaticy}</div>
+                    <div class="jms-property-value">{jmsProperties.capacity}</div>
                   </div>
                   <div>
                     <div class="jms-property-key">Max Queue Number</div>
                     <div class="jms-property-value">{jmsProperties.maxQueueNumber}</div>
                   </div>
                   <div>
+                    <div class="jms-property-key">Current Queue Number</div>
+                    <div class="jms-property-value">{jmsProperties.currentQueueNumber}</div>
+                  </div>
+                  <div>
                     <div class="jms-property-key">Consumer Status</div>
-                    <div class="jms-property-value" style={textColor1}>{jmsProperties.isConsumersHigh === 0? "OK":"High"}</div>
+                    <div class="jms-property-value" style={textColor1}>{jmsProperties.isConsumersHigh === 0 || jmsProperties.isConsumersHigh === undefined? "OK":"High"}</div>
                   </div>
                   <div>
                     <div class="jms-property-key">Producer Status</div>
-                    <div class="jms-property-value" style={textColor3}>{jmsProperties.isProducersHigh === 0? "OK":"High"}</div>
+                    <div class="jms-property-value" style={textColor3}>{jmsProperties.isProducersHigh === 0 || jmsProperties.isProducersHigh === undefined? "OK":"High"}</div>
                   </div>
                   <div>
                     <div class="jms-property-key">Transacted Sessions Status</div>
-                    <div class="jms-property-value" style={textColor2}>{jmsProperties.isTransactedSessionsHigh === 0? "OK":"High"}</div>
+                    <div class="jms-property-value" style={textColor2}>{jmsProperties.isTransactedSessionsHigh === 0 || jmsProperties.isTransactedSessionsHigh === undefined? "OK":"High"}</div>
                   </div>
                   <div>
                     <div class="jms-property-key">Capacity Status</div>
-                    <div class="jms-property-value" style={textColor4}>{jmsProperties.capacityWarning === "0"? jmsProperties.capacityError === "0"?"OK":"High":"Warning"}</div>
+                    <div class="jms-property-value" style={textColor4}>{jmsProperties.capacityWarning === "0" || jmsProperties.capacityWarning === undefined? jmsProperties.capacityError === "0" || jmsProperties.capacityError === undefined?"OK":"High":"Warning"}</div>
                   </div>
                   <div>
                     <div class="jms-property-key">Queues Status</div>
-                    <div class="jms-property-value" style={textColor5}>{jmsProperties.isQueuesHigh === 0?"OK": "High"}</div>
+                    <div class="jms-property-value" style={textColor5}>{jmsProperties.isQueuesHigh === 0 || jmsProperties.isQueuesHigh === undefined?"OK": "High"}</div>
                   </div>
                   <div>
                     <div class="jms-property-key">Message Spool Status</div>
-                    <div class="jms-property-value" style={textColor6}>{jmsProperties.isMessageSpoolHigh === 0?"OK": "High"}</div>
+                    <div class="jms-property-value" style={textColor6}>{jmsProperties.isMessageSpoolHigh === 0 || jmsProperties.isMessageSpoolHigh === undefined?"OK": "High"}</div>
                   </div>
                 </div>
                 {isExpanded && (
@@ -172,7 +174,7 @@ function JMSTile({ name, refresh, handleRefresh}) {
               </FlexBox>
             </motion.div>
         </div>
-      </motion.div>
+      </div>
     );
 }
 export default JMSTile;

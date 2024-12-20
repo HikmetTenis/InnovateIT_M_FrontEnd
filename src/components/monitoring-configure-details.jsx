@@ -8,7 +8,9 @@ import BpmnModeler from 'bpmn-js/dist/bpmn-navigated-viewer.production.min.js';
 import $ from 'jquery';
 import moment from 'moment'
 import { useMsal } from '@azure/msal-react';
+import { useAuth } from "../helpers/authcontext";
 export default function MonitoringConfigureDetails(props) {
+    const { user } = useAuth();
     const [loading, setLoading] = useState(false);
     const [everyEvent, setEveryEvent] = useState(false);
     const [everyReceiverSenderBefore, setEveryReceiverSenderBefore] = useState(false);
@@ -315,7 +317,7 @@ export default function MonitoringConfigureDetails(props) {
             scriptNames: scriptNames.current,
             version: props.iflow.Version,
             status: status.current.innerHTML,
-            updatedBy: accounts[0].username
+            updatedBy: user
         }
         saveArtifact(d).then((resp)=>{
             if(resp.data.type === "error"){

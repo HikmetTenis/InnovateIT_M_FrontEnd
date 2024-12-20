@@ -10,7 +10,7 @@ import moment from 'moment';
 import {getGraphAllData} from '../services/s-monitoring'
 import momentTZ from 'moment-timezone';
 import { motion} from "framer-motion"
-export default function MonitoringPageHeader() {
+export default function MonitoringPageHeader({tileClicked}) {
     const [refreshMessages, setRefreshMessages] = useState(false);
     const [refreshQueues, setRefreshQueues] = useState(false);
     const [refreshTime1, setRefreshtime1] = useState(moment().format("LLL"));
@@ -111,6 +111,10 @@ export default function MonitoringPageHeader() {
     const handleRefreshForQueues = (newValue) => {
         setQueuesLoaded(newValue)
     };
+    const handleTileClick = (id) => {
+        tileClicked(id)
+        // Add logic for when the tile is clicked
+    };
     return (
         <FlexBox direction="Column" alignItems="Stretch" justifyContent="Stretch" fitContainer="true" style={{gap:"10px"}}>
             <Panel className='monitoring-panel'
@@ -127,13 +131,16 @@ export default function MonitoringPageHeader() {
                             <LayoutGroup >
                                 <GridContainer>
                                     {items.map((item) => (
+                                        // <div onClick={() => handleTileClick(item.type)}>
                                         <MonitoringTile
                                             key={item.id}
                                             item={item}
+                                            onDetails={() => handleTileClick(item.type)}
                                             handleRefresh={handleRefreshForMessages}
                                             refresh={refreshMessages}
                                             isExpanded={expandedId === item.id}
                                             onExpand={handleExpand}/>
+                                        // </div>
                                     ))}
                                 </GridContainer>
                             </LayoutGroup >

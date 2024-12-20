@@ -6,7 +6,7 @@ import {BusyIndicator} from '@ui5/webcomponents-react';
 import MonitoringTileGraph from './monitoring-tile-graph'
 import React, { useState,useEffect,useRef } from 'react';
 import { useNotifications } from '../helpers/notification-context';
-function MonitoringTile({ item, refresh, isExpanded, onExpand, handleRefresh }) {
+function MonitoringTile({ item, refresh, isExpanded, onExpand, handleRefresh,onDetails }) {
   const gridColumn = isExpanded ? 'span 6' : 'span 1';
   const gridRow = isExpanded ? 'span 3' : 'span 1';
   
@@ -45,22 +45,22 @@ function MonitoringTile({ item, refresh, isExpanded, onExpand, handleRefresh }) 
     })
   }
   return (
-    <motion.div
+    <div
       className="grid-item"
-      layout
-      initial={false}
-      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
       data-is-expanded={isExpanded}
       style={{
         gridColumnEnd: gridColumn,
         gridRowEnd: gridRow,
-      }}
-      onClick={() => onExpand(item.id)}>
-      <div className="monitoring-tile" onClick={() => onExpand(item.id)}>
+      }}>
+      <div className="monitoring-tile">
         <div className='tile-text' style={style}>
           <span className='tile-text-text'>{item.type}</span><FontAwesomeIcon style={{fontSize:"12px", cursor:"hand", marginLeft:"5px", color:"grey"}} icon={['fas', 'fa-chart-pie']} onClick={(e) => {
             e.stopPropagation();
             onExpand(item.id);
+          }}/>
+          <FontAwesomeIcon style={{fontSize:"12px", cursor:"hand", marginLeft:"5px", color:"grey"}} icon={['fas', 'fa-circle-info']} onClick={(e) => {
+            e.stopPropagation();
+            onDetails(item.id);
           }}/>
         </div>
         <div className='tile-number'>
@@ -73,7 +73,7 @@ function MonitoringTile({ item, refresh, isExpanded, onExpand, handleRefresh }) 
           </div>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 }
 
