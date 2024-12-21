@@ -8,6 +8,7 @@ on:
       imagename:
         description: "Name of the Docker image"
         required: true
+
 jobs:
   build-push-gcr:
     name: Build and Push to GCP
