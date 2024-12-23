@@ -1,12 +1,13 @@
 import React, { useState,useContext } from 'react';
 import "@ui5/webcomponents-icons/dist/AllIcons.js";
-import {FlexBox, Input, Label, Text,Button,Link,Icon} from '@ui5/webcomponents-react';
+import {FlexBox, Input, Label, Text,Button,Link,BusyIndicator} from '@ui5/webcomponents-react';
 import MessageContext from "../helpers/message-context";
 import '@ui5/webcomponents-react/dist/Assets'
 import {resetPassword} from '../services/s-account'
 import { useAuth } from "../helpers/authcontext";
 import CustomError from '../helpers/custom-error';
 const LoginPage = () => {
+    const [loading, setLoading] = useState(false);
     const { login } = useAuth();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -153,11 +154,13 @@ const LoginPage = () => {
                     </FlexBox>
                 </FlexBox> 
                 <FlexBox direction="Column" alignItems="Center" justifyContent="Center" style={{flex:"1 1 10%",padding:"20px"}}>
-                    <Button style={{width:"100%"}} design="Emphasized" icon="unlocked" onClick={(e) => handleLogin(e)}>Sign In</Button>
-                
-                    <FlexBox direction="Row" alignItems="Center" justifyContent="SpaceBetween" style={{width:"100%", height:"30px"}}>
-                        <Link design="Default" onClick={(e) => resetPasswordDialog(e)}>Forgot Password </Link>
-                    </FlexBox>
+                    <BusyIndicator active={loading} style={{marginRight:"5px"}} delay={1000} size="S">
+                        <Button style={{width:"100%"}} design="Emphasized" icon="unlocked" onClick={(e) => handleLogin(e)}>Sign In</Button>
+                    
+                        <FlexBox direction="Row" alignItems="Center" justifyContent="SpaceBetween" style={{width:"100%", height:"30px"}}>
+                            <Link design="Default" onClick={(e) => resetPasswordDialog(e)}>Forgot Password </Link>
+                        </FlexBox>
+                    </BusyIndicator>
                 </FlexBox>
             </FlexBox>
         </FlexBox>
