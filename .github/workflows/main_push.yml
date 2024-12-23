@@ -3,11 +3,8 @@ name: Build and Push Front End to Google Cloud Platform
 #   push:
 #     branches: [ main ]
 on:
-  workflow_dispatch:
-    inputs:
-      imagename:
-        description: "Name of the Docker image"
-        required: true
+  push:
+    branches: [ main ]
 
 jobs:
   build-push-gcr:
