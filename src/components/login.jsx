@@ -52,6 +52,7 @@ const LoginPage = () => {
         }
     };
     const handleLogin = async (e) => {
+        setLoading(true)
         e.preventDefault();
         const newErrors = {};
         let isValid = true;
@@ -69,12 +70,14 @@ const LoginPage = () => {
                     serviceID: process.env.REACT_APP_SERVICE_ID
                 }
                 const user = await login(credentials); // Handles either JWT or SAML login based on AUTHTYPE
+                setLoading(false)
                 if(user.data.isPasswordInitial){
                     window.location.href = "/changePassword";
                 }else{
                     window.location.href = "/dashboard";
                 }
             } catch (err) {
+                setLoading(false)
                 if (err instanceof CustomError) {
                     setMessage({open:false, toastMessage:err.message, result:null, callback:null, toast:true})
                 } else {
