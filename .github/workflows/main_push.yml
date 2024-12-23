@@ -4,7 +4,7 @@ name: Build and Push Front End to Google Cloud Platform
 #     branches: [ main ]
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
   build-push-gcr:
