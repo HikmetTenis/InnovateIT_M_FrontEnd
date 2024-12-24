@@ -53,7 +53,7 @@ const LoginPage = () => {
     };
     const handleLogin = async (e) => {
         setLoading(true)
-        e.preventDefault();
+        e.preventDefault(); 
         const newErrors = {};
         let isValid = true;
         for (let field in formData) {
