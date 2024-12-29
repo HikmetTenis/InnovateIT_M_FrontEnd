@@ -65,6 +65,6 @@ jobs:
         git tag "v${{ env.new_version }}"
         git push --follow-tags
       env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
 
     
