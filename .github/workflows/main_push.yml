@@ -38,5 +38,33 @@ jobs:
         docker tag ${IMAGE}:latest ${GKE_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${IMAGE}:latest
         # docker push us-central1-docker.pkg.dev/backend-440112/repo/$IMAGE_NAME:latest
         docker push ${GKE_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${IMAGE}:latest
+        
+    - name: Get Current Version
+      id: version
+      run: |
+        if [ -f VERSION ]; then
+          echo "current=$(cat VERSION)" >> $GITHUB_ENV
+        else
+          echo "current=0.1.0" >> $GITHUB_ENV
+        fi
+
+    - name: Bump Version
+      id: bump
+      run: |
+        current=$(cat VERSION)
+        IFS='.' read -r major minor patch <<< "$current"
+        patch=$((patch + 1))
+        new_version="$major.$minor.$patch"
+        echo "$new_version" > VERSION
+        echo "new_version=$new_version" >> $GITHUB_ENV
+
+    - name: Commit and Tag
+      run: |
+        git add VERSION
+        git commit -m "chore: bump version to ${{ env.new_version }}"
+        git tag "v${{ env.new_version }}"
+        git push --follow-tags
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     
