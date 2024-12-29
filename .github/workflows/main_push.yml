@@ -39,30 +39,16 @@ jobs:
         # docker push us-central1-docker.pkg.dev/backend-440112/repo/$IMAGE_NAME:latest
         docker push ${GKE_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${IMAGE}:latest
         
-    - name: Get Latest Tag
-      id: get_latest_tag
+    - name: Read Version from package.json
+      id: get_version
       run: |
-          # Get the latest tag or set a default version if no tags exist
-          latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-          echo "LATEST_TAG=$latest_tag" >> $GITHUB_ENV
+          version=$(jq -r '.version' package.json)
+          echo "VERSION=$version" >> $GITHUB_ENV
 
-    - name: Bump Version
-      id: bump_version
+    - name: Create and Push Tag
       run: |
-          # Remove the 'v' prefix and parse the version numbers
-          latest_tag="${{ env.LATEST_TAG }}"
-          version=${latest_tag#v}
-          IFS='.' read -r major minor patch <<< "$version"
-          # Increment the patch version
-          patch=$((patch + 1))
-          new_version="v$major.$minor.$patch"
-          echo "NEW_VERSION=$new_version" >> $GITHUB_ENV
-
-    - name: Create New Tag
-      run: |
-          # Create a new tag with the incremented version
-          git tag "${{ env.NEW_VERSION }}"
-          git push origin "${{ env.NEW_VERSION }}"
+          git tag "v${{ env.VERSION }}"
+          git push origin "v${{ env.VERSION }}"
       env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
 
