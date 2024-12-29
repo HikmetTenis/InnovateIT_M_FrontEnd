@@ -19,7 +19,7 @@ export const createAccount  = (reqData, type) => {
 export const getTrialPeriod  = (reqData, type) => {
   const api = getApiInstance();
   return new Promise((resolve, reject) => {
-    let url = "/account/getTrialPeriod"
+    let url = "/trial/getTrialPeriod"
     const config = {
       method: 'get',
       url: url 
