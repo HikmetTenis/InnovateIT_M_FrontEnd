@@ -16,7 +16,21 @@ export const createAccount  = (reqData, type) => {
     });
   })
 }
-
+export const getTrialPeriod  = (reqData, type) => {
+  const api = getApiInstance();
+  return new Promise((resolve, reject) => {
+    let url = "/account/getTrialPeriod"
+    const config = {
+      method: 'get',
+      url: url 
+    };
+    api(config).then(function (response) {
+      resolve(response.data)
+    }).catch(function (error) {
+      reject(error)
+    });
+  })
+}
 export const signIn  = (reqData) => {
   const api = getApiInstance();
   return new Promise((resolve, reject) => {

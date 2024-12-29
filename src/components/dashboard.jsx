@@ -1,5 +1,5 @@
 import "@ui5/webcomponents-icons/dist/AllIcons.js";
-import { Button,  SideNavigation, SideNavigationItem, SideNavigationSubItem,Menu, MenuItem,BusyIndicator,ListItemStandard,ShellBar,Text, Avatar,Popover,FlexBox, Input, Icon, List   } from '@ui5/webcomponents-react';
+import { Button,  SideNavigation, SideNavigationItem, Tag,SideNavigationSubItem,Menu, MenuItem,BusyIndicator,ListItemStandard,ShellBar,Text, Avatar,Popover,FlexBox, Input, Icon, List   } from '@ui5/webcomponents-react';
 import React, { useState, useEffect,useRef } from 'react';
 import MonitoringPageDetails from "./monitoring-tile-details";
 import MonitoringLanes from './monitoring-lanes';
@@ -11,6 +11,7 @@ import '@ui5/webcomponents-react/dist/Assets'
 import $ from 'jquery';
 import { useNotifications } from '../helpers/notification-context';
 import { useAuth } from "../helpers/authcontext";
+import { getTrialPeriod } from "../services/s-account";
 import Home from './home';
 function Dashboard() {
   const { isAuthenticated,logout, user, token } = useAuth();
@@ -46,6 +47,7 @@ function Dashboard() {
   const [notificationCount, setNotificationCount] = useState(0);
   const buttonRef = useRef(null);
   const [menuIsOpen, setMenuIsOpen] = useState(false);
+  const [trialPeriod, setTrialPeriod] = useState(0);
   const [fullname, setFullname] = useState('');
   const environments = useRef([]);
   useEffect(() => {
@@ -53,7 +55,10 @@ function Dashboard() {
     shellBarHeader.append('<Button  design="Transparent"  icon="menu2"/>')
     const initializeWorker = async () => {
       const worker = new Worker(new URL('../helpers/notificationWorker.js', import.meta.url));
-
+      if(process.env.REACT_APP_SERVICE_TYPE === "Trial"){
+        const period = await getTrialPeriod() 
+        setTrialPeriod(period)
+      }
       // Listen for messages from the web worker
       worker.onmessage = (event) => {
           const { data } = event;
@@ -78,8 +83,10 @@ function Dashboard() {
       return () => {
           worker.terminate();
       };
+      
     }
     initializeWorker()
+    
     
   }, [token]);
   useEffect(() => {
@@ -205,14 +212,14 @@ function Dashboard() {
                         alt="User Avatar"
                         style={{ width: '100px', height: '100px', borderRadius: '50%' }}
                       /></Avatar>
-                    ) : isAuthenticated && (
+                    ) : isAuthenticated && (<FlexBox direction="Row" alignItems="Center" style={{height:"40px"}} justifyContent="Center" fitContainer="true">
                     <Button ref={buttonRef} onClick={() => {setMenuIsOpen(true);}} design="Transparent" icon="employee" title={fullname}
                       style={{
                         borderRadius: '50%',
                         border: '1px solid gray',
                       }}>
                       
-                    </Button>)}
+                    </Button> <Tag design="Information"><span>{trialPeriod}</span></Tag></FlexBox>)}
                     searchField={<Input icon={<Icon interactive name="search"/>} showClearIcon/>}
                     secondaryTitle=""
                     showCoPilot="false"

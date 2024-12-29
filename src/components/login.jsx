@@ -81,11 +81,15 @@ const LoginPage = () => {
                 if (err instanceof CustomError) {
                     setMessage({open:false, toastMessage:err.message, result:null, callback:null, toast:true})
                 } else {
-                    setErrors({
-                        username: validateField("username", '', 'Login failed, Username may not be correct.'),
-                        password: validateField("password", '', 'Login failed, Password may not be correct.')
-                    });
-                    setMessage({open:false, toastMessage:"Login failed.!", result:null, callback:null, toast:true})
+                    if(err.status === 429){
+                        setMessage({open:false, toastMessage:"Account is not active.!", result:null, callback:null, toast:true})
+                    }else{
+                        setErrors({
+                            username: validateField("username", '', 'Login failed, Username may not be correct.'),
+                            password: validateField("password", '', 'Login failed, Password may not be correct.')
+                        });
+                        setMessage({open:false, toastMessage:"Login failed.!", result:null, callback:null, toast:true})
+                    }
                 }
             }
         }
