@@ -44,22 +44,25 @@ jobs:
       run: |
           # Get the latest tag or set a default version if no tags exist
           latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-          echo "latest_tag=$latest_tag" >> $GITHUB_ENV
+          echo "LATEST_TAG=$latest_tag" >> $GITHUB_ENV
 
     - name: Bump Version
       id: bump_version
       run: |
-          # Extract version numbers from the latest tag
-          IFS='.' read -r major minor patch <<< "${{ env.latest_tag#v }}"
-          patch=$((patch + 1)) # Increment patch version
+          # Remove the 'v' prefix and parse the version numbers
+          latest_tag="${{ env.LATEST_TAG }}"
+          version=${latest_tag#v}
+          IFS='.' read -r major minor patch <<< "$version"
+          # Increment the patch version
+          patch=$((patch + 1))
           new_version="v$major.$minor.$patch"
-          echo "new_version=$new_version" >> $GITHUB_ENV
+          echo "NEW_VERSION=$new_version" >> $GITHUB_ENV
 
     - name: Create New Tag
       run: |
           # Create a new tag with the incremented version
-          git tag "${{ env.new_version }}"
-          git push origin "${{ env.new_version }}"
+          git tag "${{ env.NEW_VERSION }}"
+          git push origin "${{ env.NEW_VERSION }}"
       env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
 
