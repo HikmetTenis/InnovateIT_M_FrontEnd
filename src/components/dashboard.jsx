@@ -225,8 +225,8 @@ function Dashboard() {
                     showCoPilot="false"
                     showNotifications
                     showProductSwitch="false">
-                      <ShellBarItem><Tag style={{width:"150px"}} design="Information"><span>{trialPeriod}</span></Tag></ShellBarItem>
                 </ShellBar>
+                <Tag style={{width:"150px"}} design="Information"><span>{trialPeriod}</span></Tag>
               </div>
               <div className='main-body'>
               <BusyIndicator active={!isAuthenticated} style={{height:"100%",width:"100%",display: isAuthenticated ? "none" : "block"}} size="M"></BusyIndicator>
