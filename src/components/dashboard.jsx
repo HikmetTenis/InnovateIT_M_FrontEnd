@@ -61,7 +61,7 @@ function Dashboard() {
       }
       // Listen for messages from the web worker
       worker.onmessage = (event) => {
-          const { data } = event;
+          const { data } = event; 
           if (data.error) {
             if(data.error.status === 401 || data.error.status === 403){
               if(process.env.REACT_APP_AUTHTYPE === "SAML"){
