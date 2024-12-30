@@ -212,20 +212,20 @@ function Dashboard() {
                         alt="User Avatar"
                         style={{ width: '100px', height: '100px', borderRadius: '50%' }}
                       /></Avatar>
-                    ) : isAuthenticated && (<FlexBox direction="Row" alignItems="Center" justifyContent="Center" fitContainer="true">
+                    ) : isAuthenticated && 
                     <Button ref={buttonRef} onClick={() => {setMenuIsOpen(true);}} design="Transparent" icon="employee" title={fullname}
                       style={{
                         borderRadius: '50%',
                         border: '1px solid gray',
                       }}>
                       
-                    </Button> <Tag style={{width:"150px"}} design="Information"><span>{trialPeriod}</span></Tag></FlexBox>)}
+                    </Button>}
                     searchField={<Input icon={<Icon interactive name="search"/>} showClearIcon/>}
                     secondaryTitle=""
                     showCoPilot="false"
                     showNotifications
                     showProductSwitch="false">
-                      <ShellBarItem  icon="add" text="add" />
+                      <ShellBarItem><Tag style={{width:"150px"}} design="Information"><span>{trialPeriod}</span></Tag></ShellBarItem>
                 </ShellBar>
               </div>
               <div className='main-body'>
