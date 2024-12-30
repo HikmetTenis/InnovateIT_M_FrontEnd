@@ -212,14 +212,14 @@ function Dashboard() {
                         alt="User Avatar"
                         style={{ width: '100px', height: '100px', borderRadius: '50%' }}
                       /></Avatar>
-                    ) : isAuthenticated && (<FlexBox direction="Row" alignItems="Center" style={{height:"40px"}} justifyContent="Center" fitContainer="true">
+                    ) : isAuthenticated && (<FlexBox direction="Row" alignItems="Center" justifyContent="Center" fitContainer="true">
                     <Button ref={buttonRef} onClick={() => {setMenuIsOpen(true);}} design="Transparent" icon="employee" title={fullname}
                       style={{
                         borderRadius: '50%',
                         border: '1px solid gray',
                       }}>
                       
-                    </Button> <Tag design="Information"><span>{trialPeriod}</span></Tag></FlexBox>)}
+                    </Button> <Tag style={{width:"150px"}} design="Information"><span>{trialPeriod}</span></Tag></FlexBox>)}
                     searchField={<Input icon={<Icon interactive name="search"/>} showClearIcon/>}
                     secondaryTitle=""
                     showCoPilot="false"
