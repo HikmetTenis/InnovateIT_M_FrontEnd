@@ -1,5 +1,5 @@
 import "@ui5/webcomponents-icons/dist/AllIcons.js";
-import { Button,  SideNavigation, SideNavigationItem, Tag,SideNavigationSubItem,Menu, MenuItem,BusyIndicator,ListItemStandard,ShellBar,Text, Avatar,Popover,FlexBox, Input, Icon, List   } from '@ui5/webcomponents-react';
+import { Button,  SideNavigation, SideNavigationItem, Tag,SideNavigationSubItem,Menu, ShellBarItem,MenuItem,BusyIndicator,ListItemStandard,ShellBar,Text, Avatar,Popover,FlexBox, Input, Icon, List   } from '@ui5/webcomponents-react';
 import React, { useState, useEffect,useRef } from 'react';
 import MonitoringPageDetails from "./monitoring-tile-details";
 import MonitoringLanes from './monitoring-lanes';
@@ -225,6 +225,7 @@ function Dashboard() {
                     showCoPilot="false"
                     showNotifications
                     showProductSwitch="false">
+                      <ShellBarItem  icon="add" text="add" />
                 </ShellBar>
               </div>
               <div className='main-body'>
