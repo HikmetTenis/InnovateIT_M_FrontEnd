@@ -226,7 +226,7 @@ function Dashboard() {
                     showNotifications
                     showProductSwitch="false">
                 </ShellBar>
-                <Tag style={{width:"150px"}} design="Information"><span>{trialPeriod}</span></Tag>
+                <Tag style={{position:"absolute",right:"160px",top:"27px"}} design="Information"><span>{trialPeriod} days left</span></Tag>
               </div>
               <div className='main-body'>
               <BusyIndicator active={!isAuthenticated} style={{height:"100%",width:"100%",display: isAuthenticated ? "none" : "block"}} size="M"></BusyIndicator>
