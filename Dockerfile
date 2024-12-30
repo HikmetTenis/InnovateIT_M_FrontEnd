@@ -6,10 +6,15 @@ WORKDIR /app
 
 # Copy package.json and install dependencies
 COPY package*.json ./
-RUN npm install
+
+# Install production dependencies
+RUN npm ci --only=production
 
 # Copy application files
 COPY . .
+
+# Set environment variables
+ENV NODE_ENV=production
 
 # Expose the port Cloud Run expects
 EXPOSE 5000
