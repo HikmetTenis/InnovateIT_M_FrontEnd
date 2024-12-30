@@ -59,7 +59,7 @@ function Dashboard() {
         const period = await getTrialPeriod() 
         setTrialPeriod(period)
       }
-      // Listen for messages from the web worker
+      // Listen for messages from the web worker 1
       worker.onmessage = (event) => {
           const { data } = event; 
           if (data.error) {
