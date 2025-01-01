@@ -213,10 +213,9 @@ function Dashboard() {
                         style={{ width: '100px', height: '100px', borderRadius: '50%' }}
                       /></Avatar>
                     ) : isAuthenticated && 
-                    <Button ref={buttonRef} onClick={() => {setMenuIsOpen(true);}} design="Transparent" icon="employee" tooltip={fullname}
+                    <Button ref={buttonRef} className="profile-button" onClick={() => {setMenuIsOpen(true);}} design="Transparent" icon="employee" tooltip={fullname}
                       style={{
                         borderRadius: '50%',
-                        border: '1px solid gray',
                       }}>
                       
                     </Button>}

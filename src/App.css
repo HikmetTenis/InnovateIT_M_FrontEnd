@@ -266,7 +266,10 @@ ui5-icon:hover {
   padding:5px;
   border-radius:15px;
 }
-
+.profile-button:hover {
+  background-color: #0056b3; /* Change background color on hover */
+  border: 2px solid transparent; /* Ensure border remains consistent */
+}
 .grid-item[data-is-expanded="true"] {
   z-index: 1;
 }
