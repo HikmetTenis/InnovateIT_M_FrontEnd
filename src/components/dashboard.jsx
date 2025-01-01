@@ -206,13 +206,7 @@ function Dashboard() {
                     onSearchButtonClick={function _a(){}}
                     //primaryTitle={<span style={{fontFamily:'"72Black","72Blackfull","72","72full",Arial,Helvetica,sans-serif'}}>Watchmen</span>}
                     primaryTitle="Watchmen"
-                    profile={isAuthenticated && profilePhoto ? (
-                      <Avatar style={{ padding:"0" }}><img
-                        src={profilePhoto}
-                        alt="User Avatar"
-                        style={{ width: '100px', height: '100px', borderRadius: '50%' }}
-                      /></Avatar>
-                    ) : isAuthenticated && 
+                    profile={isAuthenticated &&
                     <Button ref={buttonRef} className="profile-button" onClick={() => {setMenuIsOpen(true);}} design="Transparent" icon="employee" tooltip={fullname}
                       style={{
                         borderRadius: '50%',
