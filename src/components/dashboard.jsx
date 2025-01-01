@@ -207,12 +207,7 @@ function Dashboard() {
                     //primaryTitle={<span style={{fontFamily:'"72Black","72Blackfull","72","72full",Arial,Helvetica,sans-serif'}}>Watchmen</span>}
                     primaryTitle="Watchmen"
                     profile={isAuthenticated &&
-                    <Button ref={buttonRef} className="profile-button" onClick={() => {setMenuIsOpen(true);}} design="Transparent" icon="employee" tooltip={fullname}
-                      style={{
-                        borderRadius: '50%',
-                      }}>
-                      
-                    </Button>}
+                    <Button ref={buttonRef} className="profile-button" onClick={() => {setMenuIsOpen(true);}} design="Transparent" icon="employee" tooltip={fullname}></Button>}
                     searchField={<Input icon={<Icon interactive name="search"/>} showClearIcon/>}
                     secondaryTitle=""
                     showCoPilot="false"
