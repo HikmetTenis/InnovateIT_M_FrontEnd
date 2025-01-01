@@ -206,13 +206,13 @@ function Dashboard() {
                     onSearchButtonClick={function _a(){}}
                     //primaryTitle={<span style={{fontFamily:'"72Black","72Blackfull","72","72full",Arial,Helvetica,sans-serif'}}>Watchmen</span>}
                     primaryTitle="Watchmen"
-                    searchField={<Input icon={<Icon interactive name="search"/>} showClearIcon/>}
+                    // searchField={<Input icon={<Icon interactive name="search"/>} showClearIcon/>}
                     secondaryTitle=""
                     showCoPilot="false"
                     showNotifications
                     showProductSwitch="false">
                 </ShellBar>
-                {isAuthenticated &&<Button ref={buttonRef} style={{position:"absolute",right:"10px",top:"27px"}} className="profile-button" onClick={() => {setMenuIsOpen(true);}} design="Transparent" icon="employee" tooltip={fullname}></Button>}
+                {isAuthenticated &&<Button ref={buttonRef} style={{position:"absolute",right:"105px",top:"20px"}} className="profile-button" onClick={() => {setMenuIsOpen(true);}} design="Transparent" icon="employee" tooltip={fullname} title={fullname}></Button>}
                 <Tag style={{position:"absolute",right:"160px",top:"27px"}} design="Information"><span>{trialPeriod} days left</span></Tag>
               </div>
               <div className='main-body'>
