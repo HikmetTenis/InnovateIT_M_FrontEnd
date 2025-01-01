@@ -34,6 +34,7 @@ export const AuthProvider = ({ children }) => {
           };
           const response = await api(config)
           setUser(response.data.user.email);
+          localStorage.setItem("fullname",response.data.user.name)
           setIsAuthenticated(true);
           setLoading(false)
         } catch (error) {
@@ -78,10 +79,12 @@ export const AuthProvider = ({ children }) => {
             const token = response.data.obj;
 
             // Save JWT to local storage
+            
             localStorage.setItem("jwtToken", token);
             setToken(token)
             // Decode user information (optional, if provided in token)
             const decodedUser = JSON.parse(atob(token.split(".")[1])); // Decode payload
+            
             setUser(decodedUser.signature.username);
             setIsAuthenticated(true);
             return response
