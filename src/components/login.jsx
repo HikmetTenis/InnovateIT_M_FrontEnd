@@ -160,17 +160,16 @@ const LoginPage = () => {
                             valueStateMessage={errors["password"] && <Text type="Error">{errors["password"]}</Text>}/>
                     </FlexBox>
                 </FlexBox> 
-                <BusyIndicator active={loading} style={{marginRight:"5px",flex:"1"}} delay={1000} size="S">
-                    <FlexBox direction="Column" alignItems="Center" justifyContent="Center" style={{flex:"1 1 10%",padding:"20px"}}>
-                        
-                            <Button style={{width:"100%"}} design="Emphasized" icon="unlocked" onClick={(e) => handleLogin(e)}>Sign In</Button>
-                        
-                            <FlexBox direction="Row" alignItems="Center" justifyContent="SpaceBetween" style={{width:"100%", height:"30px"}}>
-                                <Link design="Default" onClick={(e) => resetPasswordDialog(e)}>Forgot Password </Link>
-                            </FlexBox>
-                        
+                <FlexBox direction="Column" alignItems="Center" justifyContent="Center" style={{flex:"1 1 10%", paddingLeft:"20px", paddingRight:"20px"}}>
+                    <Button style={{width:"100%"}} disabled={loading} design="Emphasized" icon="unlocked" onClick={(e) => handleLogin(e)}>
+                        <FlexBox direction="Row" alignItems="Center" justifyContent="Center">
+                            <span>Sign In</span><BusyIndicator active={loading} className="login-busy-indicator" style={{ display: loading ? "block" : "none"}} size="S"></BusyIndicator>
+                        </FlexBox>
+                    </Button>
+                    <FlexBox direction="Row" alignItems="Center" justifyContent="SpaceBetween" style={{width:"100%", height:"30px"}}>
+                        <Link design="Default" disabled={loading} onClick={(e) => resetPasswordDialog(e)}>Forgot Password </Link>
                     </FlexBox>
-                </BusyIndicator>
+                </FlexBox>
             </FlexBox>
         </FlexBox>
     );
