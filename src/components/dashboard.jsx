@@ -238,7 +238,7 @@ function Dashboard() {
                   open={popoverIsOpen}
                   allowTargetOverlap="true"
                   onClose={() => {
-                    getServiceInfo()
+                    setPopoverIsOpen(false);
                   }}
                   placement="Bottom"
                   verticalAlign="Top">
@@ -252,7 +252,10 @@ function Dashboard() {
                   horizontalAlign="Start"
                   onBeforeClose={function ks(){}}
                   onBeforeOpen={function ks(){}}
-                  onOpen={function ks(){}}
+                  onOpen={() => {
+                    getServiceInfo();
+
+                  }}
                   opener="configButton"
                   open={popoverIsOpen1}
                   allowTargetOverlap="true"
