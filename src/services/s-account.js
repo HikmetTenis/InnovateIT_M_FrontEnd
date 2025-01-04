@@ -125,3 +125,18 @@ export const getAccount = (reqData) => {
     });
   })
 }
+export const getService = (reqData) => {
+  const api = getApiInstance();
+  return new Promise((resolve, reject) => {
+    let url = "/account/getAccount"
+    const config = {
+      method: 'get',
+      url: url
+    };
+    api(config).then(function (response) {
+      resolve(response.data)
+    }).catch(function (error) {
+      reject(error)
+    });
+  })
+}

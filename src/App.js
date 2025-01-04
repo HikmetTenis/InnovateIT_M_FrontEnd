@@ -20,31 +20,31 @@ function App() {
   return (
     
       <BrowserRouter>  
-      <div className="App">
-      <messageContext.Provider value={{message,setMessage}}>
-        <AuthProvider>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/changePassword" element={
-                <RouteProtecter>
-                  <ChangePassword />
-                </RouteProtecter> 
-              }
-            />
-            <Route path="/reset-password/:userId/:link" element={<ResetPassword />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/*" element={
-                <RouteProtecter>
-                  <Dashboard />
-                </RouteProtecter> 
-              }
-            />
-            
-          </Routes>
-        </AuthProvider>
-        <MessageBoxComponent/>
-        <MessageToastComponent/>
-      </messageContext.Provider>
+        <div className="App">
+          <messageContext.Provider value={{message,setMessage}}>
+            <AuthProvider>
+              <Routes>
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/changePassword" element={
+                    <RouteProtecter>
+                      <ChangePassword />
+                    </RouteProtecter> 
+                  }
+                />
+                <Route path="/reset-password/:userId/:link" element={<ResetPassword />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/*" element={
+                    <RouteProtecter>
+                      <Dashboard />
+                    </RouteProtecter> 
+                  }
+                />
+                
+              </Routes>
+            </AuthProvider>
+            <MessageBoxComponent/>
+            <MessageToastComponent/>
+          </messageContext.Provider>
         </div>
       </BrowserRouter>
     

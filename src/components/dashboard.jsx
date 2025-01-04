@@ -11,7 +11,7 @@ import '@ui5/webcomponents-react/dist/Assets'
 import $ from 'jquery';
 import { useNotifications } from '../helpers/notification-context';
 import { useAuth } from "../helpers/authcontext";
-import { getTrialPeriod } from "../services/s-account";
+import { getTrialPeriod, getService } from "../services/s-account";
 import Home from './home';
 function Dashboard() {
   const { isAuthenticated,logout, user, token } = useAuth();
@@ -173,6 +173,16 @@ function Dashboard() {
     setMessageStatus(e)
     setpage("monitoring") 
   }
+  const getServiceInfo  = async(e) => {
+    setPopoverIsOpen(false);
+    const service = await getService()
+    let listItems = []
+    listItems.push(<ListItemStandard additionalText={service.id}>Service ID:</ListItemStandard>)
+    listItems.push(<ListItemStandard additionalText={service.environmentID}>Environment ID:</ListItemStandard>)
+    listItems.push(<ListItemStandard additionalText={service.environmentName}>Environment Name:</ListItemStandard>)
+    listItems.push(<ListItemStandard additionalText={service.provType}>Provision Type:</ListItemStandard>)
+    setPopoverBody1(listItems)
+  }
   const menuItemClicked = (e) => {
     if(e.detail.text === "Logout"){
       logout()
@@ -228,7 +238,7 @@ function Dashboard() {
                   open={popoverIsOpen}
                   allowTargetOverlap="true"
                   onClose={() => {
-                    setPopoverIsOpen(false);
+                    getServiceInfo()
                   }}
                   placement="Bottom"
                   verticalAlign="Top">
@@ -248,6 +258,7 @@ function Dashboard() {
                   allowTargetOverlap="true"
                   onClose={() => {
                       setPopoverIsOpen1(false);
+
                   }}
                   placement="Start"
                   verticalAlign="Top">
