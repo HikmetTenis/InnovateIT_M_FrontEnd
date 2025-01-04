@@ -128,7 +128,7 @@ export const getAccount = (reqData) => {
 export const getService = (reqData) => {
   const api = getApiInstance();
   return new Promise((resolve, reject) => {
-    let url = "/account/getAccount"
+    let url = "/account/getService"
     const config = {
       method: 'get',
       url: url
