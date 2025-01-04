@@ -177,10 +177,10 @@ function Dashboard() {
     setPopoverIsOpen(false);
     const service = await getService()
     let listItems = []
-    listItems.push(<ListItemStandard additionalText={service.id}>Service ID:</ListItemStandard>)
-    listItems.push(<ListItemStandard additionalText={service.environmentID}>Environment ID:</ListItemStandard>)
-    listItems.push(<ListItemStandard additionalText={service.environmentName}>Environment Name:</ListItemStandard>)
-    listItems.push(<ListItemStandard additionalText={service.provType}>Provision Type:</ListItemStandard>)
+    listItems.push(<ListItemStandard additionalText={service.obj.id}>Service ID:</ListItemStandard>)
+    listItems.push(<ListItemStandard additionalText={service.obj.environmentID}>Environment ID:</ListItemStandard>)
+    listItems.push(<ListItemStandard additionalText={service.obj.environmentName}>Environment Name:</ListItemStandard>)
+    listItems.push(<ListItemStandard additionalText={service.obj.provType}>Provision Type:</ListItemStandard>)
     setPopoverBody1(listItems)
   }
   const menuItemClicked = (e) => {
