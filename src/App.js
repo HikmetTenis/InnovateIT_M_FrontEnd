@@ -19,12 +19,7 @@ import { getService } from "./services/s-account";
 function App() {
   const [message,setMessage] = useState({open:false,message:"",result:null, callback:null, toast:false})
   useEffect(() => {
-    const initialize = async () => {
-      const service = await getService()
-      document.title = `${document.title}(${service.obj.environmentName})`;
-    }
-    initialize()
-    
+      document.title = `${document.title}(${process.env.REACT_APP_ENVIRONMENT})`;
   }, []);
   return (
     
