@@ -1,7 +1,7 @@
 import './App.css';
 import "@ui5/webcomponents-icons/dist/AllIcons.js";
 import Dashboard from './components/dashboard';
-import React, {useState} from 'react';
+import React, {useState,useEffect} from 'react';
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { fab } from '@fortawesome/free-brands-svg-icons'
 import { fas } from '@fortawesome/free-solid-svg-icons'
@@ -15,8 +15,17 @@ import messageContext from "./helpers/message-context";
 import MessageBoxComponent from "./components/message-box"
 import MessageToastComponent from "./components/message-toast"
 import ChangePassword from "./components/change-initial-password"
+import { getService } from "./services/s-account";
 function App() {
   const [message,setMessage] = useState({open:false,message:"",result:null, callback:null, toast:false})
+  useEffect(() => {
+    const initialize = async () => {
+      const service = await getService()
+      document.title = `${document.title}(${service.obj.environmentName})`;
+    }
+    initialize()
+    
+  }, []);
   return (
     
       <BrowserRouter>  
