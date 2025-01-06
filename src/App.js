@@ -19,7 +19,7 @@ import { getService } from "./services/s-account";
 function App() {
   const [message,setMessage] = useState({open:false,message:"",result:null, callback:null, toast:false})
   useEffect(() => {
-      document.title = `${process.env.REACT_APP_ENVIRONMENT}-${document.title}`;
+      document.title = `${process.env.REACT_APP_ENVIRONMENT} - ${document.title}`;
   }, []);
   return (
     
