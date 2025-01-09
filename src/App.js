@@ -21,7 +21,7 @@ function App() {
   useEffect(() => {
       document.title = `${process.env.REACT_APP_ENVIRONMENT} - ${document.title}`;
   }, []);
-  return (
+  return ( 
     
       <BrowserRouter>  
         <div className="App">
