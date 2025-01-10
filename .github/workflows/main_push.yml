@@ -5,7 +5,8 @@ name: Build and Push Front End to Google Cloud Platform
 on:
   push:
     branches: [ master ]
-
+permissions:
+  contents: write
 jobs: 
   build-push-gcr:
     name: Build and Push to GCP
