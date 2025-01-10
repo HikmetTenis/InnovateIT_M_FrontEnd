@@ -6,7 +6,7 @@ on:
   push:
     branches: [ master ]
 
-jobs:
+jobs: 
   build-push-gcr:
     name: Build and Push to GCP
     runs-on: ubuntu-latest
