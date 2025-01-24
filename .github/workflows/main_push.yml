@@ -5,15 +5,16 @@ name: Build and Push Front End to Google Cloud Platform
 on:
   push:
     branches: [ master ]
-
-jobs:
+permissions:
+  contents: write
+jobs: 
   build-push-gcr:
     name: Build and Push to GCP
     runs-on: ubuntu-latest
     env:  
       PROJECT_ID: monitoring-442416
       REPOSITORY: repo
-      IMAGE: ttfrontend
+      IMAGE: mtfrontend
       GKE_LOCATION: us-central1
     steps: 
     - name: Checkout   
