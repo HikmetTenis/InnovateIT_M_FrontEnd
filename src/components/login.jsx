@@ -129,10 +129,10 @@ const LoginPage = () => {
     }
     return (
         <FlexBox direction="Row" alignItems="Center" justifyContent="Center" fitContainer="true">
-            <FlexBox direction="Row" alignItems="Center" style={{ display: dashboardLoading ? "block" : "none"}} justifyContent="Center" fitContainer="true">
+            <FlexBox direction="Row" alignItems="Center" style={{ display: dashboardLoading ? "flex" : "none"}} justifyContent="Center" fitContainer="true">
                 <BusyIndicator active={dashboardLoading} style={{flex:"1"}} size="L"></BusyIndicator>
             </FlexBox>
-            <FlexBox direction="Row" alignItems="Center" justifyContent="Center" style={{ display: !dashboardLoading ? "block" : "none"}} fitContainer="true">
+            <FlexBox direction="Row" alignItems="Center" justifyContent="Center" style={{ display: !dashboardLoading ? "flex" : "none"}} fitContainer="true">
             
                 <Text style={{top:"10px", position:"absolute", right:"50px"}}>{process.env.REACT_APP_VERSION}</Text>
                 <FlexBox direction="Column" alignItems="Center" justifyContent="Center" id="login-picture-wrapper">
