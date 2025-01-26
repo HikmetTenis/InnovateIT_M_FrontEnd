@@ -181,6 +181,7 @@ function Dashboard() {
     listItems.push(<ListItemStandard additionalText={service.obj.environmentID}>Environment ID:</ListItemStandard>)
     listItems.push(<ListItemStandard additionalText={service.obj.environmentName}>Environment Name:</ListItemStandard>)
     listItems.push(<ListItemStandard additionalText={service.obj.provType}>Provision Type:</ListItemStandard>)
+    listItems.push(<ListItemStandard additionalText={service.obj.version}>Version:</ListItemStandard>)
     setPopoverBody1(listItems)
   }
   const menuItemClicked = (e) => {
