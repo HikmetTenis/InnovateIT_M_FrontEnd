@@ -8,6 +8,7 @@ import { useAuth } from "../helpers/authcontext";
 import CustomError from '../helpers/custom-error';
 const LoginPage = () => {
     const [loading, setLoading] = useState(false);
+    const [dashboardLoading, setDashboardLoading] = useState(false);
     const { login } = useAuth();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -128,46 +129,52 @@ const LoginPage = () => {
     }
     return (
         <FlexBox direction="Row" alignItems="Center" justifyContent="Center" fitContainer="true">
-            <Text style={{top:"10px", position:"absolute", right:"50px"}}>{process.env.REACT_APP_VERSION}</Text>
-            <FlexBox direction="Column" alignItems="Center" justifyContent="Center" id="login-picture-wrapper">
-                <div style={{height:"100%", display:"Flex", justiftContent:"Center"}}>
-                    <img style={{width:"500px",height:"400px",margin:"auto"}} alt="Innovate IT" src={process.env.PUBLIC_URL + '/logo2.svg'} />
-                </div>
+            <FlexBox direction="Row" alignItems="Center" style={{ display: dashboardLoading ? "block" : "none"}} justifyContent="Center" fitContainer="true">
+                <BusyIndicator active={dashboardLoading} style={{flex:"1"}} size="L"></BusyIndicator>
             </FlexBox>
-            <FlexBox direction="Column" alignItems="Center" justifyContent="Center" id="login-bottom-window">
-                <FlexBox direction="Column" alignItems="Center" justifyContent="Center" style={{flex:"1 1 40%",width:"100%", fontSize:"24px"}}>
-                    {/* <img style={{width:"120px",height:"120px"}} alt="Innovate IT" src={process.env.PUBLIC_URL + '/login-mini-logo.png'} /> */}
-                    <span>Welcome to </span>
-                    <span style={{fontSize:"36px", fontWeight:"700"}}>WATCH<span style={{fontSize:"36px", fontWeight:"700", color:"orange"}}>MEN</span></span>
+            <FlexBox direction="Row" alignItems="Center" justifyContent="Center" style={{ display: !dashboardLoading ? "block" : "none"}} fitContainer="true">
+            
+                <Text style={{top:"10px", position:"absolute", right:"50px"}}>{process.env.REACT_APP_VERSION}</Text>
+                <FlexBox direction="Column" alignItems="Center" justifyContent="Center" id="login-picture-wrapper">
+                    <div style={{height:"100%", display:"Flex", justiftContent:"Center"}}>
+                        <img style={{width:"500px",height:"400px",margin:"auto"}} alt="Innovate IT" src={process.env.PUBLIC_URL + '/logo2.svg'} />
+                    </div>
                 </FlexBox>
-                <FlexBox direction="Column" alignItems="Center" justifyContent="Center" style={{width:"100%"}}>
-                    <FlexBox direction="Row" alignItems="Center" justifyContent="SpaceAround" style={{width:"100%"}}>
-                        <Label for="username">Username : </Label>
-                        <Input id="username" style={{width:"60%"}} type="Email"  required 
-                            name="username"
-                            onChange={handleChange}
-                            value={formData["username"]}
-                            valueState={errors["username"] ? "Negative" : "None"}
-                            valueStateMessage={errors["username"] && <Text type="Error">{errors["username"]}</Text>}/>
+                <FlexBox direction="Column" alignItems="Center" justifyContent="Center" id="login-bottom-window">
+                    <FlexBox direction="Column" alignItems="Center" justifyContent="Center" style={{flex:"1 1 40%",width:"100%", fontSize:"24px"}}>
+                        {/* <img style={{width:"120px",height:"120px"}} alt="Innovate IT" src={process.env.PUBLIC_URL + '/login-mini-logo.png'} /> */}
+                        <span>Welcome to </span>
+                        <span style={{fontSize:"36px", fontWeight:"700"}}>WATCH<span style={{fontSize:"36px", fontWeight:"700", color:"orange"}}>MEN</span></span>
                     </FlexBox>
-                    <FlexBox direction="Row" alignItems="Center" justifyContent="SpaceAround" style={{width:"100%"}}>
-                        <Label for="password">Password : </Label>
-                        <Input id="password" style={{width:"60%"}} icon={<Button  design="Transparent"  icon={passwordIcon}  onClick={() => showPassword()}/>} type={passwordType} required 
-                            name="password"
-                            onChange={handleChange}
-                            value={formData["password"]}
-                            valueState={errors["password"] ? "Negative" : "None"}
-                            valueStateMessage={errors["password"] && <Text type="Error">{errors["password"]}</Text>}/>
-                    </FlexBox>
-                </FlexBox> 
-                <FlexBox direction="Column" alignItems="Center" justifyContent="Center" style={{flex:"1 1 10%", paddingLeft:"20px", paddingRight:"20px"}}>
-                    <Button style={{width:"100%"}} disabled={loading} design="Emphasized" icon="unlocked" onClick={(e) => handleLogin(e)}>
-                        <FlexBox direction="Row" alignItems="Center" justifyContent="Center">
-                            <span>Sign In</span><BusyIndicator active={loading} className="login-busy-indicator" style={{ display: loading ? "block" : "none"}} size="S"></BusyIndicator>
+                    <FlexBox direction="Column" alignItems="Center" justifyContent="Center" style={{width:"100%"}}>
+                        <FlexBox direction="Row" alignItems="Center" justifyContent="SpaceAround" style={{width:"100%"}}>
+                            <Label for="username">Username : </Label>
+                            <Input id="username" style={{width:"60%"}} type="Email"  required 
+                                name="username"
+                                onChange={handleChange}
+                                value={formData["username"]}
+                                valueState={errors["username"] ? "Negative" : "None"}
+                                valueStateMessage={errors["username"] && <Text type="Error">{errors["username"]}</Text>}/>
                         </FlexBox>
-                    </Button>
-                    <FlexBox direction="Row" alignItems="Center" justifyContent="SpaceBetween" style={{width:"100%", height:"30px"}}>
-                        <Link design="Default" disabled={loading} onClick={(e) => resetPasswordDialog(e)}>Forgot Password </Link>
+                        <FlexBox direction="Row" alignItems="Center" justifyContent="SpaceAround" style={{width:"100%"}}>
+                            <Label for="password">Password : </Label>
+                            <Input id="password" style={{width:"60%"}} icon={<Button  design="Transparent"  icon={passwordIcon}  onClick={() => showPassword()}/>} type={passwordType} required 
+                                name="password"
+                                onChange={handleChange}
+                                value={formData["password"]}
+                                valueState={errors["password"] ? "Negative" : "None"}
+                                valueStateMessage={errors["password"] && <Text type="Error">{errors["password"]}</Text>}/>
+                        </FlexBox>
+                    </FlexBox> 
+                    <FlexBox direction="Column" alignItems="Center" justifyContent="Center" style={{flex:"1 1 10%", paddingLeft:"20px", paddingRight:"20px"}}>
+                        <Button style={{width:"100%"}} disabled={loading} design="Emphasized" icon="unlocked" onClick={(e) => handleLogin(e)}>
+                            <FlexBox direction="Row" alignItems="Center" justifyContent="Center">
+                                <span>Sign In</span><BusyIndicator active={loading} className="login-busy-indicator" style={{ display: loading ? "block" : "none"}} size="S"></BusyIndicator>
+                            </FlexBox>
+                        </Button>
+                        <FlexBox direction="Row" alignItems="Center" justifyContent="SpaceBetween" style={{width:"100%", height:"30px"}}>
+                            <Link design="Default" disabled={loading} onClick={(e) => resetPasswordDialog(e)}>Forgot Password </Link>
+                        </FlexBox>
                     </FlexBox>
                 </FlexBox>
             </FlexBox>
