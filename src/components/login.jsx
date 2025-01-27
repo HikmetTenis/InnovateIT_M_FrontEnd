@@ -130,7 +130,7 @@ const LoginPage = () => {
     return (
         <FlexBox direction="Row" alignItems="Center" justifyContent="Center" fitContainer="true">
             <FlexBox direction="Row" alignItems="Center" style={{ display: dashboardLoading ? "flex" : "none"}} justifyContent="Center" fitContainer="true">
-                <BusyIndicator active={dashboardLoading} style={{flex:"1"}} size="L"></BusyIndicator>
+                <BusyIndicator active={dashboardLoading} style={{flex:"1"}} size="M"></BusyIndicator>
             </FlexBox>
             <FlexBox direction="Row" alignItems="Center" justifyContent="Center" style={{ display: !dashboardLoading ? "flex" : "none"}} fitContainer="true">
             
