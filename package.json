@@ -1,6 +1,6 @@
 {
   "name": "innovateit",
-  "version": "T1.0.3",
+  "version": "T1.0.4",
   "private": true,
   "dependencies": {
     "@azure/msal-browser": "^3.23.0",

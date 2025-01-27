@@ -71,7 +71,7 @@ const LoginPage = () => {
                     serviceID: process.env.REACT_APP_SERVICE_ID
                 }
                 const user = await login(credentials); // Handles either JWT or SAML login based on AUTHTYPE
-                setLoading(false)
+                setDashboardLoading(true)
                 if(user.data.isPasswordInitial){
                     window.location.href = "/changePassword";
                 }else{
