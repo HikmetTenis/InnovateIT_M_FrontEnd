@@ -1,4 +1,4 @@
-name: Build and Push Front End to Google Cloud Platform
+name: MT Build and Push
 # on:
 #   push:
 #     branches: [ main ]
