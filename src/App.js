@@ -19,6 +19,9 @@ import { getService } from "./services/s-account";
 function App() {
   const [message,setMessage] = useState({open:false,message:"",result:null, callback:null, toast:false})
   useEffect(() => {
+    if(process.env.REACT_APP_SERVICE_TYPE.toUpperCase() === 'TRIAL'){
+      document.title = `${process.env.REACT_APP_ENVIRONMENT} - ${document.title} (${process.env.REACT_APP_SERVICE_TYPE.toUpperCase()})`;
+    }else
       document.title = `${process.env.REACT_APP_ENVIRONMENT} - ${document.title}`;
   }, []);
   return (  

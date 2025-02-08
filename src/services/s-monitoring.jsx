@@ -18,15 +18,15 @@ export const  getGraphAllData = (startDate, endDate, period) => {
   const api = getApiInstance();
   return new Promise((resolve, reject) => {
       const config = {
-          method: 'get',
-          withCredentials:true,            
-          url: "/monitoring/getGraphAllData?period="+period+"&startDate='"+startDate+"'&endDate='"+endDate+"'"
-        };
-        api(config).then(function (response) {
-          resolve(response)
-        }).catch(function (error) {
-          reject(error)
-        });
+        method: 'get',
+        withCredentials:true,            
+        url: "/monitoring/getGraphAllData?period="+period+"&startDate='"+startDate+"'&endDate='"+endDate+"'"
+      };
+      api(config).then(function (response) {
+        resolve(response)
+      }).catch(function (error) {
+        reject(error)
+      });
   });
 }
 export const  getGraphData = (startDate, endDate, status, period) => {

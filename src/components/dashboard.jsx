@@ -47,7 +47,7 @@ function Dashboard() {
   const [notificationCount, setNotificationCount] = useState(0);
   const buttonRef = useRef(null);
   const [menuIsOpen, setMenuIsOpen] = useState(false);
-  const [trialPeriod, setTrialPeriod] = useState(0);
+  const [trialPeriod, setTrialPeriod] = useState(-1);
   const [fullname, setFullname] = useState('');
   const environments = useRef([]);
   useEffect(() => {
@@ -85,7 +85,7 @@ function Dashboard() {
       };
       
     }
-    initializeWorker()
+    //initializeWorker()
     
     
   }, [token]);
@@ -224,7 +224,7 @@ function Dashboard() {
                     showProductSwitch="false">
                 </ShellBar>
                 {isAuthenticated &&<Button ref={buttonRef} style={{position:"absolute",right:"105px",top:"20px"}} className="profile-button" onClick={() => {setMenuIsOpen(true);}} design="Transparent" icon="employee" tooltip={fullname} title={fullname}></Button>}
-                <Tag style={{position:"absolute",right:"160px",top:"27px"}} design="Information"><span>{trialPeriod} days left</span></Tag>
+                {trialPeriod > -1 &&<Tag style={{position:"absolute",right:"160px",top:"27px"}} design="Information"><span>{trialPeriod} days left</span></Tag>}
               </div>
               <div className='main-body'>
               <BusyIndicator active={!isAuthenticated} style={{height:"100%",width:"100%",display: isAuthenticated ? "none" : "block"}} size="M"></BusyIndicator>
