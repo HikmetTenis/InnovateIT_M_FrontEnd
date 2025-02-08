@@ -2,10 +2,12 @@ import axios from 'axios';
 
 let apiInstance = null; // Singleton instance
 let interceptorsConfigured = false;
-
+let protocol = "https"
+if(process.env.REACT_APP_SERVER_URL == "localhost")
+  protocol = "http"
 const createApiInstance = () => {
   return axios.create({
-    baseURL: `http://${process.env.REACT_APP_SERVER_URL}:${process.env.REACT_APP_SERVER_PORT}`,
+    baseURL: `${protocol}://${process.env.REACT_APP_SERVER_URL}:${process.env.REACT_APP_SERVER_PORT}`,
     headers: {
       'Content-Type': 'application/json',
     },
@@ -53,7 +55,7 @@ export const getApiInstance = () => {
           if (error.response && (error.response.status === 401 || error.response.status === 403)) {
             if (window.location.pathname !== '/login') {
               if(process.env.REACT_APP_AUTHTYPE === "SAML"){
-                window.location.href ="https://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/loginSAML"
+                window.location.href = protocol+"://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/loginSAML"
               }else{
                 window.location.href ="/login"
               }

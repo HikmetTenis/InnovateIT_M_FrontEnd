@@ -1,7 +1,9 @@
 import axios from 'axios'
 const moment = require('moment');
 let accessToken = null;
-
+let protocol = "https"
+if(process.env.REACT_APP_SERVER_URL == "localhost")
+  protocol = "http"
 // Function to fetch notifications from the backend
 async function fetchNotifications() {
   if (!accessToken) {
@@ -20,7 +22,7 @@ async function fetchNotifications() {
       },
       method: 'get',
       withCredentials:true,
-      url: `https://${process.env.REACT_APP_SERVER_URL}:${process.env.REACT_APP_SERVER_PORT}/monitoring/getNotifications?startDate=${startDate}&endDate=${endDate}`
+      url: `${protocol}://${process.env.REACT_APP_SERVER_URL}:${process.env.REACT_APP_SERVER_PORT}/monitoring/getNotifications?startDate=${startDate}&endDate=${endDate}`
     };
     const response = await axios(config)
     postMessage(response.data.obj);  // Send back notifications to the main thread

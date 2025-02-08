@@ -4,7 +4,9 @@ import CustomError from './custom-error';
 import { useLocation,useMatch } from "react-router-dom";
 // Create the AuthContext
 const AuthContext = createContext();
-
+let protocol = "https"
+if(process.env.REACT_APP_SERVER_URL === "localhost")
+  protocol = "http"
 // Environment variable to determine authentication type
 const AUTHTYPE = process.env.REACT_APP_AUTHTYPE;
 
@@ -30,7 +32,7 @@ export const AuthProvider = ({ children }) => {
               'Content-Type': 'application/json',
             },
             withCredentials: true,
-            url: "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/user"
+            url: protocol+"://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/user"
           };
           const response = await api(config)
           setUser(response.data.user.email);
@@ -41,7 +43,7 @@ export const AuthProvider = ({ children }) => {
           console.error("Token verification failed:", error);
           if(error.response && (error.response.status === 401 || error.response.status === 403)){
             if(AUTHTYPE === "SAML"){
-              window.location.href ="http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/loginSAML"
+              window.location.href =protocol+"://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/loginSAML"
             }else if(window.location.pathname !== "/login"){
                 window.location.href ="/login"
             }
@@ -100,7 +102,7 @@ export const AuthProvider = ({ children }) => {
     // SAML Login
     const samlLogin = () => {
         // Redirect to SAML login endpoint
-        window.location.href = "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/loginSAML"
+        window.location.href = protocol+"://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/loginSAML"
     };
 
     // Logout (both methods)
@@ -109,7 +111,7 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
         setIsAuthenticated(false);
         if(AUTHTYPE === "SAML"){
-          window.location.href = "http://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/logout"
+          window.location.href = protocol+"://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/logout"
         }else{
           window.location.href = "/login"
         }
@@ -123,7 +125,7 @@ export const AuthProvider = ({ children }) => {
             const token = localStorage.getItem("jwtToken");
             if (token) {
                 // Simulate a network request
-                const response = await api("https://"+process.env.REACT_APP_SERVER_URL+"/sso/user");
+                const response = await api(protocol+"://"+process.env.REACT_APP_SERVER_URL+"/sso/user");
                 setUser(response.data.email);
                 setIsAuthenticated(true);
             } else {

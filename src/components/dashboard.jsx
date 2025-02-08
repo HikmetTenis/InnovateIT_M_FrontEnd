@@ -13,6 +13,9 @@ import { useNotifications } from '../helpers/notification-context';
 import { useAuth } from "../helpers/authcontext";
 import { getTrialPeriod, getService } from "../services/s-account";
 import Home from './home';
+let protocol = "https"
+if(process.env.REACT_APP_SERVER_URL == "localhost")
+  protocol = "http"
 function Dashboard() {
   const { isAuthenticated,logout, user, token } = useAuth();
   const wrapperVariants = {
@@ -66,7 +69,7 @@ function Dashboard() {
             if(data.error.status === 401 || data.error.status === 403){
               if(process.env.REACT_APP_AUTHTYPE === "SAML"){
                 localStorage.removeItem("jwtToken")
-                window.location.href ="https://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/loginSAML"
+                window.location.href = protocol+"://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/loginSAML"
               }else{
                 window.location.href ="/login"
               }
