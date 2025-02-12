@@ -15,7 +15,7 @@ export const createAccount  = (reqData, type) => {
       reject(error)
     });
   })
-}
+} 
 export const getTrialPeriod  = (reqData, type) => {
   const api = getApiInstance();
   return new Promise((resolve, reject) => {

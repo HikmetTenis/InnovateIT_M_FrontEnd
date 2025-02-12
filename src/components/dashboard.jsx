@@ -88,9 +88,7 @@ function Dashboard() {
       };
       
     }
-    //initializeWorker()
-    
-    
+    initializeWorker()
   }, [token]);
   useEffect(() => {
     const l = notifications.filter(notification => !notification.markAsRead)
