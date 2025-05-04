@@ -12,18 +12,21 @@ const LoginPage = () => {
     const { login } = useAuth();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [serviceID, setServiceID] = useState('');
     const {message,setMessage} = useContext(MessageContext);
     const [passwordIcon, setPasswordIcon] = useState('show');
     const [passwordType, setPasswordType] = useState('Password');
     const [formData, setFormData] = useState({
         username: '',
-        password:''
+        password:'',
+        serviceID :''
     });
     
       // Initial state for errors
     const [errors, setErrors] = useState({
         username: '',
-        password: ''
+        password: '',
+        serviceID :''
     });
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -35,6 +38,8 @@ const LoginPage = () => {
             setUsername(e.target.value)
         if(name === "password")
             setPassword(e.target.value)
+        if(name === "serviceID")
+            setServiceID(e.target.value)
     };
     const validateField = (name, value, message) => {
         switch (name) {
@@ -48,6 +53,11 @@ const LoginPage = () => {
                     return message
                 }
                 return value ? '' : 'Password is required';
+            case 'serviceID':
+                    if(message && process.env.REACT_APP_ENVIRONMENT !== "TRIAL"){
+                        return message
+                    }
+                    return value ? '' : 'serviceID is required';
             default:
                 return '';
         }
@@ -64,11 +74,14 @@ const LoginPage = () => {
         }
         setErrors(newErrors);
         if (isValid) {
+            let sId = process.env.REACT_APP_SERVICE_ID
+            if(process.env.REACT_APP_ENVIRONMENT === "TRIAL")
+                sId = serviceID
             try {
                 const credentials = {
                     username:username,
                     password: password,
-                    serviceID: process.env.REACT_APP_SERVICE_ID
+                    serviceID: sId
                 }
                 const user = await login(credentials); // Handles either JWT or SAML login based on AUTHTYPE
                 setDashboardLoading(true)
@@ -93,6 +106,8 @@ const LoginPage = () => {
                     }
                 }
             }
+        }else{
+            setLoading(false)
         }
     };
     const resetPasswordDialog = async (e) => {
@@ -165,6 +180,17 @@ const LoginPage = () => {
                                 valueState={errors["password"] ? "Negative" : "None"}
                                 valueStateMessage={errors["password"] && <Text type="Error">{errors["password"]}</Text>}/>
                         </FlexBox>
+                        {process.env.REACT_APP_ENVIRONMENT === "TRIAL"?
+                            <FlexBox direction="Row" alignItems="Center" justifyContent="SpaceAround" style={{width:"100%"}}>
+                                <Label for="serviceID">Service ID : </Label>
+                                <Input id="serviceID" style={{width:"60%"}}  required 
+                                    name="serviceID"
+                                    onChange={handleChange}
+                                    value={formData["serviceID"]}
+                                    valueState={errors["serviceID"] ? "Negative" : "None"}
+                                    valueStateMessage={errors["serviceID"] && <Text type="Error">{errors["serviceID"]}</Text>}/>
+                            </FlexBox>
+                        :""}
                     </FlexBox> 
                     <FlexBox direction="Column" alignItems="Center" justifyContent="Center" style={{flex:"1 1 10%", paddingLeft:"20px", paddingRight:"20px"}}>
                         <Button style={{width:"100%"}} disabled={loading} design="Emphasized" icon="unlocked" onClick={(e) => handleLogin(e)}>
