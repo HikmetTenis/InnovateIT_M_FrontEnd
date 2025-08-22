@@ -53,13 +53,13 @@ export const getApiInstance = () => {
 
           // Handle unauthorized or forbidden errors
           if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-            if (window.location.pathname !== '/login') {
-              if(process.env.REACT_APP_AUTHTYPE === "SAML"){
-                window.location.href = protocol+"://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/loginSAML"
-              }else{
-                window.location.href ="/login"
-              }
-            }
+            // if (window.location.pathname !== '/login') {
+            //   if(process.env.REACT_APP_AUTHTYPE === "SAML"){
+            //     window.location.href = protocol+"://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/loginSAML"
+            //   }else{
+            //     window.location.href ="/login"
+            //   }
+            // }
           }
 
           return Promise.reject(error); // Reject for other errors

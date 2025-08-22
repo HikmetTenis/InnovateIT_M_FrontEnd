@@ -58,7 +58,7 @@ function Dashboard() {
     shellBarHeader.append('<Button  design="Transparent"  icon="menu2"/>')
     const initializeWorker = async () => {
       const worker = new Worker(new URL('../helpers/notificationWorker.js', import.meta.url));
-      if(process.env.REACT_APP_SERVICE_TYPE === "Trial"){
+      if(process.env.REACT_APP_ENVIRONMENT === "TRIAL"){
         const period = await getTrialPeriod() 
         setTrialPeriod(period)
       }

@@ -70,26 +70,34 @@ export const AuthProvider = ({ children }) => {
       }
     }, []);
     // JWT Login
-    const jwtLogin = async (credentials) => {
+    const jwtLogin = async (credentials, authType) => {
         try {
-          const config = {
-              method: 'post',
-              url: "/sso/login",
-              data:credentials
+          let config = {
+            method: 'post',
+            url: "/sso/login",
+            data:credentials
           };
-            const response = await api(config);
-            const token = response.data.obj;
+          if(authType === "GOOGLE"){
+            config = {
+              method: 'post',
+              url: "/sso/google",
+              data:credentials
+            };
+          }
+          const response = await api(config);
+          const token = response.data.obj;
 
-            // Save JWT to local storage
-            
-            localStorage.setItem("jwtToken", token);
-            setToken(token)
-            // Decode user information (optional, if provided in token)
-            const decodedUser = JSON.parse(atob(token.split(".")[1])); // Decode payload
-            
-            setUser(decodedUser.signature.username);
-            setIsAuthenticated(true);
-            return response
+          // Save JWT to local storage
+          
+          localStorage.setItem("jwtToken", token);
+          setToken(token)
+          // Decode user information (optional, if provided in token)
+          const decodedUser = JSON.parse(atob(token.split(".")[1])); // Decode payload
+          
+          setUser(decodedUser.signature.username);
+          setIsAuthenticated(true);
+          return response
+              
         } catch (error) {
             console.error("JWT login failed", error);
             if(error.response.status === 403){

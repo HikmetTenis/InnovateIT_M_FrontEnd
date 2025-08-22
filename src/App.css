@@ -255,6 +255,7 @@ ui5-icon:hover {
   justify-content:center;
   align-items:stretch;
   background-color:white;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
 }
 .grid-item {
   box-shadow: var(--sapContent_Shadow2)!important;

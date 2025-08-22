@@ -236,8 +236,8 @@ function MonitoringPageDetails({status}){
         
         totalSteps += runtime.steps.length
         for(const runtimeStep of runtime.steps){
-          const idSplit = runtimeStep.stepID.split(":")
-          let metadata = metadatas.data.obj.steps.filter(m => m.stepNumber === idSplit[1]);
+          //const idSplit = runtimeStep.stepID.split(":")
+          let metadata = metadatas.data.obj.steps.filter(m => m.stepNumber === runtimeStep.stepID);
           metadata = metadata[0]
           let runtimeStatus = ""
           let executionTime = 'N/A'
@@ -484,30 +484,36 @@ function MonitoringPageDetails({status}){
   }
   
   const showPayload = (id,messageid, stepNumber) => {
+    setPayloadLoaded(false)
     setPopoverRef(id)
     popoverHeader.current.innerText="STEP "+stepNumber+" Details"  
     setPopoverIsOpen(true)  
     getPayload(id,messageid).then((res)=>{
       if(res.data.obj != null && res.status === 200){
-        const binaryString = window.atob(res.data.obj);
-        let formattedOutput = binaryString
-        if(isJsonString(binaryString)){
-          // Parse the JSON string into an object
-          const jsonObject = JSON.parse(binaryString);
+        if(res.data.obj.status === "NEW"){
+          setPopoverIsOpen(false)  
+          setMessage({open:false, toastMessage:"Payload is still being downloaded, try again in couple minutes..", result:null, callback:null, toast:true})
+        }else{
+          const binaryString = window.atob(res.data.obj.data);
+          let formattedOutput = binaryString
+          if(isJsonString(binaryString)){
+            // Parse the JSON string into an object
+            const jsonObject = JSON.parse(binaryString);
 
-          // Format the JSON object into a readable string with indentation
-          formattedOutput = JSON.stringify(jsonObject, null, 2);
-        }else if(isXmlString(binaryString)){
-          // Parse the XML string
-          const parser = new DOMParser();
-          const xmlDoc = parser.parseFromString(binaryString, "application/xml");
+            // Format the JSON object into a readable string with indentation
+            formattedOutput = JSON.stringify(jsonObject, null, 2);
+          }else if(isXmlString(binaryString)){
+            // Parse the XML string
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(binaryString, "application/xml");
 
-          // Serialize the XML back into a string with formatting
-          const serializer = new XMLSerializer();
-          formattedOutput = serializer.serializeToString(xmlDoc);
+            // Serialize the XML back into a string with formatting
+            const serializer = new XMLSerializer();
+            formattedOutput = serializer.serializeToString(xmlDoc);
+          }
+          popoverBody.current.innerText=formattedOutput
+          setPayloadLoaded(true)
         }
-        popoverBody.current.innerText=formattedOutput
-        setPayloadLoaded(true)
         
       }else{
         popoverBody.current.innerText="No PAYLOAD."
@@ -987,9 +993,9 @@ function MonitoringPageDetails({status}){
 
                         return (
                           <FlexBox>
-                            <Button icon="detail-view" disabled={isOverlay} onClick={() => loadArtifact(row.original)}/>
-                            <Button id={csID} style={{marginLeft:"3px"}} icon="filter-fields" disabled={isOverlay||isCustomProperties} onClick={() => showCustomProperties(row.original)}/>
-                            <Button id={errID} style={{marginLeft:"3px"}} icon="display" disabled={isOverlay||isError} onClick={() => showErrorDetails(row.original)}/>
+                            <Button icon="detail-view" title="Diagram view for each step." disabled={isOverlay} onClick={() => loadArtifact(row.original)}/>
+                            <Button id={csID} style={{marginLeft:"3px"}} title="Custom Properties" icon="filter-fields" disabled={isOverlay||isCustomProperties} onClick={() => showCustomProperties(row.original)}/>
+                            <Button id={errID} style={{marginLeft:"3px", color:"red"}} title="Error Details" icon="error" disabled={isOverlay||isError} onClick={() => showErrorDetails(row.original)}/>
                           </FlexBox>
                         );
                       },

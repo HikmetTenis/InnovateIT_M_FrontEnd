@@ -47,6 +47,22 @@ export const signIn  = (reqData) => {
     });
   })
 }
+export const signInGoogle  = (reqData) => {
+  const api = getApiInstance();
+  return new Promise((resolve, reject) => {
+    let url = "/sso/google"
+    const config = {
+      method: 'post',
+      url: url,
+      data:reqData 
+    };
+    api(config).then(function (response) {
+      resolve(response.data)
+    }).catch(function (error) {
+      reject(error)
+    });
+  })
+}
 export const resetPassword  = (reqData) => {
   const api = getApiInstance();
   return new Promise((resolve, reject) => {
