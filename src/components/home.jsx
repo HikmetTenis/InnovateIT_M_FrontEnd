@@ -69,9 +69,10 @@ export default function MonitoringPageHeader({tileClicked}) {
         let startDate = moment.utc(past).format("YYYY-MM-DD HH:mm:ss")
         setActiveRange(range.desc); // Update the active state when a button is clicked
         getGraphAllData(startDate,endDate,range.desc).then((res)=>{
+            let gData = []
             if(res.data.obj.length > 0){
                 const localTimezone = moment.tz.guess();
-                let gData = []
+                
                 for(const e of res.data.obj){
                     const utcDate = moment.utc(e.time_interval_utc);
                     let intervalFormat = 'HH:mm'
@@ -80,8 +81,11 @@ export default function MonitoringPageHeader({tileClicked}) {
                     const convertedLocalTime = utcDate.tz(localTimezone).format(intervalFormat);
                     gData.push({name:convertedLocalTime, SUCCESS:parseInt(e.SUCCESS), FAILED:parseInt(e.FAILED), PROCESSED:parseInt(e.PROCESSED)})
                 }
-                setGraphData(gData)
+                
+            }else{
+                gData.push({name:moment(), SUCCESS:0, FAILED:0, PROCESSED:0})
             }
+            setGraphData(gData)
             setGraphLoaded(false)
         })
     };
@@ -91,16 +95,20 @@ export default function MonitoringPageHeader({tileClicked}) {
         let past = now.subtract("1", "hours");
         const startDate = moment.utc(past).format("YYYY-MM-DD HH:mm:ss")
         getGraphAllData(startDate,endDate,"1 hour").then((res)=>{
+            let gData = []
             if(res.data.obj.length > 0){
                 const localTimezone = moment.tz.guess();
-                let gData = []
+                
                 for(const e of res.data.obj){
                     const utcDate = moment.utc(e.time_interval_utc);
                     const convertedLocalTime = utcDate.tz(localTimezone).format('HH:mm');
                     gData.push({name:convertedLocalTime, SUCCESS:parseInt(e.SUCCESS), FAILED:parseInt(e.FAILED), PROCESSED:parseInt(e.PROCESSED)})
                 }
-                setGraphData(gData)
+                
+            }else{
+                gData.push({name:moment(), SUCCESS:0, FAILED:0, PROCESSED:0})
             }
+            setGraphData(gData)
             setGraphLoaded(false)
         })
     }, []);

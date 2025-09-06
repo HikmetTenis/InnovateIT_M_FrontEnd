@@ -54,8 +54,9 @@ function MonitoringJMSGraph({ refresh,isExpanded}) {
         }
         setGraphData(gData)
       }else{
-        setGraphData(gData)
+        gData.push({name:moment(), capacity:0})
       }
+      setGraphData(gData)
       setMessagesLoaded(false)
     })
   };
@@ -80,10 +81,11 @@ function MonitoringJMSGraph({ refresh,isExpanded}) {
             const convertedLocalTime = utcDate.tz(localTimezone).format(intervalFormat);
             gData.push({name:convertedLocalTime, capacity:parseInt(e.stat)})
         }
-        setGraphData(gData)
+        
       }else{
-        setGraphData(gData)
+        gData.push({name:moment(), capacity:0})
       }
+      setGraphData(gData)
       setMessagesLoaded(false)
     })
   }, [refresh])
