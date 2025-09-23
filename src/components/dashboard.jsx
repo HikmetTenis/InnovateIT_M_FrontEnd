@@ -12,6 +12,7 @@ import $ from 'jquery';
 import { useNotifications } from '../helpers/notification-context';
 import { useAuth } from "../helpers/authcontext";
 import { getTrialPeriod, getService } from "../services/s-account";
+import IntegrationNetwork from './integration-network'
 import Home from './home';
 let protocol = "https"
 if(process.env.REACT_APP_SERVER_URL == "localhost")
@@ -36,11 +37,10 @@ function Dashboard() {
         transition: { ease: 'easeInOut' },
       },
   };
-  const { notifications, removeNotification,updateNotification,addNotification } = useNotifications();
+  const { notifications, updateNotification,addNotification } = useNotifications();
   const[page, setpage] = useState("home") 
   // const[isAuthorized, setIsAuthorized] = useState(false) 
   const[isCollapsed, setIsCollapsed] = useState(true) 
-  const [profilePhoto, setProfilePhoto] = useState(null);
   const [popoverBody, setPopoverBody] = useState([]);
   const [popoverRef, setPopoverRef] = useState(null);
   const [popoverIsOpen, setPopoverIsOpen] = useState(false);
@@ -274,6 +274,7 @@ function Dashboard() {
               <div style={{height:"100%",gap:"10px",width:"100%",display: !isAuthenticated ? "none" : "flex"}}>
                 <SideNavigation collapsed={isCollapsed} style={{zIndex:"100"}} fixedItems={<><SideNavigationItem id="configButton" icon="action-settings" onClick={()=> showConfig()} text="Settings"/></>}>
                   <SideNavigationItem icon="home" text="Home" onClick={()=> showDetails("home")} selected/>
+                  <SideNavigationItem icon="map" onClick={()=>showDetails("integrationnetwork")} text="Integration Diagram"/>
                   <SideNavigationItem expanded icon="dimension" text="Monitoring">
                     <SideNavigationSubItem onClick={()=> showDetails("monitoring")} text="Monitoring By Messages" />
                     <SideNavigationSubItem onClick={()=> showDetails("monitoringStatus")} text="Monitoring By Statuses" />
@@ -286,6 +287,13 @@ function Dashboard() {
                       initial="visible"
                       animate={page === 'home' ? 'visible' : 'hidden'}
                       exit="exit">{page === "home" && isAuthenticated && (<Home tileClicked={tileClicked}></Home>)} </motion.div>
+                </AnimatePresence>
+                <AnimatePresence>
+                  <motion.div style={{flex:"1 1 auto",width:"100%", height:"100%"}}
+                      variants={wrapperVariants}
+                      initial="visible"
+                      animate={page === 'integrationnetwork' ? 'visible' : 'hidden'}
+                      exit="exit">{page === "integrationnetwork" && isAuthenticated && (<IntegrationNetwork tileClicked={tileClicked}></IntegrationNetwork>)} </motion.div>
                 </AnimatePresence>
                 <AnimatePresence>
                   <motion.div style={{flex:"1 1 auto",width:"100%", height:"100%"}}

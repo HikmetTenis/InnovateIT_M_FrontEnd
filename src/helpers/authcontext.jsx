@@ -21,53 +21,54 @@ export const AuthProvider = ({ children }) => {
     const location = useLocation();
     const api = getApiInstance();
     useEffect(() => {
-      if (matchLogin || matchResetPassword) {
-        return children;
-      }
-      const verifyToken = async () => {
-        try {
-          const config = {
-            method: 'get',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            withCredentials: true,
-            url: protocol+"://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/user"
-          };
-          const response = await api(config)
-          setUser(response.data.user.email);
-          localStorage.setItem("fullname",response.data.user.name)
-          setIsAuthenticated(true);
-          setLoading(false)
-        } catch (error) {
-          console.error("Token verification failed:", error);
-          if(error.response && (error.response.status === 401 || error.response.status === 403)){
-            if(AUTHTYPE === "SAML"){
-              window.location.href =protocol+"://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/loginSAML"
-            }else if(window.location.pathname !== "/login"){
-                window.location.href ="/login"
-            }
-          }
-        }
-      };
-      if(AUTHTYPE === "SAML"){
-        const queryParams = new URLSearchParams(window.location.search);
-        const tokenFromUrl = queryParams.get("token");
-        if(tokenFromUrl){
-          localStorage.setItem("jwtToken",tokenFromUrl);
-          setToken(tokenFromUrl)
-          const fullname = queryParams.get("fullname");
-          const email = queryParams.get("email");
-          setUser({fullname:fullname, email: email});
-          localStorage.setItem("fullname",fullname);
-          localStorage.setItem("email",email);
-          setIsAuthenticated(true);
-        }else{
-          verifyToken();
-        }
-      }else{
-        verifyToken();
-      }
+      // if (matchLogin || matchResetPassword) {
+      //   return children;
+      // }
+      // const verifyToken = async () => {
+      //   try {
+      //     const config = {
+      //       method: 'get',
+      //       headers: {
+      //         'Content-Type': 'application/json',
+      //       },
+      //       withCredentials: true,
+      //       url: protocol+"://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/user"
+      //     };
+      //     const response = await api(config)
+      //     setUser(response.data.user.email);
+      //     localStorage.setItem("fullname",response.data.user.name)
+      //     setIsAuthenticated(true);
+      //     setLoading(false)
+      //   } catch (error) {
+      //     console.error("Token verification failed:", error);
+      //     if(error.response && (error.response.status === 401 || error.response.status === 403)){
+      //       if(AUTHTYPE === "SAML"){
+      //         window.location.href =protocol+"://"+process.env.REACT_APP_SERVER_URL+":"+process.env.REACT_APP_SERVER_PORT+"/sso/loginSAML"
+      //       }else if(window.location.pathname !== "/login"){
+      //           window.location.href ="/login"
+      //       }
+      //     }
+      //   }
+      // };
+      // if(AUTHTYPE === "SAML"){
+      //   const queryParams = new URLSearchParams(window.location.search);
+      //   const tokenFromUrl = queryParams.get("token");
+      //   if(tokenFromUrl){
+      //     localStorage.setItem("jwtToken",tokenFromUrl);
+      //     setToken(tokenFromUrl)
+      //     const fullname = queryParams.get("fullname");
+      //     const email = queryParams.get("email");
+      //     setUser({fullname:fullname, email: email});
+      //     localStorage.setItem("fullname",fullname);
+      //     localStorage.setItem("email",email);
+      //     setIsAuthenticated(true);
+      //   }else{
+      //     verifyToken();
+      //   }
+      // }else{
+      //   verifyToken();
+      // }
+      setIsAuthenticated(true);
     }, []);
     // JWT Login
     const jwtLogin = async (credentials, authType) => {
