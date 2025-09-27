@@ -289,7 +289,7 @@ function Dashboard() {
                       exit="exit">{page === "home" && isAuthenticated && (<Home tileClicked={tileClicked}></Home>)} </motion.div>
                 </AnimatePresence>
                 <AnimatePresence>
-                  <motion.div style={{flex:"1 1 auto",width:"100%", height:"100%"}}
+                  <motion.div style={{ flex:'1 1 auto', width:'100%', height:'100%', minHeight:520, minWidth:0}}
                       variants={wrapperVariants}
                       initial="visible"
                       animate={page === 'integrationnetwork' ? 'visible' : 'hidden'}

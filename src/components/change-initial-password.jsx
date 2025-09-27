@@ -1,5 +1,5 @@
 import React, { useState,useContext } from 'react';
-import "@ui5/webcomponents-icons/dist/AllIcons.js";
+import "@ui5/webcomponents-icons/dist/add.js";
 import {Form, FormItem, FlexBox, Input, Label, Text,FormGroup,Button, BusyIndicator} from '@ui5/webcomponents-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import MessageContext from "../helpers/message-context";
