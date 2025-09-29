@@ -28,6 +28,7 @@
     "fs": "^0.0.1-security",
     "html-react-parser": "^5.1.10",
     "https": "^1.0.0",
+    "joint-plus": "^4.0.1",
     "jquery": "^3.7.1",
     "jwt-decode": "^4.0.0",
     "mkcert": "^3.2.0",
@@ -45,7 +46,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "set PORT=5173 && react-scripts start --port 5173",
+    "start": "set PORT=5001 && react-scripts start --port 5001",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

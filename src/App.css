@@ -359,5 +359,10 @@ ui5-icon:hover {
 .graphcontainer{
   width: 100%!important;
   height: 100%!important;
-  overflow:scroll;
+  position: absolute;
+  right: 0;
+  top: 0;
+  left: 0;
+  bottom: 0;
 }
+

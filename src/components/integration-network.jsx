@@ -1,244 +1,81 @@
-// src/components/IntegrationNetwork.jsx
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { dia, shapes } from '@joint/core';
-import { DirectedGraph } from '@joint/layout-directed-graph';
-import { BusyIndicator, MessageStrip } from '@ui5/webcomponents-react';
-import { getIntegrationMap } from '../services/s-integration-network';
+// src/components/FlowTemplate.jsx
+import React, { useEffect, useRef, useState } from 'react';
+import { dia, shapes, util, V } from '@joint/core';
+import {getIntegrationMap} from "../services/s-integration-network"
 
-/* --------------------------- helpers --------------------------- */
-const norm = (s) => (s ?? '').toString().trim().toLowerCase().replace(/\s+/g, '').replace(/\/+$/, '');
-const isReceiver = (f) => String(f?.properties?.direction || '').toLowerCase() === 'receiver';
-const isSender   = (f) => String(f?.properties?.direction || '').toLowerCase() === 'sender';
-
-const hasParticipantsArray = (x) => x && typeof x === 'object' && Array.isArray(x.participants);
-const looksLikeParticipant = (x) => x && typeof x === 'object' && 'artifactID' in x && 'artifactName' in x && 'name' in x;
-
-function toWorkflows(anyPayload) {
-  if (Array.isArray(anyPayload) && anyPayload.some(hasParticipantsArray)) return anyPayload;
-
-  // collect participant-like nodes and group by artifact
-  const participants = [];
-  const visit = (node) => {
-    if (typeof node === 'string') { try { visit(JSON.parse(node)); } catch {} return; }
-    if (Array.isArray(node)) { node.forEach(visit); return; }
-    if (node && typeof node === 'object') {
-      if (looksLikeParticipant(node)) { participants.push(node); return; }
-      Object.values(node).forEach(visit);
-    }
-  };
-  visit(anyPayload);
-
-  const byArtifact = new Map();
-  participants.forEach((p) => {
-    const key = `${p.artifactID}•${p.artifactName}`;
-    if (!byArtifact.has(key)) {
-      byArtifact.set(key, {
-        id: p.artifactID,
-        artifactID: p.artifactID,
-        artifactName: p.artifactName,
-        artifactVersion: p.artifactVersion,
-        packageID: p.packageID,
-        packageName: p.packageName,
-        participants: []
-      });
-    }
-    byArtifact.get(key).participants.push({
-      id: p.id, name: p.name,
-      messageFlows: Array.isArray(p.messageFlows) ? p.messageFlows : []
-    });
-  });
-  return [...byArtifact.values()];
-}
-
-const wfKey = (wf) => `${wf.artifactID}•${wf.artifactName}`;
-const pKey  = (wf, p) => `${wfKey(wf)}|${p.id || p.name}`;
-
-/* -------------------------- sizing --------------------------- */
-const PARENT_W = 560;
-const HDR_H = 36;
-const PAD = 16;
-const ROW_H = 32;
-
-/* --------------------------- component --------------------------- */
 export default function IntegrationNetwork() {
-  const [loading, setLoading] = useState(true);
+  const hostRef = useRef(null);
+  const [loading, setLoading] = useState(false);
   const [err, setErr] = useState(null);
   const [workflows, setWorkflows] = useState([]);
 
-  const hostRef   = useRef(null);
-  const graphRef  = useRef(null);
-  const paperRef  = useRef(null);
-  const roRef     = useRef(null);
-  const rafRef    = useRef(0);
-  const initedRef = useRef(false);
-  const lastSize  = useRef({ w: 0, h: 0 });
+  // ---------- payload -> workflows
+  function toWorkflows(arr) {
+    if (!Array.isArray(arr)) return [];
+    return arr.map(b => ({
+      id: b.id,
+      artifactID: b.artifactID,
+      artifactName: b.artifactName,
+      artifactVersion: b.artifactVersion,
+      participants: Array.isArray(b.participants) ? b.participants : []
+    }));
+  }
 
-  // fetch data here
+  // ---------- fetch (uses your real fetch, falls back to sample)
   useEffect(() => {
     let cancelled = false;
     (async () => {
       setLoading(true); setErr(null);
       try {
-        // const res = await getIntegrationMap();
-        // let obj = res?.data?.obj ?? [];
-        let obj = [{
-        "id": "_45ec2369b71df7a683452e21be2f8fd1",
-        "packageID": "IIT",
-        "packageName": "IIT",
-        "artifactID": "_45ec2369b71df7a683452e21be2f8fd1",
-        "artifactName": "MON_Mixed_APIs_147",
-        "artifactVersion": "Active",
-        "participants": [
-            {
-                "id": "Participant_99848",
-                "name": "Sender1",
-                "messageFlows": []
-            },
-            {
-                "id": "Participant_99857",
-                "name": "Sender2",
-                "messageFlows": []
-            },
-            {
-                "id": "Participant_2",
-                "name": "Receiver",
-                "messageFlows": [
-                    {
-                        "id": "MessageFlow_22",
-                        "properties": {
-                            "Description": "",
-                            "methodSourceExpression": "",
-                            "ComponentNS": "sap",
-                            "privateKeyAlias": "",
-                            "httpMethod": "POST",
-                            "allowedResponseHeaders": "*",
-                            "Name": "HTTP",
-                            "TransportProtocolVersion": "1.15.0",
-                            "ComponentSWCVName": "external",
-                            "proxyPort": "",
-                            "enableMPLAttachments": "true",
-                            "httpAddressQuery": "",
-                            "httpRequestTimeout": "60000",
-                            "MessageProtocol": "None",
-                            "ComponentSWCVId": "1.15.0",
-                            "allowedRequestHeaders": "",
-                            "direction": "Receiver",
-                            "ComponentType": "HTTP",
-                            "httpShouldSendBody": "false",
-                            "throwExceptionOnFailure": "true",
-                            "proxyType": "default",
-                            "componentVersion": "1.15",
-                            "retryIteration": "1",
-                            "proxyHost": "",
-                            "retryOnConnectionFailure": "false",
-                            "system": "Receiver",
-                            "authenticationMethod": "None",
-                            "locationID": "",
-                            "retryInterval": "5",
-                            "TransportProtocol": "HTTP",
-                            "cmdVariantUri": "ctype::AdapterVariant/cname::sap:HTTP/tp::HTTP/mp::None/direction::Receiver/version::1.15.0",
-                            "credentialName": "",
-                            "httpErrorResponseCodes": "",
-                            "MessageProtocolVersion": "1.15.0",
-                            "httpAddressWithoutQuery": "https://api.restful-api.dev/objects"
-                        }
-                    }
-                ]
-            },
-            {
-                "id": "Participant_7",
-                "name": "Receiver1",
-                "messageFlows": [
-                    {
-                        "id": "MessageFlow_8",
-                        "properties": {
-                            "Description": "",
-                            "methodSourceExpression": "",
-                            "ComponentNS": "sap",
-                            "privateKeyAlias": "",
-                            "httpMethod": "GET",
-                            "allowedResponseHeaders": "*",
-                            "Name": "HTTP",
-                            "TransportProtocolVersion": "1.15.0",
-                            "ComponentSWCVName": "external",
-                            "proxyPort": "",
-                            "enableMPLAttachments": "true",
-                            "httpAddressQuery": "",
-                            "httpRequestTimeout": "60000",
-                            "MessageProtocol": "None",
-                            "ComponentSWCVId": "1.15.0",
-                            "allowedRequestHeaders": "",
-                            "direction": "Receiver",
-                            "ComponentType": "HTTP",
-                            "httpShouldSendBody": "false",
-                            "throwExceptionOnFailure": "true",
-                            "proxyType": "default",
-                            "componentVersion": "1.15",
-                            "retryIteration": "1",
-                            "proxyHost": "",
-                            "retryOnConnectionFailure": "false",
-                            "system": "Receiver1",
-                            "authenticationMethod": "None",
-                            "locationID": "",
-                            "retryInterval": "5",
-                            "TransportProtocol": "HTTP",
-                            "cmdVariantUri": "ctype::AdapterVariant/cname::sap:HTTP/tp::HTTP/mp::None/direction::Receiver/version::1.15.0",
-                            "credentialName": "",
-                            "httpErrorResponseCodes": "",
-                            "MessageProtocolVersion": "1.15.0",
-                            "httpAddressWithoutQuery": "https://dsfdsfs.nindasdja/fact"
-                        }
-                    }
-                ]
-            },
-            {
-                "id": "Participant_13",
-                "name": "Receiver2",
-                "messageFlows": [
-                    {
-                        "id": "MessageFlow_14",
-                        "properties": {
-                            "Description": "",
-                            "methodSourceExpression": "",
-                            "ComponentNS": "sap",
-                            "privateKeyAlias": "",
-                            "httpMethod": "GET",
-                            "allowedResponseHeaders": "*",
-                            "Name": "HTTP",
-                            "TransportProtocolVersion": "1.15.0",
-                            "ComponentSWCVName": "external",
-                            "proxyPort": "",
-                            "enableMPLAttachments": "true",
-                            "httpAddressQuery": "",
-                            "httpRequestTimeout": "60000",
-                            "MessageProtocol": "None",
-                            "ComponentSWCVId": "1.15.0",
-                            "allowedRequestHeaders": "",
-                            "direction": "Receiver",
-                            "ComponentType": "HTTP",
-                            "httpShouldSendBody": "false",
-                            "throwExceptionOnFailure": "true",
-                            "proxyType": "default",
-                            "componentVersion": "1.15",
-                            "retryIteration": "1",
-                            "proxyHost": "",
-                            "retryOnConnectionFailure": "false",
-                            "system": "Receiver2",
-                            "authenticationMethod": "None",
-                            "locationID": "",
-                            "retryInterval": "5",
-                            "TransportProtocol": "HTTP",
-                            "cmdVariantUri": "ctype::AdapterVariant/cname::sap:HTTP/tp::HTTP/mp::None/direction::Receiver/version::1.15.0",
-                            "credentialName": "",
-                            "httpErrorResponseCodes": "",
-                            "MessageProtocolVersion": "1.15.0",
-                            "httpAddressWithoutQuery": "https://api.coindesk.com/v1/bp1i/currentprice.json"
-                        }
-                    }
-                ]
-            }
-        ]
-    }]
+        const res = await getIntegrationMap?.();
+        let obj = res?.data?.obj ?? null;
+
+        // Fallback sample (remove if your API always returns data)
+        if (!obj) {
+          obj = [{
+            "id": "_45ec2369b71df7a683452e21be2f8fd1",
+            "packageID": "IIT",
+            "packageName": "IIT",
+            "artifactID": "_45ec2369b71df7a683452e21be2f8fd1",
+            "artifactName": "MON_Mixed_APIs_147",
+            "artifactVersion": "Active",
+            "participants": [
+              { "id": "Participant_99848", "name": "Sender1", "messageFlows": [] },
+              { "id": "Participant_99857", "name": "Sender2", "messageFlows": [] },
+              {
+                "id": "Participant_2", "name": "Receiver",
+                "messageFlows": [{
+                  "id": "MessageFlow_22",
+                  "properties": {
+                    "httpMethod": "POST", "direction": "Receiver", "Name": "HTTP",
+                    "system": "Receiver", "httpAddressWithoutQuery": "https://api.restful-api.dev/objects"
+                  }
+                }]
+              },
+              {
+                "id": "Participant_7", "name": "Receiver1",
+                "messageFlows": [{
+                  "id": "MessageFlow_8",
+                  "properties": {
+                    "httpMethod": "GET", "direction": "Receiver", "Name": "HTTP",
+                    "system": "Receiver1", "httpAddressWithoutQuery": "https://dsfdsfs.nindasdja/fact"
+                  }
+                }]
+              },
+              {
+                "id": "Participant_13", "name": "Receiver2",
+                "messageFlows": [{
+                  "id": "MessageFlow_14",
+                  "properties": {
+                    "httpMethod": "GET", "direction": "Receiver", "Name": "HTTP",
+                    "system": "Receiver2", "httpAddressWithoutQuery": "https://api.coindesk.com/v1/bp1i/currentprice.json"
+                  }
+                }]
+              }
+            ]
+          }];
+        }
+
         if (typeof obj === 'string') { try { obj = JSON.parse(obj); } catch {} }
         const wfArr = toWorkflows(obj);
         if (!cancelled) setWorkflows(wfArr);
@@ -251,334 +88,419 @@ export default function IntegrationNetwork() {
     return () => { cancelled = true; };
   }, []);
 
-  const beginFreeze = (paper, graph) => {
-    if (paper?.freeze && paper?.unfreeze) { paper.freeze(); return () => paper.unfreeze(); }
-    if (graph?.startBatch && graph?.stopBatch) { graph.startBatch('layout'); return () => graph.stopBatch('layout'); }
-    return () => {};
-  };
-
-  // Dagre layout on workflow parents; safe with fallback grid
-  const layoutParents = useCallback((parents, guides) => {
-    const graph = graphRef.current;
-    const paper = paperRef.current;
-    if (!graph || !paper) return;
-
-    if (!Array.isArray(parents) || parents.length === 0) {
-      paper.fitToContent?.({ padding: 20, allowNewOrigin: 'any' }) ||
-      paper.scaleContentToFit?.({ padding: 20 });
-      return;
-    }
-
-    const gridFallback = () => {
-      const GAP_X = 160, GAP_Y = 120;
-      const cols = Math.max(1, Math.ceil(Math.sqrt(parents.length)));
-      parents.forEach((p, i) => {
-        const col = i % cols, row = Math.floor(i / cols);
-        const { width: w = 400, height: h = 250 } = p.size?.() || {};
-        p.position?.(60 + col * (w + GAP_X), 60 + row * (h + GAP_Y));
-      });
-    };
-
-    const unfreeze = beginFreeze(paper, graph);
-    try {
-      const parentIds = new Set(parents.map((p) => p.id));
-      const safeGuides = (Array.isArray(guides) ? guides : []).filter((l) => {
-        const s = l.get('source')?.id, t = l.get('target')?.id;
-        return s && t && parentIds.has(s) && parentIds.has(t);
-      });
-
-      // Extra spacing so participants placed outside the parent don’t collide
-      DirectedGraph.layout([...parents, ...safeGuides], {
-        rankDir: 'LR',
-        nodeSep: 240,   // wider horizontal spacing between parents
-        edgeSep: 40,
-        rankSep: 260,   // more vertical spacing between rows
-        marginX: 60,
-        marginY: 60
-      });
-    } catch {
-      gridFallback();
-    } finally {
-      unfreeze();
-    }
-
-    paper.fitToContent?.({ padding: 40, allowNewOrigin: 'any' }) ||
-    paper.scaleContentToFit?.({ padding: 40 });
-  }, []);
-
-  // draw
+  // ---------- draw when workflows available
   useEffect(() => {
-    const host = hostRef.current;
-    if (!host || loading || err) return;
+    if (!hostRef.current || !workflows.length) return;
 
-    const visibleAndSized = () => {
-      const r = host.getBoundingClientRect();
-      const cs = getComputedStyle(host);
-      return r.width >= 50 && r.height >= 50 && cs.display !== 'none' && cs.visibility !== 'hidden';
+    const cleanupFns = [];
+
+    const PortGroup = { IN: 'in', OUT: 'out' };
+    const colors = {
+      red: '#ed2637',
+      black: '#131e29',
+      gray: '#dde6ed',
+      blue: '#00a0e9',
+      white: '#ffffff'
     };
 
-    const init = () => {
-      if (initedRef.current) return;
-      initedRef.current = true;
+    // Artifact dynamic sizing (min width/height; height scales with ports)
+    const ARTIFACT_MIN = { width: 220, height: 150 };
+    const ARTIFACT_PORT_SPACING = 30;
+    const ARTIFACT_VERTICAL_PADDING = 90;
+    const calcArtifactHeight = (inCount, outCount) => {
+      const portsMax = Math.max(inCount || 0, outCount || 0, 1);
+      const sizeFromPorts = ARTIFACT_VERTICAL_PADDING + portsMax * ARTIFACT_PORT_SPACING;
+      return Math.max(ARTIFACT_MIN.height, sizeFromPorts);
+    };
 
-      const graph = new dia.Graph({}, { cellNamespace: shapes });
-      const w0 = Math.max(1000, host.clientWidth || 1200);
-      const h0 = Math.max(700, host.clientHeight || 800);
+    // ELEMENT TEMPLATE
+    const elementTemplate = new shapes.standard.BorderedImage({
+      size: { width: 140, height: 110 },
+      attrs: {
+        root: { magnet: false },
+        image: {
+          x: 'calc(w / 2 - calc(s / 2 - 20))',
+          y: 'calc(h / 2 - calc(s / 2 - 20))',
+          width: 'calc(s - 40)',
+          height: 'calc(s - 40)',
+          xlinkHref:
+            'data:image/svg+xml;utf8,' +
+            encodeURIComponent(
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">' +
+              '<rect x="8" y="10" width="48" height="44" rx="8" ry="8" fill="#dde6ed" stroke="#131e29" stroke-width="2"/>' +
+              '<circle cx="24" cy="28" r="6" fill="#131e29"/>' +
+              '<rect x="34" y="22" width="18" height="4" fill="#131e29"/>' +
+              '<rect x="34" y="30" width="18" height="4" fill="#131e29"/>' +
+              '</svg>'
+            ),
+          refX: null, refY: null, refWidth: null, refHeight: null
+        },
+        border: { rx: 8, ry: 8, stroke: colors.black, strokeWidth: 3 },
+        background: { fill: colors.white },
+        label: {
+          fill: colors.black,
+          fontSize: 13,
+          fontWeight: '600',
+          fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
+          textWrap: { width: 'calc(w + 40)', height: null }
+        }
+      },
+      // diamond visual + invisible circular magnet
+      portMarkup: util.svg/* xml */`
+        <g>
+          <circle @selector="portHit" r="11" cx="0" cy="0" fill="none" stroke="none" />
+          <rect @selector="portBody"
+            width="20" height="20" x="-10" y="-10"
+            fill="${colors.red}"
+            stroke="${colors.gray}" stroke-width="2"
+            transform="rotate(45)"
+          />
+        </g>
+      `,
+      ports: {
+        groups: {
+          [PortGroup.IN]:  { position: 'left',  attrs: { portHit: { magnet: 'passive' }, portBody: {} } },
+          [PortGroup.OUT]: { position: 'right', attrs: { portHit: { magnet: 'active'  }, portBody: {} } }
+        }
+      }
+    });
 
-      const paper = new dia.Paper({
-        el: host,
-        model: graph,
-        width: w0,
-        height: h0,
-        background: { color: '#F5F5F5' },
-        cellViewNamespace: shapes,
-        async: true
-      });
-
-      graphRef.current = graph;
-      paperRef.current = paper;
-      lastSize.current = { w: w0, h: h0 };
-
-      const parents = [];
-      const childByPK = new Map();       // pKey -> participant element
-      const pkToWf   = new Map();        // pKey -> wfKey
-      const graphCells = [];
-      const parentGuides = [];
-
-      const quickNameIndex     = new Map(); // name -> Set(pKey)
-      const quickEndpointIndex = new Map(); // url  -> Set(pKey)
-
-      const safeWfs = Array.isArray(workflows) ? workflows : [];
-
-      // 1) parents + children; internal links attach to parent ports
-      safeWfs.forEach((wf) => {
-        const parts = Array.isArray(wf.participants) ? wf.participants : [];
-        const relevant = parts.filter((p) => Array.isArray(p.messageFlows) && p.messageFlows.length > 0);
-
-        const inbound  = [];
-        const outbound = [];
-
-        relevant.forEach((p) => {
-          const flows = p.messageFlows || [];
-          if (flows.some(isSender))   inbound.push(p);
-          if (flows.some(isReceiver)) outbound.push(p);
-
-          const n = norm(p.name);
-          if (n) { if (!quickNameIndex.has(n)) quickNameIndex.set(n, new Set()); quickNameIndex.get(n).add(pKey(wf, p)); }
-          flows.forEach((mf) => {
-            const url = norm(mf?.properties?.httpAddressWithoutQuery);
-            if (!url) return;
-            const pk = pKey(wf, p);
-            if (!quickEndpointIndex.has(url)) quickEndpointIndex.set(url, new Set());
-            quickEndpointIndex.get(url).add(pk);
-          });
-        });
-
-        const rows = Math.max(1, Math.max(inbound.length, outbound.length));
-        const PARENT_H = HDR_H + PAD * 2 + rows * ROW_H;
-
-        // parent (artifact) with ports
-        const parent = new shapes.standard.Rectangle({
-          size: { width: PARENT_W, height: PARENT_H },
-          position: { x: 0, y: 0 },
-          attrs: {
-            body: { fill: '#F9FAFB', stroke: '#D1D5DB', strokeWidth: 2, rx: 10, ry: 10 },
-            label: {
-              text: `${wf.artifactName || wf.id || 'Workflow'} • ${wf.artifactID || ''}${wf.artifactVersion ? ` • v:${wf.artifactVersion}` : ''}`,
-              refY: 10, yAlignment: 'top',
-              fontFamily: 'Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif',
-              fontSize: 12, fontWeight: 'bold', fill: '#111827'
-            }
-          }
-        });
-
-        parent.addPorts([{ id: 'in', group: 'in' }, { id: 'out', group: 'out' }]);
-        parent.set('ports', {
-          ...parent.get('ports'),
-          groups: {
-            in:  { position: 'left',  attrs: { circle: { r: 4, magnet: true, fill: '#2563EB' } }, markup: [{ tagName: 'circle', selector: 'circle' }] },
-            out: { position: 'right', attrs: { circle: { r: 4, magnet: true, fill: '#16A34A' } }, markup: [{ tagName: 'circle', selector: 'circle' }] }
-          }
-        });
-
-        parents.push(parent);
-        graphCells.push(parent);
-
-        const NODE_W = 240, NODE_H = 24, GAP_SIDE = 40;
-
-        const makeChild = (p, idx, lane) => {
-          const y0 = parent.position().y + HDR_H + PAD;
-          const y  = y0 + idx * ROW_H + ROW_H / 2 - NODE_H / 2;
-          const x = lane === 'in'
-            ? parent.position().x - GAP_SIDE - NODE_W  // left of parent
-            : parent.position().x + PARENT_W + GAP_SIDE; // right of parent
-
-          const el = new shapes.standard.Rectangle({
-            size: { width: NODE_W, height: NODE_H },
-            position: { x, y },
-            attrs: {
-              body: {
-                fill: '#FFFFFF',
-                stroke: lane === 'in' ? '#2563EB' : '#16A34A',
-                strokeWidth: 2, rx: 6, ry: 6
-              },
-              label: { text: p.name, fontSize: 11, fill: '#111827' }
-            }
-          });
-
-          // IMPORTANT: embed so they move with the parent after Dagre
-          parent.embed(el);
-
-          graphCells.push(el);
-          const pk = pKey(wf, p);
-          childByPK.set(pk, el);
-          pkToWf.set(pk, wfKey(wf));
-
-          // internal link: participant ↔ parent port
-          const flows = p.messageFlows || [];
-          const labelText = flows
-            .filter(isReceiver) // outbound labels
-            .map(f => `${f?.properties?.httpMethod || ''} ${f?.properties?.httpAddressWithoutQuery || ''}`.trim())
-            .filter(Boolean)
-            .join('\n');
-
-          const labels = labelText ? [{
-            position: 0.5,
-            attrs: {
-              label: { text: labelText, fontSize: 10, fill: '#374151' },
-              body:  { fill: '#F3F4F6', stroke: '#E5E7EB' }
-            }
-          }] : [];
-
-          const link = lane === 'in'
-            ? new shapes.standard.Link({ source: { id: el.id }, target: { id: parent.id, port: 'in'  }, labels })
-            : new shapes.standard.Link({ source: { id: parent.id, port: 'out' }, target: { id: el.id },           labels });
-
-          link.attr({
-            line: {
-              stroke: '#6B7280', strokeWidth: 2,
-              targetMarker: { type: 'path', d: 'M 10 -5 0 0 10 5 z' }
-            }
-          });
-
-          // Manhattan routing to avoid overlaps
-          link.router({ name: 'manhattan', args: { padding: 18, step: 12 } }).connector('rounded');
-          graphCells.push(link);
-        };
-
-        inbound.forEach((p, i)  => makeChild(p, i, 'in'));
-        outbound.forEach((p, i) => makeChild(p, i, 'out'));
-      });
-
-      // 2) cross-workflow links (participant -> participant), with guards
-      const made = new Set();
-      const addCross = (fromPk, toPk, label) => {
-        if (!fromPk || !toPk) return;
-        if (fromPk === toPk) return;                                   // no self loops
-        if (pkToWf.get(fromPk) === pkToWf.get(toPk)) return;           // no same-workflow loops
-
-        const src = childByPK.get(fromPk);
-        const trg = childByPK.get(toPk);
-        if (!src || !trg) return;
-
-        const sig = `${src.id}->${trg.id}`;
-        if (made.has(sig)) return;
-        made.add(sig);
-
-        const link = new shapes.standard.Link({
-          source: { id: src.id },
-          target: { id: trg.id },
-          labels: label ? [{
-            position: 0.5,
-            attrs: {
-              label: { text: label, fontSize: 10, fill: '#111827' },
-              body:  { fill: '#FEF3C7', stroke: '#F59E0B' }
-            }
-          }] : []
-        });
-        link.attr({
-          line: {
-            stroke: '#F59E0B', strokeWidth: 2,
-            targetMarker: { type: 'path', d: 'M 10 -5 0 0 10 5 z' }
-          }
-        });
-        link.router({ name: 'manhattan', args: { padding: 20, step: 12 } }).connector('rounded');
-        graphCells.push(link);
-      };
-
-      // A) outbound.system -> other participant.name
-      (Array.isArray(workflows) ? workflows : []).forEach((wf) => {
-        (wf.participants || []).forEach((p) => {
-          const flows = p.messageFlows || [];
-          if (!flows.some(isReceiver)) return; // outbound only initiates
-          const fromPk = pKey(wf, p);
-          flows.forEach((mf) => {
-            const sys = norm(mf?.properties?.system);
-            if (!sys) return;
-            const targets = [...(quickNameIndex.get(sys) || [])];
-            targets.forEach((toPk) => addCross(fromPk, toPk, mf?.properties?.Name || 'direct'));
-          });
-        });
-      });
-
-      // B) identical endpoint (across workflows)
-      quickEndpointIndex.forEach((set) => {
-        const arr = [...set];
-        if (arr.length < 2) return;
-        for (let i = 0; i < arr.length - 1; i++) {
-          for (let j = i + 1; j < arr.length; j++) {
-            addCross(arr[i], arr[j], 'direct(endpoint)');
+    // LINK TEMPLATE
+    const templateLink = new shapes.standard.Link({
+      attrs: { line: { stroke: colors.black, strokeWidth: 2 } },
+      defaultLabel: {
+        markup: util.svg/* xml */`
+          <rect @selector="labelBody" />
+          <text @selector="labelText" />
+        `,
+        attrs: {
+          root: { cursor: 'pointer' },
+          labelText: {
+            fill: colors.black,
+            fontSize: 12,
+            fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
+            fontWeight: 'bold',
+            textAnchor: 'middle',
+            textVerticalAnchor: 'middle',
+            textWrap: { width: 120, height: null }
+          },
+          labelBody: {
+            rx: 4, ry: 4, ref: 'labelText',
+            x: 'calc(x - 4)', y: 'calc(y - 4)',
+            width: 'calc(w + 8)', height: 'calc(h + 8)',
+            fill: colors.white, stroke: colors.black, strokeWidth: 2
           }
         }
-      });
+      }
+    });
 
-      // add and layout
-      graph.addCells(graphCells);
-      layoutParents(parents, parentGuides);
+    // GRAPH + PAPER
+    const graph = new dia.Graph({}, { cellNamespace: shapes });
+    const paper = new dia.Paper({
+      el: hostRef.current,
+      model: graph,
+      cellViewNamespace: shapes,
+      width: hostRef.current.clientWidth || 1000,
+      height: hostRef.current.clientHeight || 600,
+      gridSize: 20,
+      async: true,
+      sorting: dia.Paper.sorting.APPROX,
+      background: { color: colors.gray },
+      linkPinning: false,
+      snapLinks: true,
+      interactive: { linkMove: false, labelMove: false },
+      defaultConnectionPoint: { name: 'boundary' },
+      clickThreshold: 5,
+      magnetThreshold: 'onleave',
+      markAvailable: true,
+      highlighting: {
+        connecting: false,
+        magnetAvailability: {
+          name: 'mask',
+          options: { padding: 1, attrs: { stroke: colors.blue, 'stroke-width': 4 } }
+        }
+      },
+      defaultLink: () => templateLink.clone()
+    });
 
-      // Resize handling
-      const observed = host.parentElement || host;
-      const ro = new ResizeObserver(() => {
-        const w = Math.round(observed.clientWidth || host.clientWidth || 0);
-        const h = Math.round(observed.clientHeight || host.clientHeight || 0);
-        if (w < 50 || h < 50) return;
-        if (w === lastSize.current.w && h === lastSize.current.h) return;
-        lastSize.current = { w, h };
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = requestAnimationFrame(() => {
-          paper.setDimensions(w, h);
-          paper.scaleContentToFit?.({ padding: 40 });
+    // ----- Zoom (wheel) + Pan (drag on blank) -----
+    let zoom = 1;
+    const Z_MIN = 0.4;
+    const Z_MAX = 2.0;
+
+    function clientToLocal(clientX, clientY) {
+      const rect = paper.svg.getBoundingClientRect();
+      const pt = paper.svg.createSVGPoint();
+      pt.x = clientX - rect.left;
+      pt.y = clientY - rect.top;
+      return pt.matrixTransform(paper.viewport.getCTM().inverse());
+    }
+
+    function onWheel(evt) {
+      evt.preventDefault();
+      const raw = evt.deltaY != null ? -evt.deltaY : (evt.wheelDelta != null ? evt.wheelDelta : -evt.detail);
+      const step = (raw > 0 ? 1 : -1) * 0.1;
+      const newZoom = Math.max(Z_MIN, Math.min(Z_MAX, zoom + step));
+      if (newZoom === zoom) return;
+
+      const p = clientToLocal(evt.clientX, evt.clientY);
+      paper.scale(newZoom, newZoom, p.x, p.y);
+      zoom = newZoom;
+    }
+
+    paper.svg.addEventListener('wheel', onWheel, { passive: false });
+    paper.svg.addEventListener('mousewheel', onWheel, { passive: false });
+    paper.svg.addEventListener('DOMMouseScroll', onWheel, { passive: false });
+    cleanupFns.push(() => {
+      paper.svg.removeEventListener('wheel', onWheel);
+      paper.svg.removeEventListener('mousewheel', onWheel);
+      paper.svg.removeEventListener('DOMMouseScroll', onWheel);
+    });
+
+    let isPanning = false;
+    let panStart = null;
+    let panOrigin = { tx: 0, ty: 0 };
+
+    const onMouseMove = (e) => {
+      if (!isPanning) return;
+      const dx = e.clientX - panStart.x;
+      const dy = e.clientY - panStart.y;
+      paper.translate(panOrigin.tx + dx, panOrigin.ty + dy);
+    };
+    const endPan = () => {
+      isPanning = false;
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', endPan);
+      paper.svg.style.cursor = '';
+    };
+
+    paper.on('blank:pointerdown', (evt /*, x, y */) => {
+      isPanning = true;
+      panStart = { x: evt.clientX, y: evt.clientY };
+      panOrigin = paper.translate(); // { tx, ty }
+      paper.svg.style.cursor = 'grabbing';
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', endPan);
+    });
+    cleanupFns.push(() => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', endPan);
+    });
+
+    // helpers
+    const createElement = (labelText) =>
+      elementTemplate.clone().attr({ label: { text: labelText } });
+
+    const createLink = (text) => {
+      const link = templateLink.clone();
+      if (text) {
+        link.labels([{
+          attrs: {
+            labelText: { text },
+            labelBody: { fill: colors.white }
+          }
+        }]);
+      }
+      link.connector('rounded');
+      return link;
+    };
+
+    // --------- VERTICAL COLUMNS LAYOUT (per workflow)
+    // Columns: [Senders (vertical stack)]  [Artifact]  [Receivers (vertical stack)]
+    const arrangeVerticalColumns = (clusters, {
+      startY = 100,            // top Y of first lane
+      laneGapY = 120,          // vertical gap between lanes
+      centerX = 700,           // X of artifact center
+      columnGapX = 260,        // horizontal distance from artifact center to sender/receiver columns
+      rowGapY = 24             // vertical gap between stacked participants
+    } = {}) => {
+      let currentY = startY;
+
+      clusters.forEach((cl) => {
+        const { artifactEl, leftEls, rightEls } = cl;
+        const aSize = artifactEl.size();
+        const aW = aSize.width, aH = aSize.height;
+
+        const leftHeights = leftEls.map(el => el.size().height);
+        const leftTotalH =
+          leftHeights.reduce((s, h) => s + h, 0) + Math.max(0, leftEls.length - 1) * rowGapY;
+
+        const rightHeights = rightEls.map(el => el.size().height);
+        const rightTotalH =
+          rightHeights.reduce((s, h) => s + h, 0) + Math.max(0, rightEls.length - 1) * rowGapY;
+
+        const laneHeight = Math.max(aH, leftTotalH, rightTotalH, 1);
+        const laneTop = currentY;
+        const laneMidY = laneTop + laneHeight / 2;
+
+        // Artifact (center)
+        artifactEl.position(centerX - aW / 2, laneMidY - aH / 2);
+
+        // Left column (senders)
+        let leftY = laneMidY - leftTotalH / 2;
+        leftEls.forEach((el) => {
+          const { width: w, height: h } = el.size();
+          const x = centerX - columnGapX - w / 2;
+          el.position(x, leftY);
+          leftY += h + rowGapY;
         });
+
+        // Right column (receivers)
+        let rightY = laneMidY - rightTotalH / 2;
+        rightEls.forEach((el) => {
+          const { width: w, height: h } = el.size();
+          const x = centerX + columnGapX - w / 2;
+          el.position(x, rightY);
+          rightY += h + rowGapY;
+        });
+
+        currentY += laneHeight + laneGapY;
       });
-      ro.observe(observed);
-      roRef.current = ro;
     };
 
-    const boot = () => (visibleAndSized() ? init() : (rafRef.current = requestAnimationFrame(boot)));
-    rafRef.current = requestAnimationFrame(boot);
+    // ---------- build all workflows ----------
+    const clusters = [];
+    const dirOf = (mf) => String(mf?.properties?.direction || '').toLowerCase();
 
+    workflows.forEach((wf, wfIdx) => {
+      const participants = Array.isArray(wf.participants) ? wf.participants : [];
+
+      // Keep only participants that HAVE at least one message flow
+      const withFlows = participants.filter(
+        p => Array.isArray(p.messageFlows) && p.messageFlows.length > 0
+      );
+
+      const senderFlows = [];   // participant -> artifact
+      const receiverFlows = []; // artifact -> participant
+
+      const pElMap = new Map();
+      const leftEls = [];  // senders
+      const rightEls = []; // receivers
+
+      withFlows.forEach(p => {
+        const flows = Array.isArray(p.messageFlows) ? p.messageFlows : [];
+        const inToParticipant    = flows.filter(mf => dirOf(mf) === 'receiver'); // artifact -> participant
+        const outFromParticipant = flows.filter(mf => dirOf(mf) === 'sender');   // participant -> artifact
+
+        inToParticipant.forEach(mf => receiverFlows.push({ participant: p, mf }));
+        outFromParticipant.forEach(mf => senderFlows.push({ participant: p, mf }));
+
+        // participant element + ports
+        const el = createElement(p.name || p.id).set('service', p.id);
+        const inPorts  = inToParticipant.map((_, i) => ({ group: PortGroup.IN,  id: `in${i + 1}` }));
+        const outPorts = outFromParticipant.map((_, i) => ({ group: PortGroup.OUT, id: `out${i + 1}` }));
+        el.addPorts([...inPorts, ...outPorts]);
+
+        pElMap.set(p.id, { element: el, inCount: inPorts.length, outCount: outPorts.length });
+
+        if (inPorts.length > 0) rightEls.push(el);
+        else if (outPorts.length > 0) leftEls.push(el);
+      });
+
+      // artifact ports + dynamic height
+      const artifactInPorts  = senderFlows.map((_, i) => ({ group: PortGroup.IN,  id: `in${i + 1}` }));
+      const artifactOutPorts = receiverFlows.map((_, i) => ({ group: PortGroup.OUT, id: `out${i + 1}` }));
+      const dynamicHeight = calcArtifactHeight(artifactInPorts.length, artifactOutPorts.length);
+
+      const artifactEl = createElement(wf.artifactName || 'Artifact')
+        .set('service', wf.artifactID || (wf.artifactName || 'Artifact'))
+        .size({ width: ARTIFACT_MIN.width, height: dynamicHeight })
+        .addPorts([...artifactInPorts, ...artifactOutPorts]);
+
+      clusters.push({ artifactEl, leftEls, rightEls, senderFlows, receiverFlows, pElMap, wfIdx });
+    });
+
+    // add all elements first
+    graph.addCells(clusters.flatMap(c => [c.artifactEl, ...c.leftEls, ...c.rightEls]));
+
+    // link after render (ensures port geometry is ready)
+    paper.once('render:done', () => {
+      const timer = setTimeout(() => {
+        const links = [];
+
+        clusters.forEach((cl) => {
+          const { artifactEl, senderFlows, receiverFlows, pElMap } = cl;
+
+          // Sender: participant OUT -> artifact IN
+          let artInIdx = 1;
+          senderFlows.forEach(({ participant, mf }) => {
+            const pi = pElMap.get(participant.id);
+            if (!pi) return;
+            const label =
+              (mf?.properties?.httpMethod ? `${mf.properties.httpMethod}` : '') ||
+              (mf?.properties?.Name || '') || '';
+            const outPortId = `out${Math.min(artInIdx, Math.max(1, pi.outCount))}`;
+            links.push(
+              createLink(label).set({
+                source: { id: pi.element.id, port: outPortId },
+                target: { id: artifactEl.id,   port: `in${artInIdx}` }
+              })
+            );
+            artInIdx += 1;
+          });
+
+          // Receiver: artifact OUT -> participant IN
+          let artOutIdx = 1;
+          receiverFlows.forEach(({ participant, mf }) => {
+            const pi = pElMap.get(participant.id);
+            if (!pi) return;
+            const label =
+              (mf?.properties?.httpMethod ? `${mf.properties.httpMethod}` : '') ||
+              (mf?.properties?.Name || '') || '';
+            const inPortId = `in${Math.min(artOutIdx, Math.max(1, pi.inCount))}`;
+            links.push(
+              createLink(label).set({
+                source: { id: artifactEl.id,   port: `out${artOutIdx}` },
+                target: { id: pi.element.id, port: inPortId }
+              })
+            );
+            artOutIdx += 1;
+          });
+        });
+
+        graph.addCells(links);
+
+        // arrange as vertical columns
+        arrangeVerticalColumns(clusters, {
+          startY: 80,
+          laneGapY: 120,
+          centerX: 900,
+          columnGapX: 320,
+          rowGapY: 28
+        });
+
+        // Grow paper to content once; users can then pan/zoom
+        try { paper.fitToContent({ padding: 40, allowNewOrigin: 'any' }); } catch {}
+
+        clearTimeout(timer);
+      }, 300);
+    });
+
+    // cleanup
     return () => {
-      cancelAnimationFrame(rafRef.current);
-      try { roRef.current?.disconnect(); } catch {}
-      try { paperRef.current?.remove(); } catch {}
-      try { graphRef.current?.clear(); } catch {}
-      roRef.current = null; paperRef.current = null; graphRef.current = null; initedRef.current = false;
+      cleanupFns.forEach(fn => { try { fn(); } catch {} });
+      try { paper.remove(); } catch {}
+      try { graph.clear(); } catch {}
     };
-  }, [workflows, loading, err, layoutParents]);
+  }, [workflows]);
 
-  if (loading) return <BusyIndicator active style={{ width: '100%', height: '100%' }} size="M" />;
-  if (err) {
-    return (
-      <MessageStrip design="Negative" style={{ margin: 12 }}>
-        Failed to load integration map: {String(err?.message || err)}
-      </MessageStrip>
-    );
-  }
+  if (loading) return <div style={{ padding: 12 }}>Loading…</div>;
+  if (err) return <div style={{ padding: 12, color: 'crimson' }}>Error: {String(err)}</div>;
+  if (!workflows.length) return <div style={{ padding: 12 }}>No data.</div>;
 
+  // Host container with scrollbars
   return (
-    <div className='graphcontainer'
+    <div
       ref={hostRef}
-      style={{ width: '100%', height: '100%', minHeight: 600, position: 'relative' }}
+      className="graphcontainer"
+      style={{
+        width: '100%',
+        height: 600,
+        overflow: 'auto',
+        border: '1px solid #c9d6e2',
+        borderRadius: 8,
+        background: '#dde6ed'
+      }}
     />
   );
 }
