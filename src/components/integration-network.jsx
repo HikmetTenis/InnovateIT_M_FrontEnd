@@ -1,13 +1,35 @@
-// src/components/FlowTemplate.jsx
+// src/components/integration-network.jsx
 import React, { useEffect, useRef, useState } from 'react';
-import { dia, shapes, util, V } from '@joint/core';
-import {getIntegrationMap} from "../services/s-integration-network"
+import { dia, shapes, util } from '@joint/core';
+import { getIntegrationMap } from '../services/s-integration-network';
 
 export default function IntegrationNetwork() {
   const hostRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState(null);
   const [workflows, setWorkflows] = useState([]);
+
+  // ---- your files (from public/)
+  const ICON_URL = {
+    sender:   '/telephone-outbound-fill.svg',
+    receiver: '/telephone-inbound-fill.svg',
+    workflow: '/cpu-fill.svg'
+  };
+
+  // --------- helpers
+  const resolvePublic = (url) => {
+    if (!url) return '';
+    if (/^(https?:)?\/\//i.test(url) || /^data:/i.test(url)) return url;
+    const base = (process.env.PUBLIC_URL || '').replace(/\/+$/, '');
+    if (url.startsWith('/')) return `${base}${url}`;
+    return `${base}/${url}`;
+  };
+
+  // const setIconUrl = (el, url) => {
+  //   const resolved = resolvePublic(url);
+  //   el.attr('image/href', resolved);
+  //   el.attr('image/xlinkHref', resolved);
+  // };
 
   // ---------- payload -> workflows
   function toWorkflows(arr) {
@@ -30,45 +52,49 @@ export default function IntegrationNetwork() {
         const res = await getIntegrationMap?.();
         let obj = res?.data?.obj ?? null;
 
-        // Fallback sample (remove if your API always returns data)
+        // Fallback sample
         if (!obj) {
           obj = [{
-            "id": "_45ec2369b71df7a683452e21be2f8fd1",
-            "packageID": "IIT",
-            "packageName": "IIT",
-            "artifactID": "_45ec2369b71df7a683452e21be2f8fd1",
-            "artifactName": "MON_Mixed_APIs_147",
-            "artifactVersion": "Active",
-            "participants": [
-              { "id": "Participant_99848", "name": "Sender1", "messageFlows": [] },
-              { "id": "Participant_99857", "name": "Sender2", "messageFlows": [] },
+            id: '_45ec2369b71df7a683452e21be2f8fd1',
+            packageID: 'IIT',
+            packageName: 'IIT',
+            artifactID: '_45ec2369b71df7a683452e21be2f8fd1',
+            artifactName: 'MON_Mixed_APIs_147',
+            artifactVersion: 'Active',
+            participants: [
+              { id: 'Participant_99848', name: 'Sender1', messageFlows: [
+                { id: 'MessageFlow_s1', properties: { direction: 'Sender', httpMethod: 'POST', Name: 'HTTP' } }
+              ] },
+              { id: 'Participant_99857', name: 'Sender2', messageFlows: [
+                { id: 'MessageFlow_s2', properties: { direction: 'Sender', httpMethod: 'PUT', Name: 'HTTP' } }
+              ] },
               {
-                "id": "Participant_2", "name": "Receiver",
-                "messageFlows": [{
-                  "id": "MessageFlow_22",
-                  "properties": {
-                    "httpMethod": "POST", "direction": "Receiver", "Name": "HTTP",
-                    "system": "Receiver", "httpAddressWithoutQuery": "https://api.restful-api.dev/objects"
+                id: 'Participant_2', name: 'Receiver',
+                messageFlows: [{
+                  id: 'MessageFlow_22',
+                  properties: {
+                    httpMethod: 'POST', direction: 'Receiver', Name: 'HTTP',
+                    system: 'Receiver', httpAddressWithoutQuery: 'https://api.restful-api.dev/objects'
                   }
                 }]
               },
               {
-                "id": "Participant_7", "name": "Receiver1",
-                "messageFlows": [{
-                  "id": "MessageFlow_8",
-                  "properties": {
-                    "httpMethod": "GET", "direction": "Receiver", "Name": "HTTP",
-                    "system": "Receiver1", "httpAddressWithoutQuery": "https://dsfdsfs.nindasdja/fact"
+                id: 'Participant_7', name: 'Receiver1',
+                messageFlows: [{
+                  id: 'MessageFlow_8',
+                  properties: {
+                    httpMethod: 'GET', direction: 'Receiver', Name: 'HTTP',
+                    system: 'Receiver1', httpAddressWithoutQuery: 'https://dsfdsfs.nindasdja/fact'
                   }
                 }]
               },
               {
-                "id": "Participant_13", "name": "Receiver2",
-                "messageFlows": [{
-                  "id": "MessageFlow_14",
-                  "properties": {
-                    "httpMethod": "GET", "direction": "Receiver", "Name": "HTTP",
-                    "system": "Receiver2", "httpAddressWithoutQuery": "https://api.coindesk.com/v1/bp1i/currentprice.json"
+                id: 'Participant_13', name: 'Receiver2',
+                messageFlows: [{
+                  id: 'MessageFlow_14',
+                  properties: {
+                    httpMethod: 'GET', direction: 'Receiver', Name: 'HTTP',
+                    system: 'Receiver2', httpAddressWithoutQuery: 'https://api.coindesk.com/v1/bp1i/currentprice.json'
                   }
                 }]
               }
@@ -113,36 +139,34 @@ export default function IntegrationNetwork() {
       return Math.max(ARTIFACT_MIN.height, sizeFromPorts);
     };
 
-    // ELEMENT TEMPLATE
-    const elementTemplate = new shapes.standard.BorderedImage({
+    // ELEMENT TEMPLATE (image-based, fixed 40x40 icon centered)
+    const elementTemplateBase = new shapes.standard.BorderedImage({
       size: { width: 140, height: 110 },
       attrs: {
         root: { magnet: false },
-        image: {
-          x: 'calc(w / 2 - calc(s / 2 - 20))',
-          y: 'calc(h / 2 - calc(s / 2 - 20))',
-          width: 'calc(s - 40)',
-          height: 'calc(s - 40)',
-          xlinkHref:
-            'data:image/svg+xml;utf8,' +
-            encodeURIComponent(
-              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">' +
-              '<rect x="8" y="10" width="48" height="44" rx="8" ry="8" fill="#dde6ed" stroke="#131e29" stroke-width="2"/>' +
-              '<circle cx="24" cy="28" r="6" fill="#131e29"/>' +
-              '<rect x="34" y="22" width="18" height="4" fill="#131e29"/>' +
-              '<rect x="34" y="30" width="18" height="4" fill="#131e29"/>' +
-              '</svg>'
-            ),
-          refX: null, refY: null, refWidth: null, refHeight: null
-        },
-        border: { rx: 8, ry: 8, stroke: colors.black, strokeWidth: 3 },
         background: { fill: colors.white },
+        border: { rx: 8, ry: 8, stroke: colors.black, strokeWidth: 3 },
+
+        // >>> Fixed size icon 40x40, centered horizontally & vertically
+        image: {
+          x: 'calc(w / 2 - 20)',
+          y: 'calc(h / 2 - 20)',
+          width: 40,
+          height: 40,
+          preserveAspectRatio: 'xMidYMid meet',
+          opacity: 1
+        },
+
         label: {
           fill: colors.black,
           fontSize: 13,
           fontWeight: '600',
           fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
-          textWrap: { width: 'calc(w + 40)', height: null }
+          textWrap: { width: 'calc(w + 40)', height: null },
+          textVerticalAnchor: 'bottom',
+          textAnchor: 'middle',
+          x: 'calc(w / 2)',
+          y: 'calc(h - 6)'
         }
       },
       // diamond visual + invisible circular magnet
@@ -165,14 +189,36 @@ export default function IntegrationNetwork() {
       }
     });
 
+    // Helper to assign icon
+    const createElement = (labelText, type = 'workflow') => {
+      const el = elementTemplateBase.clone().attr({ label: { text: labelText } });
+      const url = ICON_URL[type] || ICON_URL.workflow;
+      const size = type === 'workflow' ? 50 : 20;
+
+      const { width: w, height: h } = el.size();
+      const x = Math.round((w - size) / 2);
+      const y = Math.round((h - size) / 2);
+      if (url) {
+        const resolved = resolvePublic(url);
+        el.attr('image/href', resolved);
+        el.attr('image/xlinkHref', resolved);
+        el.attr('image/width',size)
+        el.attr('image/height',size)
+        el.attr('image/x', x)
+        el.attr('image/y', y)
+        // el.attr('image/preserveAspectRatio', 'xMidYMid meet')
+        // el.attr('image/opacity',1)
+        // el.attr('image/visibility', 'visible')
+        // el.attr('image/pointer-events', 'none')
+      }
+      return el;
+    };
+
     // LINK TEMPLATE
     const templateLink = new shapes.standard.Link({
       attrs: { line: { stroke: colors.black, strokeWidth: 2 } },
       defaultLabel: {
-        markup: util.svg/* xml */`
-          <rect @selector="labelBody" />
-          <text @selector="labelText" />
-        `,
+        markup: util.svg/* xml */`<rect @selector="labelBody" /><text @selector="labelText" />`,
         attrs: {
           root: { cursor: 'pointer' },
           labelText: {
@@ -213,20 +259,12 @@ export default function IntegrationNetwork() {
       clickThreshold: 5,
       magnetThreshold: 'onleave',
       markAvailable: true,
-      highlighting: {
-        connecting: false,
-        magnetAvailability: {
-          name: 'mask',
-          options: { padding: 1, attrs: { stroke: colors.blue, 'stroke-width': 4 } }
-        }
-      },
       defaultLink: () => templateLink.clone()
     });
 
-    // ----- Zoom (wheel) + Pan (drag on blank) -----
+    // ----- Zoom (wheel) + Pan (drag on blank)
     let zoom = 1;
-    const Z_MIN = 0.4;
-    const Z_MAX = 2.0;
+    const Z_MIN = 0.4, Z_MAX = 2.0;
 
     function clientToLocal(clientX, clientY) {
       const rect = paper.svg.getBoundingClientRect();
@@ -242,7 +280,6 @@ export default function IntegrationNetwork() {
       const step = (raw > 0 ? 1 : -1) * 0.1;
       const newZoom = Math.max(Z_MIN, Math.min(Z_MAX, zoom + step));
       if (newZoom === zoom) return;
-
       const p = clientToLocal(evt.clientX, evt.clientY);
       paper.scale(newZoom, newZoom, p.x, p.y);
       zoom = newZoom;
@@ -274,10 +311,10 @@ export default function IntegrationNetwork() {
       paper.svg.style.cursor = '';
     };
 
-    paper.on('blank:pointerdown', (evt /*, x, y */) => {
+    paper.on('blank:pointerdown', (evt) => {
       isPanning = true;
       panStart = { x: evt.clientX, y: evt.clientY };
-      panOrigin = paper.translate(); // { tx, ty }
+      panOrigin = paper.translate();
       paper.svg.style.cursor = 'grabbing';
       document.addEventListener('mousemove', onMouseMove);
       document.addEventListener('mouseup', endPan);
@@ -287,33 +324,11 @@ export default function IntegrationNetwork() {
       document.removeEventListener('mouseup', endPan);
     });
 
-    // helpers
-    const createElement = (labelText) =>
-      elementTemplate.clone().attr({ label: { text: labelText } });
-
-    const createLink = (text) => {
-      const link = templateLink.clone();
-      if (text) {
-        link.labels([{
-          attrs: {
-            labelText: { text },
-            labelBody: { fill: colors.white }
-          }
-        }]);
-      }
-      link.connector('rounded');
-      return link;
-    };
-
-    // --------- VERTICAL COLUMNS LAYOUT (per workflow)
-    // Columns: [Senders (vertical stack)]  [Artifact]  [Receivers (vertical stack)]
-    const arrangeVerticalColumns = (clusters, {
-      startY = 100,            // top Y of first lane
-      laneGapY = 120,          // vertical gap between lanes
-      centerX = 700,           // X of artifact center
-      columnGapX = 260,        // horizontal distance from artifact center to sender/receiver columns
-      rowGapY = 24             // vertical gap between stacked participants
-    } = {}) => {
+    // ====== LAYOUT (vertical columns per workflow)
+    const arrangeVerticalColumns = (
+      clusters,
+      { startY = 100, laneGapY = 120, centerX = 700, columnGapX = 260, rowGapY = 24 } = {}
+    ) => {
       let currentY = startY;
 
       clusters.forEach((cl) => {
@@ -322,12 +337,10 @@ export default function IntegrationNetwork() {
         const aW = aSize.width, aH = aSize.height;
 
         const leftHeights = leftEls.map(el => el.size().height);
-        const leftTotalH =
-          leftHeights.reduce((s, h) => s + h, 0) + Math.max(0, leftEls.length - 1) * rowGapY;
+        const leftTotalH = leftHeights.reduce((s, h) => s + h, 0) + Math.max(0, leftEls.length - 1) * rowGapY;
 
         const rightHeights = rightEls.map(el => el.size().height);
-        const rightTotalH =
-          rightHeights.reduce((s, h) => s + h, 0) + Math.max(0, rightEls.length - 1) * rowGapY;
+        const rightTotalH = rightHeights.reduce((s, h) => s + h, 0) + Math.max(0, rightEls.length - 1) * rowGapY;
 
         const laneHeight = Math.max(aH, leftTotalH, rightTotalH, 1);
         const laneTop = currentY;
@@ -362,10 +375,10 @@ export default function IntegrationNetwork() {
     const clusters = [];
     const dirOf = (mf) => String(mf?.properties?.direction || '').toLowerCase();
 
-    workflows.forEach((wf, wfIdx) => {
+    workflows.forEach((wf) => {
       const participants = Array.isArray(wf.participants) ? wf.participants : [];
 
-      // Keep only participants that HAVE at least one message flow
+      // Only participants that HAVE at least one message flow
       const withFlows = participants.filter(
         p => Array.isArray(p.messageFlows) && p.messageFlows.length > 0
       );
@@ -385,8 +398,16 @@ export default function IntegrationNetwork() {
         inToParticipant.forEach(mf => receiverFlows.push({ participant: p, mf }));
         outFromParticipant.forEach(mf => senderFlows.push({ participant: p, mf }));
 
+        // Decide icon type
+        const type =
+          inToParticipant.length > 0
+            ? 'receiver'
+            : outFromParticipant.length > 0
+            ? 'sender'
+            : 'workflow';
+
         // participant element + ports
-        const el = createElement(p.name || p.id).set('service', p.id);
+        const el = createElement(p.name || p.id, type).set('service', p.id);
         const inPorts  = inToParticipant.map((_, i) => ({ group: PortGroup.IN,  id: `in${i + 1}` }));
         const outPorts = outFromParticipant.map((_, i) => ({ group: PortGroup.OUT, id: `out${i + 1}` }));
         el.addPorts([...inPorts, ...outPorts]);
@@ -402,15 +423,30 @@ export default function IntegrationNetwork() {
       const artifactOutPorts = receiverFlows.map((_, i) => ({ group: PortGroup.OUT, id: `out${i + 1}` }));
       const dynamicHeight = calcArtifactHeight(artifactInPorts.length, artifactOutPorts.length);
 
-      const artifactEl = createElement(wf.artifactName || 'Artifact')
+      const artifactEl = createElement(wf.artifactName || 'Artifact', 'workflow')
         .set('service', wf.artifactID || (wf.artifactName || 'Artifact'))
         .size({ width: ARTIFACT_MIN.width, height: dynamicHeight })
         .addPorts([...artifactInPorts, ...artifactOutPorts]);
+      const size = wf.artifactName === 'workflow'|| 'Artifact'? 60 : 20;
 
-      clusters.push({ artifactEl, leftEls, rightEls, senderFlows, receiverFlows, pElMap, wfIdx });
+      const { width: w, height: h } = artifactEl.size();
+      const x = Math.round((w - size) / 2);
+      const y = Math.round((h - size) / 2);
+   
+      artifactEl.attr('image/width',size)
+      artifactEl.attr('image/height',size)
+      artifactEl.attr('image/x', x)
+      artifactEl.attr('image/y', y)
+      artifactEl.attr('image/preserveAspectRatio', 'xMidYMid meet')
+      artifactEl.attr('image/opacity',1)
+      artifactEl.attr('image/visibility', 'visible')
+      artifactEl.attr('image/pointer-events', 'none')
+      
+      clusters.push({ artifactEl, leftEls, rightEls, senderFlows, receiverFlows, pElMap });
     });
 
     // add all elements first
+    //const graph = paper.model;
     graph.addCells(clusters.flatMap(c => [c.artifactEl, ...c.leftEls, ...c.rightEls]));
 
     // link after render (ensures port geometry is ready)
@@ -430,12 +466,15 @@ export default function IntegrationNetwork() {
               (mf?.properties?.httpMethod ? `${mf.properties.httpMethod}` : '') ||
               (mf?.properties?.Name || '') || '';
             const outPortId = `out${Math.min(artInIdx, Math.max(1, pi.outCount))}`;
-            links.push(
-              createLink(label).set({
-                source: { id: pi.element.id, port: outPortId },
-                target: { id: artifactEl.id,   port: `in${artInIdx}` }
-              })
-            );
+            const link = templateLink.clone();
+            if (label) {
+              link.labels([{ attrs: { labelText: { text: label } } }]);
+            }
+            link.connector('rounded');
+            links.push(link.set({
+              source: { id: pi.element.id, port: outPortId },
+              target: { id: artifactEl.id,   port: `in${artInIdx}` }
+            }));
             artInIdx += 1;
           });
 
@@ -448,12 +487,15 @@ export default function IntegrationNetwork() {
               (mf?.properties?.httpMethod ? `${mf.properties.httpMethod}` : '') ||
               (mf?.properties?.Name || '') || '';
             const inPortId = `in${Math.min(artOutIdx, Math.max(1, pi.inCount))}`;
-            links.push(
-              createLink(label).set({
-                source: { id: artifactEl.id,   port: `out${artOutIdx}` },
-                target: { id: pi.element.id, port: inPortId }
-              })
-            );
+            const link = templateLink.clone();
+            if (label) {
+              link.labels([{ attrs: { labelText: { text: label } } }]);
+            }
+            link.connector('rounded');
+            links.push(link.set({
+              source: { id: artifactEl.id,   port: `out${artOutIdx}` },
+              target: { id: pi.element.id, port: inPortId }
+            }));
             artOutIdx += 1;
           });
         });
@@ -473,14 +515,13 @@ export default function IntegrationNetwork() {
         try { paper.fitToContent({ padding: 40, allowNewOrigin: 'any' }); } catch {}
 
         clearTimeout(timer);
-      }, 300);
+      }, 500);
     });
 
     // cleanup
     return () => {
       cleanupFns.forEach(fn => { try { fn(); } catch {} });
       try { paper.remove(); } catch {}
-      try { graph.clear(); } catch {}
     };
   }, [workflows]);
 
@@ -488,7 +529,6 @@ export default function IntegrationNetwork() {
   if (err) return <div style={{ padding: 12, color: 'crimson' }}>Error: {String(err)}</div>;
   if (!workflows.length) return <div style={{ padding: 12 }}>No data.</div>;
 
-  // Host container with scrollbars
   return (
     <div
       ref={hostRef}
