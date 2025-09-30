@@ -8,7 +8,7 @@ export default function IntegrationNetwork() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState(null);
   const [workflows, setWorkflows] = useState([]);
-
+  const BOX_HEIGHT_SCALE = 1.5; // 50% taller boxes
   // ---- your files (from public/)
   const ICON_URL = {
     sender:   '/telephone-outbound-fill.svg',
@@ -141,7 +141,7 @@ export default function IntegrationNetwork() {
 
     // ELEMENT TEMPLATE (image-based, fixed 40x40 icon centered)
     const elementTemplateBase = new shapes.standard.BorderedImage({
-      size: { width: 140, height: 110 },
+      size: { width: 140, height: Math.round(110 * BOX_HEIGHT_SCALE) },
       attrs: {
         root: { magnet: false },
         background: { fill: colors.white },
@@ -222,7 +222,7 @@ export default function IntegrationNetwork() {
         attrs: {
           root: { cursor: 'pointer' },
           labelText: {
-            fill: colors.black,
+            fill: colors.white,
             fontSize: 12,
             fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
             fontWeight: 'bold',
@@ -234,7 +234,7 @@ export default function IntegrationNetwork() {
             rx: 4, ry: 4, ref: 'labelText',
             x: 'calc(x - 4)', y: 'calc(y - 4)',
             width: 'calc(w + 8)', height: 'calc(h + 8)',
-            fill: colors.white, stroke: colors.black, strokeWidth: 2
+            fill: colors.black, stroke: colors.white, strokeWidth: 2
           }
         }
       }
@@ -253,6 +253,7 @@ export default function IntegrationNetwork() {
       sorting: dia.Paper.sorting.APPROX,
       background: { color: colors.gray },
       linkPinning: false,
+      defaultConnector: { name: 'smooth' },
       snapLinks: true,
       interactive: { linkMove: false, labelMove: false },
       defaultConnectionPoint: { name: 'boundary' },
@@ -421,13 +422,13 @@ export default function IntegrationNetwork() {
       // artifact ports + dynamic height
       const artifactInPorts  = senderFlows.map((_, i) => ({ group: PortGroup.IN,  id: `in${i + 1}` }));
       const artifactOutPorts = receiverFlows.map((_, i) => ({ group: PortGroup.OUT, id: `out${i + 1}` }));
-      const dynamicHeight = calcArtifactHeight(artifactInPorts.length, artifactOutPorts.length);
-
+      const dynamicHeight = calcArtifactHeight(artifactInPorts.length, artifactOutPorts.length) * BOX_HEIGHT_SCALE;
       const artifactEl = createElement(wf.artifactName || 'Artifact', 'workflow')
         .set('service', wf.artifactID || (wf.artifactName || 'Artifact'))
         .size({ width: ARTIFACT_MIN.width, height: dynamicHeight })
         .addPorts([...artifactInPorts, ...artifactOutPorts]);
       const size = wf.artifactName === 'workflow'|| 'Artifact'? 60 : 20;
+      const fontSize = wf.artifactName === 'workflow'|| 'Artifact'? 8 : 30;
 
       const { width: w, height: h } = artifactEl.size();
       const x = Math.round((w - size) / 2);
@@ -441,6 +442,7 @@ export default function IntegrationNetwork() {
       artifactEl.attr('image/opacity',1)
       artifactEl.attr('image/visibility', 'visible')
       artifactEl.attr('image/pointer-events', 'none')
+      artifactEl.attr('label/fontSize', fontSize)
       
       clusters.push({ artifactEl, leftEls, rightEls, senderFlows, receiverFlows, pElMap });
     });
@@ -470,7 +472,7 @@ export default function IntegrationNetwork() {
             if (label) {
               link.labels([{ attrs: { labelText: { text: label } } }]);
             }
-            link.connector('rounded');
+            link.connector('smooth'); 
             links.push(link.set({
               source: { id: pi.element.id, port: outPortId },
               target: { id: artifactEl.id,   port: `in${artInIdx}` }
@@ -491,7 +493,7 @@ export default function IntegrationNetwork() {
             if (label) {
               link.labels([{ attrs: { labelText: { text: label } } }]);
             }
-            link.connector('rounded');
+            link.connector('smooth'); 
             links.push(link.set({
               source: { id: artifactEl.id,   port: `out${artOutIdx}` },
               target: { id: pi.element.id, port: inPortId }
@@ -504,11 +506,11 @@ export default function IntegrationNetwork() {
 
         // arrange as vertical columns
         arrangeVerticalColumns(clusters, {
-          startY: 80,
-          laneGapY: 120,
-          centerX: 900,
-          columnGapX: 320,
-          rowGapY: 28
+            startY: 120,   // initial top offset
+            laneGapY: 240, // gap between workflows (lanes) — was 120
+            centerX: 900,  // keep if you like current center; bump if you want more overall width
+            columnGapX: 440, // horizontal gap from artifact to sender/receiver columns — was 320
+            rowGapY: 44    // vertical gap between participants in a column — was 28
         });
 
         // Grow paper to content once; users can then pan/zoom
