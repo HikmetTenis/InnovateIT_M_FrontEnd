@@ -5,18 +5,15 @@ const alphabet = [
 ];
 export const  getPackages = async() => {
   const api = getApiInstance();
-    return new Promise(async(resolve, reject) => {
+    //return new Promise(async(resolve, reject) => {
         const config = {
             method: 'get',
             withCredentials:true,
             url: "/artifacts/getPackages"
-          };
-          api(config).then(function (response) {
-            resolve(response)
-          }).catch(function (error) {
-            reject(error)
-          });
-    });
+        };
+        const response = await api(config)
+        return response
+    //});
 }
 export const  getArtifacts = async(artifactID) => {
   const api = getApiInstance();

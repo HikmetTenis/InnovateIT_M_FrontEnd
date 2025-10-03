@@ -15,6 +15,7 @@ export default function MonitoringPage() {
     const [currentArtifactID, setCurrentArtifactID] = useState(null)
     const [packageName, setPackageName] = useState(null)
     const [errorOccured, setErrorOccured] = useState(false)
+    const [noData, setNoData] = useState(false)
     const wrapperVariants = {
         hidden: {
           opacity: 0,
@@ -34,17 +35,20 @@ export default function MonitoringPage() {
         },
     };
     const controls = useAnimationControls();
-    useEffect(()=>{
+    useEffect(async()=>{
         setLoading(true)
-        getPackages().then((res)=>{
+        try{
+            const res = await getPackages()
+            
+            if(res.data.obj.length == 0)
+                setNoData(true)
+            setErrorOccured(false)
+            setArtifacts(res.data.obj)
+        }catch(error){
+            setErrorOccured(true)
+        }finally{
             setLoading(false)
-            if(res.data.type === "error"){
-                setErrorOccured(true)
-            }else{
-                setErrorOccured(false)
-                setArtifacts(res.data.obj)
-            }
-        })
+        }
     },[])
     const refreshArtifact = (packageid) => {
         setLoading(true)
@@ -126,6 +130,8 @@ export default function MonitoringPage() {
                                     </FlexBox>}>
                         </ObjectPageTitle>}
                     style={{height: '100%',borderRadius:"10px"}}>
+                    <BusyIndicator active={loading} style={{width:"100%", height:"100%"}} size="M">
+                    {noData?<IllustratedMessage name="UnableToLoad" />:''}
                     {errorOccured?<IllustratedMessage name="UnableToLoad" />:artifacts.map((artifact) => {
                         return(
                             <Panel collapsed={artifact.Id !== currentItemID} data-id={artifact.Id} key={artifact.Id} data-name={artifact.PackageName}
@@ -154,6 +160,7 @@ export default function MonitoringPage() {
                                 </BusyIndicator>:[]}
                             </Panel>)
                     })}
+                    </BusyIndicator>
                 </ObjectPage>
             </motion.div>
             <motion.div style={{flex:"1 1 auto", height:"100%"}}
