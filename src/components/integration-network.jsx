@@ -885,7 +885,7 @@ export default function IntegrationNetwork() {
       className="graphcontainer"
       style={{
         width: '100%',
-        height: 600,
+        height: 600, 
         overflow: 'auto',
         border: '1px solid #c9d6e2',
         borderRadius: 8,
